@@ -371,3 +371,8 @@ for u64 outer = 0; outer < 10; outer++:
             breakall
     println("I'm not printed..")
 println("cool stuff indeed")
+
+println("\nwe can also use '=' inside a string interpolation as follows:")
+u64 some_value = 1337
+println("{some_value=}")
+println("and a more complicated expression: {15*some_value+5/5=}")

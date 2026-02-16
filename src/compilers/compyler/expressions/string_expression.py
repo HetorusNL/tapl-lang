@@ -5,6 +5,7 @@
 # This file is part of compyler, a TAPL compiler.
 
 from .expression import Expression
+from .string_equal_expression import StringEqualExpression
 from ..tokens.string_chars_token import StringCharsToken
 from ..tokens.token import Token
 from ..tokens.token_type import TokenType
@@ -46,7 +47,7 @@ class StringExpression(Expression):
                 case TokenType.STRING_EXPR_END:
                     string += "}"
                 case _:
-                    assert False
+                    assert False, f"found an unknown token of type {token.token_type} in a string expression!"
         return string
 
     def c_code(self) -> str:
@@ -55,7 +56,14 @@ class StringExpression(Expression):
         arguments: list[str] = []
 
         for element in self.string_elements:
-            # check if the element is an expression, if so add its c_code as argument
+            # check if the element is a StringEqualExpression, if so add it to the format string and add the arguments
+            if isinstance(element, StringEqualExpression):
+                format_string += f"%s"
+                format_string += Utils.get_type_format_string(element.inner)
+                arguments.append(f'"{element.source_text()}"')
+                arguments.append(element.inner.c_code())
+                continue
+            # check if the element is a form of an expression, if so add it to the format string and add the argument
             if isinstance(element, Expression):
                 format_string += Utils.get_type_format_string(element)
                 arguments.append(element.c_code())

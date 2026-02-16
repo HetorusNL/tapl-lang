@@ -10,6 +10,7 @@ from ..expressions.call_expression import CallExpression
 from ..expressions.expression import Expression
 from ..expressions.expression_type import ExpressionType
 from ..expressions.identifier_expression import IdentifierExpression
+from ..expressions.string_equal_expression import StringEqualExpression
 from ..expressions.string_expression import StringExpression
 from ..expressions.this_expression import ThisExpression
 from ..expressions.token_expression import TokenExpression
@@ -324,6 +325,10 @@ class TypingPass(PassBase):
                     finally:
                         self._identifier_stack.pop()
                 expression.type_ = self._get_identifier_type(expression.identifier_token)
+            case StringEqualExpression():
+                # check the inner expression of the string equal expression
+                self.parse_expression(expression.inner)
+                expression.type_ = expression.inner.type_
             case StringExpression():
                 # parse all inner expression of the string, when they exist
                 for element in expression.string_elements:
@@ -575,6 +580,8 @@ class TypingPass(PassBase):
             case IdentifierExpression():
                 if expression.inner_expression:
                     self._check_expression(expression.inner_expression)
+            case StringEqualExpression():
+                self._check_expression(expression.inner)
             case StringExpression():
                 for element in expression.string_elements:
                     if isinstance(element, Expression):

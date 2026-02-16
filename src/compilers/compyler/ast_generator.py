@@ -13,6 +13,7 @@ from .expressions.binary_expression import BinaryExpression
 from .expressions.call_expression import CallExpression
 from .expressions.expression import Expression
 from .expressions.identifier_expression import IdentifierExpression
+from .expressions.string_equal_expression import StringEqualExpression
 from .expressions.string_expression import StringExpression
 from .expressions.this_expression import ThisExpression
 from .expressions.token_expression import TokenExpression
@@ -758,7 +759,16 @@ class AstGenerator:
                     break
                 # check for a start of an expression
                 if token.token_type == TokenType.STRING_EXPR_START:
-                    string_expression.add_token(self.expression())
+                    expression: Expression = self.expression()
+                    # check for the end of the expression and expression modifiers
+                    if self.match(TokenType.STRING_EXPR_END):
+                        # found an expression end, add it to the string expression and continue
+                        string_expression.add_token(expression)
+                    elif equal_token := self.match(TokenType.EQUAL):
+                        # found a string equal expression, add it to the string expression and continue
+                        string_expression.add_token(StringEqualExpression(expression, equal_token, self._filename))
+                    # later expression format modifiers can be added here as well
+
             return string_expression
 
         # match expressions between parenthesis

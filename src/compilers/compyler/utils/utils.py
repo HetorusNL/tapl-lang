@@ -56,6 +56,23 @@ class Utils:
             return f"{Colors.BOLD}{Colors.RED}{error}{Colors.RESET} {no_source}"
 
     @classmethod
+    def get_source_text(cls, filename: Path, source_location: SourceLocation) -> str:
+        # read the entire file info a string
+        with open(filename) as f:
+            content: str = f.read()
+
+        # sanity check that the SourceLocation start is within the file
+        error: str = f"SourceLocation start {source_location.start} is outside the file {filename}"
+        assert source_location.start < len(content), error
+        source_location_end: int = source_location.start + source_location.length
+        error = f"SourceLocation end {source_location_end} is outside the file {filename}"
+        assert source_location_end <= len(content), error
+
+        # return the source text within the SourceLocation
+        location_start: int = source_location.start
+        return content[location_start:source_location_end]
+
+    @classmethod
     def get_expression_type(cls, expression: Expression) -> Type:
         # checks if the type has an inner type, then return the inner type
         if isinstance(expression, IdentifierExpression):
