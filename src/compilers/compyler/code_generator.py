@@ -19,6 +19,9 @@ class CodeGenerator:
         self._templates_folder: Path = templates_folder
 
     def generate_c(self, main_c_file: Path) -> None:
+        # generate the utility functions
+        self._generate_utility_functions_c()
+
         # also generate the typedefs for all builtin basic types
         self._ast.types.generate_c_headers(self._header_folder, self._templates_folder)
 
@@ -46,7 +49,35 @@ class CodeGenerator:
         # write the main c file with the code
         self._write_main_c_file(main_c_lines, main_c_file)
 
-    def _write_classes_c(self, definitions: list[str]):
+    def _generate_utility_functions_c(self) -> None:
+        utility_functions_c_file: Path = self._header_folder / "utility_functions.h"
+
+        lines: list[str] = [
+            "#pragma once\n",
+            "\n",
+            "// include the needed system headers\n",
+            "#include <stdio.h>\n",
+            "#include <stdlib.h>\n",
+            "\n",
+            '#define RED   "\\x1b[31m"\n',
+            '#define GRN   "\\x1b[32m"\n',
+            '#define YEL   "\\x1b[33m"\n',
+            '#define BLU   "\\x1b[34m"\n',
+            '#define MAG   "\\x1b[35m"\n',
+            '#define CYN   "\\x1b[36m"\n',
+            '#define WHT   "\\x1b[37m"\n',
+            '#define RESET "\\x1b[0m"\n',
+            "\n",
+            "void panic(const char* message) {\n",
+            '    fprintf(stderr, RED "panic: %s!\\n" RESET, message);\n',
+            "    exit(1);\n",
+            "}\n",
+        ]
+
+        with open(utility_functions_c_file, "w") as f:
+            f.writelines(lines)
+
+    def _write_classes_c(self, definitions: list[str]) -> None:
         classes_c_file: Path = self._header_folder / "classes.h"
 
         initial_lines: list[str] = [
@@ -65,7 +96,7 @@ class CodeGenerator:
             f.writelines(initial_lines)
             f.writelines(definitions)
 
-    def _write_functions_c(self, declarations: list[str], definitions: list[str]):
+    def _write_functions_c(self, declarations: list[str], definitions: list[str]) -> None:
         functions_c_file: Path = self._header_folder / "functions.h"
 
         initial_lines: list[str] = [

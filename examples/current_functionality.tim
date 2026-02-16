@@ -197,11 +197,15 @@ println("some functions to be called on the list")
 println("\nreturns the size, should be initialized as 0: {some_list.size()}")
 some_list.add(1337)
 println("\nadds an element, 1, to the list, size: {some_list.size()}")
-println("\ngets the 0th element (or 0/crash when not there): {some_list.get(0)}")
-println("\nremoves the 0th element, return true on success, false/crash on failure: {some_list.del(0)}")
-println("\ninserts 10 at location 0, return true on success, false/crash on failure: {some_list.insert(0, 10)}")
+println("\ngets the 0th element (or panic when not there):")
+some_list.get(0)
+println("\nremoves the 0th element, return true on success, panic on failure:")
+some_list.del(0)
+println("\ninserts 10 at location 0, return true on success, panic on failure:")
+some_list.insert(0, 10)
 println("\nsize of the list now: {some_list.size()}")
-println("\ngets the 0th element (or 0/crash when not there) {some_list.get(0)}")
+println("\ngets the 0th element (or panic when not there)")
+some_list.get(0)
 list[f64] doublee
 list[u1] boool
 list[char] charr
@@ -376,3 +380,6 @@ println("\nwe can also use '=' inside a string interpolation as follows:")
 u64 some_value = 1337
 println("{some_value=}")
 println("and a more complicated expression: {15*some_value+5/5=}")
+
+list[u8] list1
+println("adding list1.get(10) here, results in a panic")

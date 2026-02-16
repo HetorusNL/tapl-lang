@@ -56,15 +56,13 @@ the following 'features' were found during AoC solving, and should be fixed
 
 - make char and base/u16-related types be used together
 - python IndexError in unterminated string on the last line
-- add abort/exit/panic -like functionality
 - fix type checking after boolean operators (e.g. "(value1 >= value2) && !flag" should end up as "bool && bool" and eventually "bool")
 - implement a list of class instances
-- invalid list operations should crash instead of silently ignore the error
 - same symbols multiple times defined should show the correct error, also with functions and lists
 - list.add() should support a function call as 'argument'
 - add (fancy) enumeration type (that also has something like a to_string() function)
-- parsing in f-string-like function skips everything including and after ':'
-- string parsing results in errors when the terminating '"' is within the f-string-like section
+- parsing in string interpolation function skips everything including and after ':'
+- string parsing results in errors when the terminating '"' is within the string interpolation section
 
 ## TODO
 
@@ -81,7 +79,6 @@ the following 'features' were found during AoC solving, and should be fixed
       - in block scope:
       - sprintf(char array)
 - add list tests
-- add last pointer to list
 - clean up list implementation
 - make SourceLocation also able to 'add' a Token/Expression/Statement('s source_location)
 - refactor identifier expression from TokenExpression to IdentifierExpression

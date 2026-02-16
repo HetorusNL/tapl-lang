@@ -65,7 +65,7 @@ void list_TYPE_add(list_TYPE* this, TYPE value) {
     this->tail = new_element;
     this->size++;
 }
-// gets the Xth element from the list, return 0/crash when it's not there
+// gets the Xth element from the list, panic when it's not there
 TYPE list_TYPE_get(list_TYPE* this, u64 index) {
     // remember the requested index for caching
     u64 requested_index = index;
@@ -85,10 +85,9 @@ TYPE list_TYPE_get(list_TYPE* this, u64 index) {
         index--;
     }
 
-    // if the item is not found, or the element is NULL, return 0
-    // TODO: or should we crash?
+    // if the item is not found, or the element is NULL, panic
     if (index > 0 || element == NULL)
-        return 0;
+        panic("index out of bounds in list_TYPE_get");
 
     // otherwise we have found the element, update the cache and return the value
     this->cache_valid = true;
@@ -97,9 +96,8 @@ TYPE list_TYPE_get(list_TYPE* this, u64 index) {
 
     return element->value;
 }
-// sets the Xth element in the list to value
-// return true on success, false/crash when it's not there
-bool list_TYPE_set(list_TYPE* this, u64 index, TYPE value) {
+// sets the Xth element in the list to value, panic when it's not there
+void list_TYPE_set(list_TYPE* this, u64 index, TYPE value) {
     // remember the requested index for caching
     u64 requested_index = index;
 
@@ -118,10 +116,9 @@ bool list_TYPE_set(list_TYPE* this, u64 index, TYPE value) {
         index--;
     }
 
-    // if the item is not found, or the element is NULL, return 0
-    // TODO: or should we crash?
+    // if the item is not found, or the element is NULL, panic
     if (index > 0 || element == NULL)
-        return false;
+        panic("index out of bounds in list_TYPE_set");
 
     // otherwise we have found the element, update the cache and update the value
     this->cache_valid = true;
@@ -129,17 +126,15 @@ bool list_TYPE_set(list_TYPE* this, u64 index, TYPE value) {
     this->cache_element = element;
 
     element->value = value;
-    return true;
 }
-// deletes the Xth element from the list, neatly reconnecting the respective pointer(s)
-// return true on success, false/crash when it's not there
-bool list_TYPE_del(list_TYPE* this, u64 index) {
+// deletes the Xth element from the list, neatly reconnecting the respective pointer(s), panic when it's not there
+void list_TYPE_del(list_TYPE* this, u64 index) {
     list_TYPE_cache_invalidate(this);
     // handle the case when it's the first element
     if (index == 0) {
         // check if it exists
         if (this->head == NULL)
-            return false;
+            panic("index out of bounds in list_TYPE_del");
 
         // otherise delete the element and connect the list to the inner element
         list_TYPE_element* inner = this->head->next;
@@ -151,7 +146,7 @@ bool list_TYPE_del(list_TYPE* this, u64 index) {
         if (inner == NULL)
             this->tail = NULL;
 
-        return true;
+        return;
     }
     // traverse to the X-1th element (if it exists)
     list_TYPE_element* element = this->head;
@@ -160,10 +155,9 @@ bool list_TYPE_del(list_TYPE* this, u64 index) {
         index--;
     }
 
-    // if the item is not found, or the element is NULL, return false
-    // TODO: or should we crash?
+    // if the item is not found, or the element is NULL, panic
     if (index > 1 || element == NULL || element->next == NULL)
-        return false;
+        panic("index out of bounds in list_TYPE_del");
 
     // otherwise delete the next element and connect the element's next pointer to the next-next element
     list_TYPE_element* inner = element->next->next;
@@ -175,12 +169,10 @@ bool list_TYPE_del(list_TYPE* this, u64 index) {
         this->tail = element;
 
     this->size--;
-
-    return true;
 }
-// inserts a value at the Xth position in the list, neatly connecting the respective pointer(s)
-// returns true on success, false/crash when it's not possible
-bool list_TYPE_insert(list_TYPE* this, u64 index, TYPE value) {
+// inserts a value at the Xth position in the list, neatly connecting the respective pointer(s),
+// panic when it's not possible
+void list_TYPE_insert(list_TYPE* this, u64 index, TYPE value) {
     list_TYPE_cache_invalidate(this);
     // handle the case when it's the first element
     if (index == 0) {
@@ -190,7 +182,7 @@ bool list_TYPE_insert(list_TYPE* this, u64 index, TYPE value) {
         new_element->next = this->head;
         this->head = new_element;
         this->size++;
-        return true;
+        return;
     }
 
     // as we add after the element found, reduce the index by one
@@ -203,10 +195,9 @@ bool list_TYPE_insert(list_TYPE* this, u64 index, TYPE value) {
         index--;
     }
 
-    // if the item is not found, or the element is NULL, return false
-    // TODO: or should we crash?
+    // if the item is not found, or the element is NULL, panic
     if (index > 0 || element == NULL)
-        return false;
+        panic("index out of bounds in list_TYPE_insert");
 
     // add the element at the current element's next pointer, and this next pointer points to that
     list_TYPE_element* new_element = malloc(sizeof(list_TYPE_element));
@@ -219,6 +210,4 @@ bool list_TYPE_insert(list_TYPE* this, u64 index, TYPE value) {
         this->tail = new_element;
 
     this->size++;
-
-    return true;
 }

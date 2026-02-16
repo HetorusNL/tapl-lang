@@ -179,6 +179,7 @@ class Types:
             "\n",
             "// also include the needed TAPL headers\n",
             "#include <tapl_headers/types.h>\n",
+            "#include <tapl_headers/utility_functions.h>\n",
             "\n",
         ]
 
