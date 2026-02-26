@@ -4,6 +4,11 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
+from contextlib import contextmanager
+from typing import Generator
+from typing import NoReturn
+
+from ..errors.ast_error import AstError
 from ..errors.tapl_error import TaplError
 from ..expressions.binary_expression import BinaryExpression
 from ..expressions.call_expression import CallExpression
@@ -16,7 +21,6 @@ from ..expressions.this_expression import ThisExpression
 from ..expressions.token_expression import TokenExpression
 from ..expressions.type_cast_expression import TypeCastExpression
 from ..expressions.unary_expression import UnaryExpression
-from .pass_base import PassBase
 from ..statements.assignment_statement import AssignmentStatement
 from ..statements.break_statement import BreakStatement
 from ..statements.breakall_statement import BreakallStatement
@@ -51,9 +55,18 @@ from ..utils.utils import Utils
 from .scope_wrapper import ScopeWrapper
 
 
-class TypingPass(PassBase):
+class TypingPass:
+    # TODO: also refactor to the visitor pattern
     def __init__(self, ast: AST):
-        super().__init__(ast)
+        # TODO: remove below when refactoring completed
+        self._ast: AST = ast
+        # store a linked list of scopes inside a wrapper that stores the functions and variables
+        self._scope_wrapper: ScopeWrapper = ScopeWrapper()
+        # also create a scope stash to move the scope aside for a clean one
+        self._scope_wrapper_stash: ScopeWrapper = ScopeWrapper()
+        # store a list of errors during this pass, if they occur
+        self._errors: list[TaplError] = []
+
         # extract the types as determined during the type resolving pass
         self._types: Types = ast.types
 
@@ -68,6 +81,99 @@ class TypingPass(PassBase):
         self._identifier_stack: list[Type] = []
         # add the stdlib functions to the global scope
         self.add_stdlib_functions()
+
+    # TODO: start of base class to be removed
+    def run(self) -> None:
+        for statement in self._ast.statements.iter():
+            self.parse_statement(statement)
+
+        # ensure that we have the global scope and only the global scope left
+        error: str = f"internal compiler error"
+        assert self._scope_wrapper.scope.parent is None, f"{error}, more scopes than the global scope left!"
+        # ensure that we have no scope stash left
+        assert self._scope_wrapper_stash.empty, f"{error}, scope stash is not empty!"
+
+        # if we found errors, print them and exit with exit code 1
+        if self._errors:
+            [print(e) for e in self._errors]
+            exit(1)
+
+    def parse_statement(self, statement: Statement | None) -> None:
+        """wrapper around the statement parsing to catch and handle exceptions"""
+        try:
+            if statement:
+                self._parse_statement(statement)
+        except TaplError as e:
+            self._errors.append(e)
+
+    def add_identifier(self, identifier_token: IdentifierToken, type_: Type):
+        """first checks if the identifier already exists in innermost scope, otherwise adds identifier"""
+        identifier: str = identifier_token.value
+        # check in the innermost scope if the identifier already exists
+        if identifier in self._scope_wrapper.scope.identifiers:
+            self.ast_error(f"identifier '{identifier}' already exists!", identifier_token.source_location)
+
+        # otherwise add the identifier in the innermost scope
+        self._scope_wrapper.scope.add_identifier(identifier, type_)
+
+    def _add_function(self, name: str, function_statement: FunctionStatement):
+        """first checks if the function already exists in innermost scope, otherwise adds function"""
+        # check in the innermost scope if the function already exists
+        if name in self._scope_wrapper.scope.functions:
+            self.ast_error(f"function '{name}' already exists!", function_statement.source_location)
+
+        # otherwise add the identifier in the innermost scope
+        self._scope_wrapper.scope.add_function(name, function_statement)
+
+    def get_identifier_type(self, identifier_token: IdentifierToken) -> Type:
+        """checks that the identifier exists in current or inner scopes, and return its type"""
+        identifier: str = identifier_token.value
+        if type_ := self._scope_wrapper.scope.get_identifier(identifier):
+            return type_
+
+        # the identifier doesn't exist, raise an error
+        self.ast_error(f"unknown identifier '{identifier}'!", identifier_token.source_location)
+
+    @contextmanager
+    def new_scope(self) -> Generator[None]:
+        """enter a new outer scope for the content in the 'with' statement"""
+        try:
+            # first enter the scope by adding a new outer scope
+            self._scope_wrapper.add_scope()
+            # then give control to the caller
+            yield
+        finally:
+            # no matter if there is an exception, leave the outer scope
+            print(f"leaving scope with identifiers: {{{', '.join(self._scope_wrapper.scope.identifiers.keys())}}}")
+            self._scope_wrapper.remove_scope()
+
+    @contextmanager
+    def _clean_scope(self) -> Generator[ScopeWrapper]:
+        """create a new clean scope for the content in the 'with' statement"""
+        try:
+            # make sure the scope stash is currently empty
+            assert self._scope_wrapper_stash.empty, "internal compiler error, clean scope already active!"
+            # move the scope to the stash and create an empty scope list
+            self._scope_wrapper_stash: ScopeWrapper = self._scope_wrapper
+            self._scope_wrapper: ScopeWrapper = ScopeWrapper()
+            # then give control to the caller
+            yield self._scope_wrapper
+        finally:
+            # no matter if there is an exception, restore the scope from the stash
+            # create a reference to the clean scope to return
+            clean_scope: ScopeWrapper = self._scope_wrapper
+            # restore the scope from the stash
+            assert not self._scope_wrapper_stash.empty, "internal compiler error, no scope stash found!"
+            self._scope_wrapper: ScopeWrapper = self._scope_wrapper_stash
+            # create a new empty scope stash
+            self._scope_wrapper_stash = ScopeWrapper()
+            print(f"returning scope with identifiers: {{{', '.join(clean_scope.scope.all_identifiers)}}}")
+
+    def ast_error(self, message: str, source_location: SourceLocation) -> NoReturn:
+        """constructs and raises an AStError"""
+        raise AstError(message, self._ast.filename, source_location)
+
+    # TODO: end of base class to be removed
 
     def add_stdlib_functions(self) -> None:
         # TODO: do this only once, not for every class scope
@@ -94,7 +200,7 @@ class TypingPass(PassBase):
         read_file_function.add_argument(string_type_token, filename_identifier)
         read_file_function.add_argument(list_char_type_token, list_identifier)
         # add the function name to the surrounding scope
-        self._add_identifier(read_file_function.name, read_file_function.return_type.type_)
+        self.add_identifier(read_file_function.name, read_file_function.return_type.type_)
         # add the function to the function list
         self._scope_wrapper.scope.add_function(read_file_function.name.value, read_file_function)
 
@@ -104,7 +210,7 @@ class TypingPass(PassBase):
         write_file_function.add_argument(string_type_token, filename_identifier)
         write_file_function.add_argument(list_char_type_token, list_identifier)
         # add the function name to the surrounding scope
-        self._add_identifier(write_file_function.name, write_file_function.return_type.type_)
+        self.add_identifier(write_file_function.name, write_file_function.return_type.type_)
         # add the function to the function list
         self._scope_wrapper.scope.add_function(write_file_function.name.value, write_file_function)
 
@@ -145,7 +251,7 @@ class TypingPass(PassBase):
                 self.parse_expression(statement.expression)
             case ForLoopStatement():
                 # create a new scope for the for loop definition and body statements
-                with self._new_scope():
+                with self.new_scope():
                     # check the statements and expression that make up the for loop definition
                     self.parse_statement(statement.init)
                     if statement.check:
@@ -157,11 +263,11 @@ class TypingPass(PassBase):
                         self.parse_statement(body_statement)
             case FunctionStatement():
                 # add the function name to the surrounding scope
-                self._add_identifier(statement.name, statement.return_type.type_)
+                self.add_identifier(statement.name, statement.return_type.type_)
                 # add the function statement also to the scope
                 self._scope_wrapper.scope.add_function(statement.name.value, statement)
                 # create a new scope for the function arguments and body statements
-                with self._new_scope():
+                with self.new_scope():
                     # add the return type to the function return type stack
                     self._function_stack.append(statement.return_type.type_)
                     try:
@@ -170,7 +276,7 @@ class TypingPass(PassBase):
                             # set the type to be a reference
                             type_token.type_.is_reference = True
                             # add the argument to the scope
-                            self._add_identifier(identifier_token, type_token.type_)
+                            self.add_identifier(identifier_token, type_token.type_)
                         # check the statements inside the function
                         for body_statement in statement.statements:
                             self.parse_statement(body_statement)
@@ -179,7 +285,7 @@ class TypingPass(PassBase):
             case IfStatement():
                 # pretty nice, this parsing is the same as the scoping pass :)
                 # create a new scope for the if statement expression and body
-                with self._new_scope():
+                with self.new_scope():
                     # parse the expression and statements
                     self.parse_expression(statement.expression)
                     for body_statement in statement.statements:
@@ -187,25 +293,25 @@ class TypingPass(PassBase):
                 # loop through all else-if blocks
                 for else_if_expression, else_if_statements in statement.else_if_statement_blocks:
                     # create a new scope for the else-if block expression and body
-                    with self._new_scope():
+                    with self.new_scope():
                         # parse the expression and statements
                         self.parse_expression(else_if_expression)
                         for else_if_statement in else_if_statements:
                             self.parse_statement(else_if_statement)
                 # if there is an else block, loop through its statements
                 if else_statements := statement.else_statements:
-                    with self._new_scope():
+                    with self.new_scope():
                         for else_statement in else_statements:
                             self.parse_statement(else_statement)
             case LifecycleStatement():
                 # create a new scope for the lifecycle statement arguments and body statements
-                with self._new_scope():
+                with self.new_scope():
                     # add the return type (void) to the function return type stack
                     self._function_stack.append(self._types["void"])
                     try:
                         # add the arguments to the newly created scope
                         for type_token, identifier_token in statement.arguments:
-                            self._add_identifier(identifier_token, type_token.type_)
+                            self.add_identifier(identifier_token, type_token.type_)
                         # check the statements inside the function
                         for body_statement in statement.statements:
                             self.parse_statement(body_statement)
@@ -213,7 +319,7 @@ class TypingPass(PassBase):
                         self._function_stack.pop()
             case ListStatement():
                 # add the variable declaration to the scope
-                self._add_identifier(statement.name, statement.list_type)
+                self.add_identifier(statement.name, statement.list_type)
             case PrintStatement():
                 # check the expression
                 self.parse_expression(statement.value)
@@ -244,11 +350,11 @@ class TypingPass(PassBase):
                         self.ast_error(message, source_location)
             case VarDeclStatement():
                 # add the variable declaration to the scope (we may need it already when testing the initial value)
-                self._add_identifier(statement.name, statement.type_token.type_)
+                self.add_identifier(statement.name, statement.type_token.type_)
                 # get the type of the initial value
                 if initial_value := statement.initial_value:
                     # get the identifier token type
-                    requested_type: Type = self._get_identifier_type(statement.name)
+                    requested_type: Type = self.get_identifier_type(statement.name)
                     # check that the expression is of this type
                     self.parse_expression(initial_value)
                     # check that returned type and requested are valid
@@ -302,15 +408,15 @@ class TypingPass(PassBase):
                 elif function := self._scope_wrapper.scope.get_function(identifier_token.value):
                     self._check_function(function, expression)
                     # set the return type of the function as expression type
-                    expression.type_ = self._get_identifier_type(identifier_token)
+                    expression.type_ = self.get_identifier_type(identifier_token)
                     expression.expression.type_ = expression.type_
                     return
                 source_location: SourceLocation = identifier_token.source_location
                 self.ast_error(f"identifier '{identifier_token}' is not callable!", source_location)
             case IdentifierExpression():
                 # TODO: implement
-                with self._new_scope():
-                    type_: Type = self._get_identifier_type(expression.identifier_token)
+                with self.new_scope():
+                    type_: Type = self.get_identifier_type(expression.identifier_token)
                     is_class: bool = isinstance(type_, ClassType)
                     if is_class:
                         expression.class_type = type_
@@ -324,7 +430,7 @@ class TypingPass(PassBase):
                             return
                     finally:
                         self._identifier_stack.pop()
-                expression.type_ = self._get_identifier_type(expression.identifier_token)
+                expression.type_ = self.get_identifier_type(expression.identifier_token)
             case StringEqualExpression():
                 # check the inner expression of the string equal expression
                 self.parse_expression(expression.inner)
@@ -351,7 +457,7 @@ class TypingPass(PassBase):
                     case IdentifierToken():
                         # TODO: handle callables differently, this now results in gcc errors
                         # get the type from the identifier
-                        expression.type_ = self._get_identifier_type(expression.token)
+                        expression.type_ = self.get_identifier_type(expression.token)
                     case _:
                         match expression.token.token_type:
                             # TODO: refactor true/false to special booleans
@@ -430,7 +536,7 @@ class TypingPass(PassBase):
                 self.ast_error(message, source_location)
 
     def _check_identifier(self, identifier_token: IdentifierToken, target_type: Type) -> None:
-        identifier_type: Type = self._get_identifier_type(identifier_token)
+        identifier_type: Type = self.get_identifier_type(identifier_token)
         if identifier_type != target_type:
             message: str = f"identifier {identifier_token.value} is of type {identifier_type.keyword}, "
             message += f"cannot assign value of type {target_type.keyword}!"

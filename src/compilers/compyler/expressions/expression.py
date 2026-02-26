@@ -5,15 +5,22 @@
 # This file is part of compyler, a TAPL compiler.
 
 from copy import deepcopy
+from typing import TYPE_CHECKING
 
 from ..types.type import Type
 from ..utils.source_location import SourceLocation
+
+if TYPE_CHECKING:
+    from ..visitors.base_expression_visitor import BaseExpressionVisitor
 
 
 class Expression:
     def __init__(self, source_location: SourceLocation):
         self.source_location: SourceLocation = source_location
         self._internal_type_ref_: Type = Type.unknown()
+
+    def accept[T](self, visitor: BaseExpressionVisitor[T]) -> T:
+        return visitor.visit_expression(self)
 
     @property
     def type_(self) -> Type:

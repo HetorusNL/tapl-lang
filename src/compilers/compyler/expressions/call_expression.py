@@ -4,11 +4,16 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
+from typing import TYPE_CHECKING
+
 from ..expressions.expression import Expression
 from ..expressions.identifier_expression import IdentifierExpression
 from ..tokens.identifier_token import IdentifierToken
 from ..types.class_type import ClassType
 from ..utils.source_location import SourceLocation
+
+if TYPE_CHECKING:
+    from ..visitors.base_expression_visitor import BaseExpressionVisitor
 
 
 class CallExpression(Expression):
@@ -24,6 +29,9 @@ class CallExpression(Expression):
         self.class_type: ClassType | None = class_type
         self.arguments: list[Expression] = arguments
         self.call_consumed: bool = False
+
+    def accept[T](self, visitor: BaseExpressionVisitor[T]) -> T:
+        return visitor.visit_call_expression(self)
 
     def consume(self) -> IdentifierToken:
         # consume the call, as it will be generated at the outermost identifier expression

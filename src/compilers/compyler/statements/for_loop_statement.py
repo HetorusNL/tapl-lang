@@ -4,10 +4,15 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
+from typing import TYPE_CHECKING
+
 from ..expressions.expression import Expression
 from .statement import Statement
 from ..tokens.token import Token
 from ..utils.source_location import SourceLocation
+
+if TYPE_CHECKING:
+    from ..visitors.base_statement_visitor import BaseStatementVisitor
 
 
 class ForLoopStatement(Statement):
@@ -43,6 +48,9 @@ class ForLoopStatement(Statement):
         self.check: Expression | None = check
         self.loop: Statement | None = loop
         self.statements: list[Statement] = statements
+
+    def accept[T](self, visitor: BaseStatementVisitor[T]) -> T:
+        return visitor.visit_for_loop_statement(self)
 
     def c_code(self) -> str:
         # construct the for-loop statement

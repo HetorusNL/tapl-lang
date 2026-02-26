@@ -4,11 +4,16 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
+from typing import TYPE_CHECKING
+
 from .expression import Expression
 from ..tokens.identifier_token import IdentifierToken
 from ..types.class_type import ClassType
 from ..types.list_type import ListType
 from ..utils.source_location import SourceLocation
+
+if TYPE_CHECKING:
+    from ..visitors.base_expression_visitor import BaseExpressionVisitor
 
 
 class IdentifierExpression(Expression):
@@ -18,6 +23,9 @@ class IdentifierExpression(Expression):
         self.inner_expression: Expression | None = None
         self.class_type: ClassType | None = None
         self.list_type: ListType | None = None
+
+    def accept[T](self, visitor: BaseExpressionVisitor[T]) -> T:
+        return visitor.visit_identifier_expression(self)
 
     def inner_function_call(self) -> IdentifierToken | None:
         from .call_expression import CallExpression

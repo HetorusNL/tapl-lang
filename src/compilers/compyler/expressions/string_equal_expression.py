@@ -5,11 +5,15 @@
 # This file is part of compyler, a TAPL compiler.
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from .expression import Expression
 from ..tokens.token import Token
 from ..utils.source_location import SourceLocation
 from ..utils.utils import Utils
+
+if TYPE_CHECKING:
+    from ..visitors.base_expression_visitor import BaseExpressionVisitor
 
 
 class StringEqualExpression(Expression):
@@ -19,6 +23,9 @@ class StringEqualExpression(Expression):
         self.inner: Expression = inner
         self.token: Token = token
         self.filename: Path = filename
+
+    def accept[T](self, visitor: BaseExpressionVisitor[T]) -> T:
+        return visitor.visit_string_equal_expression(self)
 
     def source_text(self) -> str:
         return Utils.get_source_text(self.filename, self.source_location)

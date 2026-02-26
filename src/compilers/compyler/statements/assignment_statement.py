@@ -4,6 +4,8 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
+from typing import TYPE_CHECKING
+
 from ..expressions.expression import Expression
 from ..expressions.identifier_expression import IdentifierExpression
 from ..expressions.this_expression import ThisExpression
@@ -11,6 +13,9 @@ from .statement import Statement
 from ..tokens.token import Token
 from ..tokens.token_type import TokenType
 from ..utils.source_location import SourceLocation
+
+if TYPE_CHECKING:
+    from ..visitors.base_statement_visitor import BaseStatementVisitor
 
 
 class AssignmentStatement(Statement):
@@ -32,6 +37,9 @@ class AssignmentStatement(Statement):
         assert AssignmentStatement.is_assignment_form_token(assignment_token), message
         self.assignment_token: Token = assignment_token
         self.value: Expression = value
+
+    def accept[T](self, visitor: BaseStatementVisitor[T]) -> T:
+        return visitor.visit_assignment_statement(self)
 
     def c_code(self) -> str:
         identifier: str = self.expression.c_code()

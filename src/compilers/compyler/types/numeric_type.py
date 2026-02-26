@@ -22,14 +22,14 @@ class NumericType(Type):
         self.numeric_type_type: NumericTypeType = numeric_type_type
         self.num_bits: int = num_bits
 
-    def add_promotions(self, *promotions: "Type") -> None:
+    def add_promotions(self, *promotions: Type) -> None:
         """add promotions to which this type can promote to"""
         self._promotions.extend(promotions)
 
-    def get_promotions(self) -> list["Type"]:
+    def get_promotions(self) -> list[Type]:
         """get the list of promotions of this type"""
         return self._promotions
 
-    def can_promote_to(self, other: "Type") -> bool:
+    def can_promote_to(self, other: Type) -> bool:
         """check if this type can be promoted (or is of same type) as other"""
         return other == self or other in self.get_promotions()

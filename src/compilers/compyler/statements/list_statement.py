@@ -4,11 +4,16 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
+from typing import TYPE_CHECKING
+
 from .statement import Statement
 from ..tokens.identifier_token import IdentifierToken
 from ..tokens.type_token import TypeToken
 from ..types.list_type import ListType
 from ..utils.source_location import SourceLocation
+
+if TYPE_CHECKING:
+    from ..visitors.base_statement_visitor import BaseStatementVisitor
 
 
 class ListStatement(Statement):
@@ -21,6 +26,9 @@ class ListStatement(Statement):
         assert isinstance(type_token.type_, ListType)
         self.list_type: ListType = type_token.type_
         self.name: IdentifierToken = name
+
+    def accept[T](self, visitor: BaseStatementVisitor[T]) -> T:
+        return visitor.visit_list_statement(self)
 
     def c_code(self) -> str:
         list_base: str = self.list_type.c_code()

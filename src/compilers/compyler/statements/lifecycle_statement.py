@@ -4,12 +4,17 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
+from typing import TYPE_CHECKING
+
 from .lifecycle_statement_type import LifecycleStatementType
 from .statement import Statement
 from ..tokens.identifier_token import IdentifierToken
 from ..tokens.type_token import TypeToken
 from ..types.type import Type
 from ..utils.source_location import SourceLocation
+
+if TYPE_CHECKING:
+    from ..visitors.base_statement_visitor import BaseStatementVisitor
 
 
 class LifecycleStatement(Statement):
@@ -19,6 +24,9 @@ class LifecycleStatement(Statement):
         self.type_: Type = type_
         self.arguments: list[tuple[TypeToken, IdentifierToken]] = []
         self.statements: list[Statement] = []
+
+    def accept[T](self, visitor: BaseStatementVisitor[T]) -> T:
+        return visitor.visit_lifecycle_statement(self)
 
     def add_argument(self, argument_type: TypeToken, argument_name: IdentifierToken) -> None:
         # add the source lcoation of the argument type and name

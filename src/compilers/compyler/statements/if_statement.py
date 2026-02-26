@@ -4,10 +4,15 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
+from typing import TYPE_CHECKING
+
 from ..expressions.expression import Expression
 from .statement import Statement
 from ..tokens.token import Token
 from ..utils.source_location import SourceLocation
+
+if TYPE_CHECKING:
+    from ..visitors.base_statement_visitor import BaseStatementVisitor
 
 
 class IfStatement(Statement):
@@ -23,6 +28,9 @@ class IfStatement(Statement):
         self.statements: list[Statement] = statements
         self.else_if_statement_blocks: list[tuple[Expression, list[Statement]]] = []
         self.else_statements: list[Statement] | None = None
+
+    def accept[T](self, visitor: BaseStatementVisitor[T]) -> T:
+        return visitor.visit_if_statement(self)
 
     def add_else_if_statement_block(self, expression: Expression, statement_block: list[Statement]) -> None:
         self.else_if_statement_blocks.append((expression, statement_block))

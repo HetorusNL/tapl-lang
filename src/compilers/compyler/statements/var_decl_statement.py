@@ -4,11 +4,16 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
+from typing import TYPE_CHECKING
+
 from ..expressions.expression import Expression
 from .statement import Statement
 from ..tokens.identifier_token import IdentifierToken
 from ..tokens.type_token import TypeToken
 from ..utils.source_location import SourceLocation
+
+if TYPE_CHECKING:
+    from ..visitors.base_statement_visitor import BaseStatementVisitor
 
 
 class VarDeclStatement(Statement):
@@ -23,6 +28,9 @@ class VarDeclStatement(Statement):
         self.type_token: TypeToken = type_token
         self.name: IdentifierToken = name
         self.initial_value: Expression | None = initial_value
+
+    def accept[T](self, visitor: BaseStatementVisitor[T]) -> T:
+        return visitor.visit_var_decl_statement(self)
 
     def c_code(self) -> str:
         # if we have an initial value, also generate code for that

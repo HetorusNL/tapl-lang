@@ -4,6 +4,8 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
+from typing import TYPE_CHECKING
+
 from .expression import Expression
 from ..tokens.character_token import CharacterToken
 from ..tokens.identifier_token import IdentifierToken
@@ -13,11 +15,17 @@ from ..tokens.token import Token
 from ..tokens.token_type import TokenType
 from ..utils.source_location import SourceLocation
 
+if TYPE_CHECKING:
+    from ..visitors.base_expression_visitor import BaseExpressionVisitor
+
 
 class TokenExpression(Expression):
     def __init__(self, source_location: SourceLocation, token: Token):
         super().__init__(source_location)
         self.token: Token = token
+
+    def accept[T](self, visitor: BaseExpressionVisitor[T]) -> T:
+        return visitor.visit_token_expression(self)
 
     def c_code(self) -> str:
         match self.token.token_type:

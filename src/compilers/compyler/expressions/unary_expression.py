@@ -4,9 +4,14 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
+from typing import TYPE_CHECKING
+
 from .expression import Expression
 from .expression_type import ExpressionType
 from ..utils.source_location import SourceLocation
+
+if TYPE_CHECKING:
+    from ..visitors.base_expression_visitor import BaseExpressionVisitor
 
 
 class UnaryExpression(Expression):
@@ -14,6 +19,9 @@ class UnaryExpression(Expression):
         super().__init__(source_location)
         self.expression_type: ExpressionType = expression_type
         self.expression: Expression = expression
+
+    def accept[T](self, visitor: BaseExpressionVisitor[T]) -> T:
+        return visitor.visit_unary_expression(self)
 
     def c_code(self) -> str:
         match self.expression_type:

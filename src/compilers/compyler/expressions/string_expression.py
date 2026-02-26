@@ -4,6 +4,8 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
+from typing import TYPE_CHECKING
+
 from .expression import Expression
 from .string_equal_expression import StringEqualExpression
 from ..tokens.string_chars_token import StringCharsToken
@@ -11,6 +13,9 @@ from ..tokens.token import Token
 from ..tokens.token_type import TokenType
 from ..utils.source_location import SourceLocation
 from ..utils.utils import Utils
+
+if TYPE_CHECKING:
+    from ..visitors.base_expression_visitor import BaseExpressionVisitor
 
 
 class StringExpression(Expression):
@@ -20,6 +25,9 @@ class StringExpression(Expression):
         self.string_elements: list[Token | Expression] = [string_start]
         # the line end is updated to '\n' when it's inside a println
         self.line_end: str = ""
+
+    def accept[T](self, visitor: BaseExpressionVisitor[T]) -> T:
+        return visitor.visit_string_expression(self)
 
     def add_token(self, element: Token | Expression) -> None:
         self.source_location += element.source_location

@@ -4,6 +4,8 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
+from typing import TYPE_CHECKING
+
 from ..expressions.expression import Expression
 from ..expressions.string_expression import StringExpression
 from .statement import Statement
@@ -12,6 +14,9 @@ from ..tokens.token_type import TokenType
 from ..utils.source_location import SourceLocation
 from ..utils.utils import Utils
 
+if TYPE_CHECKING:
+    from ..visitors.base_statement_visitor import BaseStatementVisitor
+
 
 class PrintStatement(Statement):
     def __init__(self, token: Token, value: Expression):
@@ -19,6 +24,9 @@ class PrintStatement(Statement):
         super().__init__(source_location)
         self.line_end: str = "\\n" if token.token_type == TokenType.PRINTLN else ""
         self.value: Expression = value
+
+    def accept[T](self, visitor: BaseStatementVisitor[T]) -> T:
+        return visitor.visit_print_statement(self)
 
     def c_code(self) -> str:
         # handle the special case of a stringexpression

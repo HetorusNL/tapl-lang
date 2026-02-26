@@ -4,11 +4,16 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
+from typing import TYPE_CHECKING
+
 from .statement import Statement
 from ..tokens.identifier_token import IdentifierToken
 from ..tokens.type_token import TypeToken
 from ..types.class_type import ClassType
 from ..utils.source_location import SourceLocation
+
+if TYPE_CHECKING:
+    from ..visitors.base_statement_visitor import BaseStatementVisitor
 
 
 class FunctionStatement(Statement):
@@ -21,6 +26,9 @@ class FunctionStatement(Statement):
         self.class_type: ClassType | None = class_type
         self.arguments: list[tuple[TypeToken, IdentifierToken]] = []
         self.statements: list[Statement] = []
+
+    def accept[T](self, visitor: BaseStatementVisitor[T]) -> T:
+        return visitor.visit_function_statement(self)
 
     def add_argument(self, argument_type: TypeToken, argument_name: IdentifierToken) -> None:
         # add the source lcoation of the argument type and name

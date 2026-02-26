@@ -4,10 +4,15 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
+from typing import TYPE_CHECKING
+
 from .expression import Expression
 from .token_expression import TokenExpression
 from ..tokens.token import Token
 from ..utils.source_location import SourceLocation
+
+if TYPE_CHECKING:
+    from ..visitors.base_expression_visitor import BaseExpressionVisitor
 
 
 class BinaryExpression(TokenExpression):
@@ -16,6 +21,9 @@ class BinaryExpression(TokenExpression):
         super().__init__(source_location, token)
         self.left: Expression = left
         self.right: Expression = right
+
+    def accept[T](self, visitor: BaseExpressionVisitor[T]) -> T:
+        return visitor.visit_binary_expression(self)
 
     def c_code(self) -> str:
         left_code: str = self.left.c_code()

@@ -11,6 +11,7 @@ from typing import NoReturn
 
 from ..errors.ast_error import AstError
 from ..errors.tapl_error import TaplError
+from ..expressions.expression import Expression
 from ..statements.function_statement import FunctionStatement
 from ..statements.statement import Statement
 from ..tokens.identifier_token import IdentifierToken
@@ -19,11 +20,20 @@ from ..utils.ast import AST
 from ..utils.source_location import SourceLocation
 from .scope_wrapper import ScopeWrapper
 
+from ..visitors.base_expression_visitor import BaseExpressionVisitor
+from ..visitors.base_statement_visitor import BaseStatementVisitor
 
-class PassBase:
+
+class PassBase[T]:
     """Base class of AST check passes, with the common functionality"""
 
-    def __init__(self, ast: AST):
+    def __init__(
+        self,
+        ast: AST,
+        expression_visitor: BaseExpressionVisitor[T],
+        statement_visitor: BaseStatementVisitor[T],
+    ):
+
         self._ast: AST = ast
         # store a linked list of scopes inside a wrapper that stores the functions and variables
         self._scope_wrapper: ScopeWrapper = ScopeWrapper()
@@ -31,6 +41,9 @@ class PassBase:
         self._scope_wrapper_stash: ScopeWrapper = ScopeWrapper()
         # store a list of errors during this pass, if they occur
         self._errors: list[TaplError] = []
+        # store the visitors
+        self.expression_visitor: BaseExpressionVisitor[T] = expression_visitor
+        self.statement_visitor: BaseStatementVisitor[T] = statement_visitor
 
     def run(self) -> None:
         for statement in self._ast.statements.iter():
@@ -47,18 +60,23 @@ class PassBase:
             [print(e) for e in self._errors]
             exit(1)
 
-    def parse_statement(self, statement: Statement | None) -> None:
+    def parse_statement(self, statement: Statement | None) -> T | None:
         """wrapper around the statement parsing to catch and handle exceptions"""
         try:
             if statement:
-                self._parse_statement(statement)
+                return statement.accept(self.statement_visitor)
         except TaplError as e:
             self._errors.append(e)
 
-    def _parse_statement(self, statement: Statement) -> None:
-        raise NotImplementedError()
+    def parse_expression(self, expression: Expression | None) -> T | None:
+        """wrapper around the expression parsing to catch and handle exceptions"""
+        try:
+            if expression:
+                return expression.accept(self.expression_visitor)
+        except TaplError as e:
+            self._errors.append(e)
 
-    def _add_identifier(self, identifier_token: IdentifierToken, type_: Type):
+    def add_identifier(self, identifier_token: IdentifierToken, type_: Type):
         """first checks if the identifier already exists in innermost scope, otherwise adds identifier"""
         identifier: str = identifier_token.value
         # check in the innermost scope if the identifier already exists
@@ -77,7 +95,7 @@ class PassBase:
         # otherwise add the identifier in the innermost scope
         self._scope_wrapper.scope.add_function(name, function_statement)
 
-    def _get_identifier_type(self, identifier_token: IdentifierToken) -> Type:
+    def get_identifier_type(self, identifier_token: IdentifierToken) -> Type:
         """checks that the identifier exists in current or inner scopes, and return its type"""
         identifier: str = identifier_token.value
         if type_ := self._scope_wrapper.scope.get_identifier(identifier):
@@ -87,7 +105,7 @@ class PassBase:
         self.ast_error(f"unknown identifier '{identifier}'!", identifier_token.source_location)
 
     @contextmanager
-    def _new_scope(self) -> Generator[None]:
+    def new_scope(self) -> Generator[None]:
         """enter a new outer scope for the content in the 'with' statement"""
         try:
             # first enter the scope by adding a new outer scope

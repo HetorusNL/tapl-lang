@@ -4,10 +4,15 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
+from typing import TYPE_CHECKING
+
 from ..expressions.expression import Expression
 from .statement import Statement
 from ..tokens.token import Token
 from ..utils.source_location import SourceLocation
+
+if TYPE_CHECKING:
+    from ..visitors.base_statement_visitor import BaseStatementVisitor
 
 
 class ReturnStatement(Statement):
@@ -20,6 +25,9 @@ class ReturnStatement(Statement):
 
         # store the rest of the variables in the class
         self.value: Expression | None = value
+
+    def accept[T](self, visitor: BaseStatementVisitor[T]) -> T:
+        return visitor.visit_return_statement(self)
 
     def c_code(self) -> str:
         if self.value:
