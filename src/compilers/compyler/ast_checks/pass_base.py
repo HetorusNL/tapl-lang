@@ -12,7 +12,6 @@ from typing import NoReturn
 from ..errors.ast_error import AstError
 from ..errors.tapl_error import TaplError
 from ..expressions.expression import Expression
-from ..statements.function_statement import FunctionStatement
 from ..statements.statement import Statement
 from ..tokens.identifier_token import IdentifierToken
 from ..types.type import Type
@@ -36,7 +35,7 @@ class PassBase[T]:
 
         self._ast: AST = ast
         # store a linked list of scopes inside a wrapper that stores the functions and variables
-        self._scope_wrapper: ScopeWrapper = ScopeWrapper()
+        self.scope_wrapper: ScopeWrapper = ScopeWrapper()
         # also create a scope stash to move the scope aside for a clean one
         self._scope_wrapper_stash: ScopeWrapper = ScopeWrapper()
         # store a list of errors during this pass, if they occur
@@ -51,7 +50,7 @@ class PassBase[T]:
 
         # ensure that we have the global scope and only the global scope left
         error: str = f"internal compiler error"
-        assert self._scope_wrapper.scope.parent is None, f"{error}, more scopes than the global scope left!"
+        assert self.scope_wrapper.scope.parent is None, f"{error}, more scopes than the global scope left!"
         # ensure that we have no scope stash left
         assert self._scope_wrapper_stash.empty, f"{error}, scope stash is not empty!"
 
@@ -80,25 +79,16 @@ class PassBase[T]:
         """first checks if the identifier already exists in innermost scope, otherwise adds identifier"""
         identifier: str = identifier_token.value
         # check in the innermost scope if the identifier already exists
-        if identifier in self._scope_wrapper.scope.identifiers:
+        if identifier in self.scope_wrapper.scope.identifiers:
             self.ast_error(f"identifier '{identifier}' already exists!", identifier_token.source_location)
 
         # otherwise add the identifier in the innermost scope
-        self._scope_wrapper.scope.add_identifier(identifier, type_)
-
-    def _add_function(self, name: str, function_statement: FunctionStatement):
-        """first checks if the function already exists in innermost scope, otherwise adds function"""
-        # check in the innermost scope if the function already exists
-        if name in self._scope_wrapper.scope.functions:
-            self.ast_error(f"function '{name}' already exists!", function_statement.source_location)
-
-        # otherwise add the identifier in the innermost scope
-        self._scope_wrapper.scope.add_function(name, function_statement)
+        self.scope_wrapper.scope.add_identifier(identifier, type_)
 
     def get_identifier_type(self, identifier_token: IdentifierToken) -> Type:
         """checks that the identifier exists in current or inner scopes, and return its type"""
         identifier: str = identifier_token.value
-        if type_ := self._scope_wrapper.scope.get_identifier(identifier):
+        if type_ := self.scope_wrapper.scope.get_identifier(identifier):
             return type_
 
         # the identifier doesn't exist, raise an error
@@ -109,32 +99,32 @@ class PassBase[T]:
         """enter a new outer scope for the content in the 'with' statement"""
         try:
             # first enter the scope by adding a new outer scope
-            self._scope_wrapper.add_scope()
+            self.scope_wrapper.add_scope()
             # then give control to the caller
             yield
         finally:
             # no matter if there is an exception, leave the outer scope
-            print(f"leaving scope with identifiers: {{{', '.join(self._scope_wrapper.scope.identifiers.keys())}}}")
-            self._scope_wrapper.remove_scope()
+            print(f"leaving scope with identifiers: {{{', '.join(self.scope_wrapper.scope.identifiers.keys())}}}")
+            self.scope_wrapper.remove_scope()
 
     @contextmanager
-    def _clean_scope(self) -> Generator[ScopeWrapper]:
+    def clean_scope(self) -> Generator[ScopeWrapper]:
         """create a new clean scope for the content in the 'with' statement"""
         try:
             # make sure the scope stash is currently empty
             assert self._scope_wrapper_stash.empty, "internal compiler error, clean scope already active!"
             # move the scope to the stash and create an empty scope list
-            self._scope_wrapper_stash: ScopeWrapper = self._scope_wrapper
-            self._scope_wrapper: ScopeWrapper = ScopeWrapper()
+            self._scope_wrapper_stash: ScopeWrapper = self.scope_wrapper
+            self.scope_wrapper: ScopeWrapper = ScopeWrapper()
             # then give control to the caller
-            yield self._scope_wrapper
+            yield self.scope_wrapper
         finally:
             # no matter if there is an exception, restore the scope from the stash
             # create a reference to the clean scope to return
-            clean_scope: ScopeWrapper = self._scope_wrapper
+            clean_scope: ScopeWrapper = self.scope_wrapper
             # restore the scope from the stash
             assert not self._scope_wrapper_stash.empty, "internal compiler error, no scope stash found!"
-            self._scope_wrapper: ScopeWrapper = self._scope_wrapper_stash
+            self.scope_wrapper: ScopeWrapper = self._scope_wrapper_stash
             # create a new empty scope stash
             self._scope_wrapper_stash = ScopeWrapper()
             print(f"returning scope with identifiers: {{{', '.join(clean_scope.scope.all_identifiers)}}}")

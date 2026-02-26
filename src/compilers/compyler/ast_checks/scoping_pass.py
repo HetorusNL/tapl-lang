@@ -12,7 +12,6 @@ from ..visitors.scoping_pass_statement_visitor import ScopingPassStatementVisito
 
 class ScopingPass(PassBase[None]):
     def __init__(self, ast: AST):
-
         # create the visitors of the ScopingPass and pass them to the PassBase
         expression_visitor = ScopingPassExpressionVisitor(ast, self)
         statement_visitor = ScopingPassStatementVisitor(ast, self)

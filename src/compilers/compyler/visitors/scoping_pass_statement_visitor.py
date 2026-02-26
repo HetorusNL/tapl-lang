@@ -5,7 +5,7 @@
 # This file is part of compyler, a TAPL compiler.
 
 from ..ast_checks.pass_base import PassBase
-from ..visitors.base_statement_visitor import BaseStatementVisitor
+from .base_statement_visitor import BaseStatementVisitor
 from ..statements.assignment_statement import AssignmentStatement
 from ..statements.break_statement import BreakStatement
 from ..statements.breakall_statement import BreakallStatement
