@@ -15,9 +15,13 @@ class AstCheck:
 
     def run(self) -> None:
         """run several passes on the AST to perform a variety of checks on the statements"""
+        scoping_pass: ScopingPass = ScopingPass(self._ast)
+        typing_pass: TypingPass = TypingPass(self._ast)
+
         # check the variables defined in the scopes of the AST
-        ScopingPass(self._ast).run()
+        scoping_pass.run()
+
         # check and apply types to the variables, including type 'upscaling'
-        TypingPass(self._ast).run()
+        typing_pass.run()
         # check that all expressions have a type
-        TypingPass(self._ast).verify_types()
+        typing_pass.verify_types()

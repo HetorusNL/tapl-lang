@@ -5,32 +5,11 @@
 # This file is part of compyler, a TAPL compiler.
 
 from ..errors.tapl_error import TaplError
-from ..expressions.binary_expression import BinaryExpression
 from ..expressions.call_expression import CallExpression
 from ..expressions.expression import Expression
-from ..expressions.identifier_expression import IdentifierExpression
-from ..expressions.string_equal_expression import StringEqualExpression
-from ..expressions.string_expression import StringExpression
-from ..expressions.this_expression import ThisExpression
 from ..expressions.token_expression import TokenExpression
-from ..expressions.type_cast_expression import TypeCastExpression
-from ..expressions.unary_expression import UnaryExpression
 from .pass_base import PassBase
-from ..statements.assignment_statement import AssignmentStatement
-from ..statements.break_statement import BreakStatement
-from ..statements.breakall_statement import BreakallStatement
-from ..statements.class_statement import ClassStatement
-from ..statements.continue_statement import ContinueStatement
-from ..statements.expression_statement import ExpressionStatement
-from ..statements.for_loop_statement import ForLoopStatement
 from ..statements.function_statement import FunctionStatement
-from ..statements.if_statement import IfStatement
-from ..statements.lifecycle_statement import LifecycleStatement
-from ..statements.list_statement import ListStatement
-from ..statements.print_statement import PrintStatement
-from ..statements.return_statement import ReturnStatement
-from ..statements.statement import Statement
-from ..statements.var_decl_statement import VarDeclStatement
 from ..tokens.identifier_token import IdentifierToken
 from ..tokens.number_token import NumberToken
 from ..tokens.type_token import TypeToken
@@ -42,8 +21,12 @@ from ..utils.ast import AST
 from ..utils.source_location import SourceLocation
 from ..utils.utils import Utils
 from .scope_wrapper import ScopeWrapper
+from ..visitors.base_expression_visitor import BaseExpressionVisitor
+from ..visitors.base_statement_visitor import BaseStatementVisitor
 from ..visitors.typing_pass_expression_visitor import TypingPassExpressionVisitor
 from ..visitors.typing_pass_statement_visitor import TypingPassStatementVisitor
+from ..visitors.verify_types_expression_visitor import VerifyTypesExpressionVisitor
+from ..visitors.verify_types_statement_visitor import VerifyTypesStatementVisitor
 
 
 class TypingPass(PassBase[None]):
@@ -198,102 +181,10 @@ class TypingPass(PassBase[None]):
         return requested_type
 
     def verify_types(self) -> None:
-        # TODO: refactor this to a list in a statement/expression,
-        # that contains all child statements/expressions, to easily recurse everything
-        # ensure that all expressions have a type
+        # create the visitors of the VerifyTypes pass
+        expression_visitor: BaseExpressionVisitor[None] = VerifyTypesExpressionVisitor()
+        statement_visitor: BaseStatementVisitor[None] = VerifyTypesStatementVisitor(expression_visitor)
+
+        # loop through all statements (and expressions) and verify that they have a type
         for statement in self._ast.statements.iter():
-            self._check_statement(statement)
-
-    def _check_statement(self, statement: Statement) -> None:
-        match statement:
-            case AssignmentStatement():
-                self._check_expression(statement.expression)
-                self._check_expression(statement.value)
-            case BreakStatement():
-                pass  # nothing to check in a BreakStatement
-            case BreakallStatement():
-                pass  # nothing to check in a BreakallStatement
-            case ClassStatement():
-                if statement.constructor:
-                    self._check_statement(statement.constructor)
-                if statement.destructor:
-                    self._check_statement(statement.destructor)
-                for function in statement.functions:
-                    self._check_statement(function)
-                for variable in statement.variables:
-                    self._check_statement(variable)
-            case ContinueStatement():
-                pass  # nothing to check in a ContinueStatement
-            case ExpressionStatement():
-                self._check_expression(statement.expression)
-            case ForLoopStatement():
-                if statement.check:
-                    self._check_expression(statement.check)
-                if statement.init:
-                    self._check_statement(statement.init)
-                if statement.loop:
-                    self._check_statement(statement.loop)
-                for stm in statement.statements:
-                    self._check_statement(stm)
-            case FunctionStatement():
-                for stm in statement.statements:
-                    self._check_statement(stm)
-            case IfStatement():
-                for expression, stmlist in statement.else_if_statement_blocks:
-                    self._check_expression(expression)
-                    for stm in stmlist:
-                        self._check_statement(stm)
-                if statement.else_statements:
-                    for stm in statement.else_statements:
-                        self._check_statement(stm)
-                self._check_expression(statement.expression)
-                for stm in statement.statements:
-                    self._check_statement(stm)
-            case LifecycleStatement():
-                for stm in statement.statements:
-                    self._check_statement(stm)
-            case ListStatement():
-                pass  # nothing to check in a ListStatement
-            case PrintStatement():
-                self._check_expression(statement.value)
-            case ReturnStatement():
-                if statement.value:
-                    self._check_expression(statement.value)
-            case VarDeclStatement():
-                if statement.initial_value:
-                    self._check_expression(statement.initial_value)
-
-            case _:
-                assert False, f"internal compiler error, {type(statement)} not handled!"
-
-    def _check_expression(self, expression: Expression) -> None:
-        if expression.type_ == Type.unknown():
-            print(f"FAILURE: {expression}.type_ == Type.unknown()")
-        assert expression.type_ != Type.unknown()
-        match expression:
-            case BinaryExpression():
-                self._check_expression(expression.left)
-                self._check_expression(expression.right)
-            case CallExpression():
-                self._check_expression(expression.expression)
-                for argument in expression.arguments:
-                    self._check_expression(argument)
-            case IdentifierExpression():
-                if expression.inner_expression:
-                    self._check_expression(expression.inner_expression)
-            case StringEqualExpression():
-                self._check_expression(expression.inner)
-            case StringExpression():
-                for element in expression.string_elements:
-                    if isinstance(element, Expression):
-                        self._check_expression(element)
-            case ThisExpression():
-                self._check_expression(expression.inner_expression)
-            case TokenExpression():
-                pass  # nothing to check in a TokenExpression
-            case TypeCastExpression():
-                self._check_expression(expression.expression)
-            case UnaryExpression():
-                self._check_expression(expression.expression)
-            case _:
-                assert False, f"internal compiler error, {type(expression)} not handled!"
+            statement.accept(statement_visitor)
