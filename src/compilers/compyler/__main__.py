@@ -5,8 +5,11 @@
 # This file is part of compyler, a TAPL compiler.
 
 import argparse
-from os import system
 from pathlib import Path
+from subprocess import CalledProcessError
+from subprocess import CompletedProcess
+from subprocess import run
+from typing import NoReturn
 
 from .ast_generator import AstGenerator
 from .code_generator import CodeGenerator
@@ -88,34 +91,45 @@ def format_files(folder: Path) -> None:
     # recursively find all .c and .h files in the build folder and format all found files
     for file_path in folder.rglob("*.[ch]"):
         if file_path.is_file():
-            command: str = f"clang-format -i --fallback-style=none {file_path}"
-            print(command)
-            if error_code := system(command):
-                handle_error(f"clang-format failed to format {file_path} with error code {error_code}")
+            command: list[str] = ["clang-format", "-i", "--fallback-style=none", str(file_path)]
+            returncode: int = execute_command(command).returncode
+            if returncode != 0:
+                handle_error(f"clang-format failed to format {file_path} with error code {returncode}")
 
 
 def compile_c(c_file: Path, build_folder: Path) -> Path:
     executable: Path = c_file.parent / "main"
 
     # remove the old executable (if it exists)
-    command: str = f"rm -f {executable}"
-    print(command)
-    system(command)
+    command: list[str] = ["rm", "-f", str(executable)]
+    execute_command(command)
 
     # directly call the gcc compiler, passing the build folder as additional include path
-    command: str = f"gcc -O0 -g3 -I{build_folder} -o {executable} {c_file}"
-    print(command)
-    if error_code := system(command):
-        handle_error(f"gcc returned error code {error_code}")
+    command: list[str] = ["gcc", "-O0", "-g3", f"-I{build_folder}", "-o", str(executable), str(c_file)]
+    returncode: int = execute_command(command).returncode
+    if returncode != 0:
+        handle_error(f"gcc returned error code {returncode}")
     return executable
 
 
 def run_executable(executable: Path):
-    print(executable)
-    system(executable)
+    command: list[str] = [str(executable)]
+    execute_command(command)
 
 
-def handle_error(error_msg: str):
+def execute_command(command: list[str]) -> CompletedProcess[bytes]:
+    """print and execute a command and return its result"""
+    print(" ".join(command))
+    try:
+        result = run(command)
+        return result
+    except CalledProcessError as e:
+        handle_error(f"command '{' '.join(command)}' failed with error code {e.returncode}")
+    except FileNotFoundError:
+        handle_error(f"command '{command[0]}' not found")
+
+
+def handle_error(error_msg: str) -> NoReturn:
     # lazy import the inspect and colors modules for error handling
     import inspect
     from inspect import FrameInfo
