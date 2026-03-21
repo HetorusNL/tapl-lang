@@ -102,6 +102,10 @@ the following 'features' were found during AoC solving, and should be fixed
   - example: https://github.com/windelbouwman/sauce-os/tree/main/language-server/slang-lang
 - use hypothesis tests: https://hypothesis.readthedocs.io/en/latest/
 - rewrite code generation to separate backend module instead of in statement/expression
+  - refactor remainder of the `c_code()` functions out of the following locations:
+    - `Type`
+    - `TypeToken`
+  - remove the old c_code() shit from the statements/expressions and code generator
 
 ## Ideas
 

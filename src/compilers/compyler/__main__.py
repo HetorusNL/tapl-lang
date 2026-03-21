@@ -11,7 +11,9 @@ from subprocess import CompletedProcess
 from subprocess import run
 from typing import NoReturn
 
+from .ast_checks.ast_check import AstCheck
 from .ast_generator import AstGenerator
+from .backends.c_backend_code_generator import CBackendCodeGenerator
 from .code_generator import CodeGenerator
 from .tokenizer import Tokenizer
 from .tokens.token import Token
@@ -20,7 +22,6 @@ from .types.type_resolver import TypeResolver
 from .types.types import Types
 from .utils.ast import AST
 from .utils.stream import Stream
-from .ast_checks.ast_check import AstCheck
 
 
 # get to the repo root folder, several levels up
@@ -75,6 +76,11 @@ def create_build_folders() -> tuple[Path, Path]:
 
 
 def generate_code(ast: AST, build_folder: Path, header_folder: Path, templates_folder: Path) -> Path:
+    # the new visitor pattern code generator
+    generator = CBackendCodeGenerator(ast, build_folder, header_folder, templates_folder)
+    generator.generate()
+    return generator.get_main_file()
+
     main_c_file: Path = build_folder / "main.c"
     CodeGenerator(ast, build_folder, header_folder, templates_folder).generate_c(main_c_file)
     return main_c_file

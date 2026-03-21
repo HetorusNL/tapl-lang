@@ -1,0 +1,143 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2026 Tim Klein Nijenhuis <tim@hetorus.nl>
+#
+# This file is part of compyler, a TAPL compiler.
+
+from pathlib import Path
+
+from .c_backend_expression_visitor import CBackendExpressionVisitor
+from .c_backend_state import CBackendState
+from .c_backend_statement_visitor import CBackendStatementVisitor
+from ..utils.ast import AST
+
+
+class CBackendCodeGenerator:
+    def __init__(self, ast: AST, build_folder: Path, header_folder: Path, templates_folder: Path):
+        # store the passed objects in the class
+        self._ast: AST = ast
+        self._build_folder: Path = build_folder
+        self._header_folder: Path = header_folder
+        self._templates_folder: Path = templates_folder
+
+        # create the state and the visitors for the C backend
+        self._state = CBackendState()
+        self._expression_visitor = CBackendExpressionVisitor(self._state)
+        self._statement_visitor = CBackendStatementVisitor(self._state, self._expression_visitor)
+
+    def get_main_file(self) -> Path:
+        return self._build_folder / "main.c"
+
+    def generate(self) -> None:
+        # generate the utility functions
+        self._generate_utility_functions_c()
+
+        # also generate the typedefs for all builtin basic types
+        self._ast.types.generate_c_headers(self._header_folder, self._templates_folder)
+
+        # loop through the statements in the AST and generate code for each of them
+        # the visitors store the generated code in the state
+        for statement in self._ast.statements.iter():
+            if line := statement.accept(self._statement_visitor):
+                self._state.main_lines.append(line)
+
+        # write the classes to the classes c file
+        self._write_classes_c(self._state.class_definitions)
+
+        # write the functions to the functions c file
+        self._write_functions_c(self._state.function_declarations, self._state.function_definitions)
+
+        # write the main c file with the code
+        self._write_main_c_file(self._state.main_lines, self.get_main_file())
+
+    def _generate_utility_functions_c(self) -> None:
+        utility_functions_c_file: Path = self._header_folder / "utility_functions.h"
+
+        lines: list[str] = [
+            "#pragma once\n",
+            "\n",
+            "// include the needed system headers\n",
+            "#include <stdio.h>\n",
+            "#include <stdlib.h>\n",
+            "\n",
+            '#define RED "\\x1b[31m"\n',
+            '#define GRN "\\x1b[32m"\n',
+            '#define YEL "\\x1b[33m"\n',
+            '#define BLU "\\x1b[34m"\n',
+            '#define MAG "\\x1b[35m"\n',
+            '#define CYN "\\x1b[36m"\n',
+            '#define WHT "\\x1b[37m"\n',
+            '#define RESET "\\x1b[0m"\n',
+            "\n",
+            "void panic(const char* message) {\n",
+            '    fprintf(stderr, RED "panic: %s!\\n" RESET, message);\n',
+            "    exit(1);\n",
+            "}\n",
+        ]
+
+        with open(utility_functions_c_file, "w") as f:
+            f.writelines(lines)
+
+    def _write_classes_c(self, definitions: list[str]) -> None:
+        classes_c_file: Path = self._header_folder / "classes.h"
+
+        initial_lines: list[str] = [
+            "#pragma once\n",
+            "\n",
+            "// include the needed system headers\n",
+            "#include <stdio.h>\n",
+            "\n",
+            "// also include the needed TAPL headers\n",
+            "#include <tapl_headers/types.h>\n",
+            "\n",
+            "// classes declarations\n",
+        ]
+
+        with open(classes_c_file, "w") as f:
+            f.writelines(initial_lines)
+            f.writelines(definitions)
+
+    def _write_functions_c(self, declarations: list[str], definitions: list[str]) -> None:
+        functions_c_file: Path = self._header_folder / "functions.h"
+
+        initial_lines: list[str] = [
+            "#pragma once\n",
+            "\n",
+            "// include the needed system headers\n",
+            "#include <stdio.h>\n",
+            "\n",
+            "// also include the needed TAPL headers\n",
+            "#include <tapl_headers/types.h>\n",
+            "\n",
+            "// function declarations\n",
+        ]
+        definition_lines: list[str] = [
+            "\n",
+            "// function definitions\n",
+        ]
+
+        with open(functions_c_file, "w") as f:
+            f.writelines(initial_lines)
+            f.writelines(declarations)
+            f.writelines(definition_lines)
+            f.writelines(definitions)
+
+    def _write_main_c_file(self, code_lines: list[str], c_file: Path) -> None:
+        initial_lines: list[str] = [
+            "// include the needed system headers\n",
+            "#include <stdio.h>\n",
+            "\n",
+            "// also include the needed TAPL headers\n",
+            "#include <tapl_headers/classes.h>\n",
+            "#include <tapl_headers/file.h>\n",
+            "#include <tapl_headers/functions.h>\n",
+            "#include <tapl_headers/list.h>\n",
+            "#include <tapl_headers/types.h>\n",
+            "\n",
+            "int main(int argc, char** argv) {\n",
+        ]
+
+        with open(c_file, "w") as f:
+            f.writelines(initial_lines)
+            f.writelines(code_lines)
+            f.write("}\n")

@@ -36,7 +36,7 @@ class FunctionStatement(Statement):
         # add the argument to the class
         self.arguments.append((argument_type, argument_name))
 
-    def _function_name(self) -> str:
+    def function_name(self) -> str:
         """return the function name, dependent on whether it's a class method or not"""
         if self.class_type:
             return f"{self.class_type}_{self.name}"
@@ -45,7 +45,7 @@ class FunctionStatement(Statement):
     def _c_declaration_base(self) -> str:
         """returns the function declaration line, without anything after the closing paren"""
         # start with the function return type and name
-        code: str = f"{self.return_type.c_code()} {self._function_name()}("
+        code: str = f"{self.return_type.c_code()} {self.function_name()}("
 
         # create a list of argument type-name pairs
         arguments: list[str] = []
@@ -81,9 +81,9 @@ class FunctionStatement(Statement):
         return code
 
     def __str__(self) -> str:
-        return f"{self.return_type} {self._function_name()}: ..."
+        return f"{self.return_type} {self.function_name()}: ..."
 
     def __repr__(self) -> str:
         string: str = f"<FunctionStatement, location {self.source_location},"
-        string += f" {self.return_type} {self._function_name()}>"
+        string += f" {self.return_type} {self.function_name()}>"
         return string
