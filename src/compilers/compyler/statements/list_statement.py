@@ -30,14 +30,6 @@ class ListStatement(Statement):
     def accept[T](self, visitor: BaseStatementVisitor[T]) -> T:
         return visitor.visit_list_statement(self)
 
-    def c_code(self) -> str:
-        list_base: str = self.list_type.c_code()
-        # create the list declaration
-        code: str = f"{list_base} {self.name};"
-        # call the constructor of the list
-        code += f"{list_base}_constructor(&{self.name});"
-        return code
-
     def __str__(self) -> str:
         return f"{self.list_type.keyword} {self.name}"
 

@@ -45,7 +45,7 @@ class IdentifierExpression(Expression):
         else:
             return None
 
-    def get_arguments(self) -> list[str]:
+    def get_arguments(self) -> list[Expression]:
         from .call_expression import CallExpression
 
         # recurse if the inner expression is also an IdentifierExpression
@@ -55,50 +55,14 @@ class IdentifierExpression(Expression):
         # otherwise this must be a CallExpression
         assert isinstance(self.inner_expression, CallExpression)
 
-        # otherwise get the arguments list if the inner expression is a CallExpression
-        arguments: list[str] = []
-        for argument in self.inner_expression.arguments:
-            arguments.append(argument.c_code())
-
-        # add the arguments
-        return arguments
+        # get the arguments list of the inner CallExpression
+        return self.inner_expression.arguments
 
     def _join(self) -> str:
         return "->" if self.type_.is_reference else "."
 
-    def _inner_c_code(self) -> str:
-        # only if we have an inner expression that has not been consumed, return it
-        if self.inner_expression:
-            inner_code: str = self.inner_expression.c_code()
-            if inner_code:
-                return f"{self.identifier_token}{self._join()}{self.inner_expression.c_code()}"
-
-        return f"{self.identifier_token}"
-
     def dereference(self) -> str:
         return f"" if self.type_.is_reference else f"&"
-
-    def c_code(self) -> str:
-        # if this is a class, check if there is a call expression inside
-        if self.class_type:
-            if name := self.inner_function_call():
-                # we need to create a function call of the outermost function
-                full_name: str = f"{self.class_type}_{name}"
-                arguments: str = ", ".join([f"{self.dereference()}{self._inner_c_code()}", *self.get_arguments()])
-                return f"{full_name}({arguments})"
-
-        # if this is a list, check if there is a call expression inside
-        if self.list_type:
-            if name := self.inner_function_call():
-                # we need to create a function call of the outermost list
-                full_name: str = f"list_{self.list_type.inner_type}_{name}"
-                arguments: str = ", ".join([f"{self.dereference()}{self._inner_c_code()}", *self.get_arguments()])
-                return f"{full_name}({arguments})"
-            # pass the address of the list type, not by value
-            return f"{self.dereference()}{self._inner_c_code()}"
-
-        # otherwise simply return the identifier with potential inner expressions
-        return self._inner_c_code()
 
     def __str__(self) -> str:
         if self.inner_expression:

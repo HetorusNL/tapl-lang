@@ -23,9 +23,6 @@ class TypeCastExpression(Expression):
     def accept[T](self, visitor: BaseExpressionVisitor[T]) -> T:
         return visitor.visit_type_cast_expression(self)
 
-    def c_code(self) -> str:
-        return f"(({self.cast_to.c_code()}){self.expression.c_code()})"
-
     def __str__(self) -> str:
         return f"({self.cast_to}){self.expression}"
 

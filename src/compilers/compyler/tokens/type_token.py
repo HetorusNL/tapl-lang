@@ -16,8 +16,9 @@ class TypeToken(Token):
         # store the additional properties in the class
         self.type_: Type = type_
 
-    def c_code(self) -> str:
-        return self.type_.c_code()
+    @property
+    def name(self) -> str:
+        return self.type_.name
 
     def __str__(self) -> str:
         return f"{self.type_.keyword}"

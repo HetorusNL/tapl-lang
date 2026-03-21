@@ -29,12 +29,6 @@ class ReturnStatement(Statement):
     def accept[T](self, visitor: BaseStatementVisitor[T]) -> T:
         return visitor.visit_return_statement(self)
 
-    def c_code(self) -> str:
-        if self.value:
-            return f"return {self.value.c_code()};"
-        else:
-            return f"return;"
-
     def __str__(self) -> str:
         return f"return {self.value.__str__()}"
 

@@ -120,7 +120,7 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
         def _c_declaration_base() -> str:
             """returns the function declaration line, without anything after the closing paren"""
             # start with the function return type and name
-            code: str = f"{statement.return_type.c_code()} {statement.function_name()}("
+            code: str = f"{statement.return_type.name} {statement.function_name()}("
 
             # create a list of argument type-name pairs
             arguments: list[str] = []
@@ -129,7 +129,7 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
                 arguments.append(f"{statement.class_type}* this")
             # construct the function declaration arguments from the list of arguments
             for argument_type, argument_name in statement.arguments:
-                arguments.append(f"{argument_type.c_code()} {argument_name}")
+                arguments.append(f"{argument_type.name} {argument_name}")
             # add comma separated list of the argument type-name pairs
             code += ", ".join(arguments)
             code += f")"
@@ -192,14 +192,14 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
         # add the declaration
         match statement.statement_type:
             case LifecycleStatementType.CONSTRUCTOR:
-                code += f"void {statement.type_.c_code()}_constructor("
+                code += f"void {statement.type_.name}_constructor("
             case LifecycleStatementType.DESTRUCTOR:
-                code += f"void {statement.type_.c_code()}_destructor("
+                code += f"void {statement.type_.name}_destructor("
 
         # create a list of argument type-name pairs, start with the pointer to the instance
-        arguments: list[str] = [f"{statement.type_.c_code()}* this"]
+        arguments: list[str] = [f"{statement.type_.name}* this"]
         for argument_type, argument_name in statement.arguments:
-            arguments.append(f"{argument_type.type_.c_code()} {argument_name}")
+            arguments.append(f"{argument_type.type_.name} {argument_name}")
         # add the arguments
         code += ", ".join(arguments)
 
@@ -216,7 +216,7 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
         return code
 
     def visit_list_statement(self, statement: ListStatement) -> str:
-        list_base: str = statement.list_type.c_code()
+        list_base: str = statement.list_type.name
         # create the list declaration
         code: str = f"{list_base} {statement.name};"
         # call the constructor of the list
@@ -245,7 +245,7 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
         # if we have an initial value, also generate code for that
         if statement.initial_value:
             initial_value: str = statement.initial_value.accept(self._expression_visitor)
-            return f"{statement.type_token.c_code()} {statement.name} = {initial_value};"
+            return f"{statement.type_token.name} {statement.name} = {initial_value};"
 
         # otherwise it's a default initialized variable
         return f"{statement.type_token} {statement.name};"

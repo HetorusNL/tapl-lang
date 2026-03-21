@@ -66,7 +66,18 @@ class CBackendExpressionVisitor(BaseExpressionVisitor[str]):
         def _join() -> str:
             return "->" if expression.type_.is_reference else "."
 
-        def _inner_c_code() -> str:
+        def _get_arguments_str() -> str:
+            # get the code of the arguments in the expression
+            arguments_code: list[str] = []
+            for argument in expression.get_arguments():
+                arguments_code.append(argument.accept(self))
+
+            # formulate and return the comma-separated argument string
+            arguments: list[str] = [f"{expression.dereference()}{_inner_code()}", *arguments_code]
+            arguments_str: str = ", ".join(arguments)
+            return arguments_str
+
+        def _inner_code() -> str:
             # only if we have an inner expression that has not been consumed, return it
             if expression.inner_expression:
                 inner_code: str = expression.inner_expression.accept(self)
@@ -80,23 +91,19 @@ class CBackendExpressionVisitor(BaseExpressionVisitor[str]):
             if name := expression.inner_function_call():
                 # we need to create a function call of the outermost function
                 full_name: str = f"{expression.class_type}_{name}"
-                arguments: list[str] = [f"{expression.dereference()}{_inner_c_code()}", *expression.get_arguments()]
-                arguments_str: str = ", ".join(arguments)
-                return f"{full_name}({arguments_str})"
+                return f"{full_name}({_get_arguments_str()})"
 
         # if this is a list, check if there is a call expression inside
         if expression.list_type:
             if name := expression.inner_function_call():
                 # we need to create a function call of the outermost list
                 full_name: str = f"list_{expression.list_type.inner_type}_{name}"
-                arguments: list[str] = [f"{expression.dereference()}{_inner_c_code()}", *expression.get_arguments()]
-                arguments_str: str = ", ".join(arguments)
-                return f"{full_name}({arguments_str})"
+                return f"{full_name}({_get_arguments_str()})"
             # pass the address of the list type, not by value
-            return f"{expression.dereference()}{_inner_c_code()}"
+            return f"{expression.dereference()}{_inner_code()}"
 
         # otherwise simply return the identifier with potential inner expressions
-        return _inner_c_code()
+        return _inner_code()
 
     def visit_string_equal_expression(self, expression: StringEqualExpression) -> str:
         inner_code: str = expression.inner.accept(self)
@@ -165,7 +172,7 @@ class CBackendExpressionVisitor(BaseExpressionVisitor[str]):
                 return expression.token.token_type.value
 
     def visit_type_cast_expression(self, expression: TypeCastExpression) -> str:
-        return f"(({expression.cast_to.c_code()}){expression.expression.accept(self)})"
+        return f"(({expression.cast_to.name}){expression.expression.accept(self)})"
 
     def visit_unary_expression(self, expression: UnaryExpression) -> str:
         match expression.expression_type:

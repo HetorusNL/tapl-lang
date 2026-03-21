@@ -38,31 +38,6 @@ class CallExpression(Expression):
         self.call_consumed = True
         return self.expression.identifier_token
 
-    def c_code(self) -> str:
-        # construct the function name
-        function_name: str = f"{self.expression.identifier_token}"
-
-        # if the call has been consumed, return an empty string
-        if self.call_consumed:
-            return f""
-
-        # otherwise this should generate a function call
-        # build the argument list
-        arguments: list[str] = []
-        # if it's a class method call, prepend the 'this' argument
-        if self.class_type:
-            arguments.append("this")
-        for argument in self.arguments:
-            arguments.append(argument.c_code())
-        arguments_string: str = ", ".join(arguments)
-
-        # if it's a class method call, prepend the class name
-        if self.class_type:
-            function_name = f"{self.class_type}_{function_name}"
-
-        # construct and return the whole function call
-        return f"{function_name}({arguments_string})"
-
     def __str__(self) -> str:
         return f'{self.expression.__str__()}({", ".join([argument.__str__() for argument in self.arguments])})'
 

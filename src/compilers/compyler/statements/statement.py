@@ -19,9 +19,6 @@ class Statement:
     def accept[T](self, visitor: BaseStatementVisitor[T]) -> T:
         return visitor.visit_statement(self)
 
-    def c_code(self) -> str:
-        assert False, f"we can't generate code for a {type(self)}!"
-
     def __str__(self) -> str:
         return f""
 

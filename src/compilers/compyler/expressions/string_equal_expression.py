@@ -30,11 +30,6 @@ class StringEqualExpression(Expression):
     def source_text(self) -> str:
         return Utils.get_source_text(self.filename, self.source_location)
 
-    def c_code(self) -> str:
-        inner_code: str = self.inner.c_code()
-        token_code: str = self.token.token_type.value
-        return f"{inner_code}{token_code}"
-
     def __str__(self) -> str:
         return f"{self.inner}{self.token.token_type.value}"
 

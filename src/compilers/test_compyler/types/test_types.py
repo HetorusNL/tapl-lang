@@ -3,9 +3,6 @@
 # Copyright (c) 2026 Tim Klein Nijenhuis <tim@hetorus.nl>
 #
 # This file is part of compyler, a TAPL compiler.
-#
-# don't report this, as the unittests access private members:
-# pyright: reportPrivateUsage=false
 
 import unittest
 
@@ -19,27 +16,27 @@ class TestTypes(unittest.TestCase):
         types: Types = Types()
 
         # test that the keyword and sugar objects point to same type
-        self.assertEqual(types._types["u1"], types._types["bool"])
+        self.assertEqual(types.types["u1"], types.types["bool"])
 
         # test that other types are different
-        self.assertNotEqual(types._types["u1"], types._types["u8"])
+        self.assertNotEqual(types.types["u1"], types.types["u8"])
 
     def test_add_existing_type(self):
         # test that adding existing type doesn't add it
         types: Types = Types()
         # extract the first keyword
-        types_keys = types._types.keys()
+        types_keys = types.types.keys()
         keyword: str = list(types_keys)[0]
-        num_keys_before: int = len(types._types.keys())
+        num_keys_before: int = len(types.types.keys())
         types.add(keyword)
-        num_keys_after: int = len(types._types.keys())
+        num_keys_after: int = len(types.types.keys())
         self.assertEqual(num_keys_before, num_keys_after)
 
     def test_add_new_type(self):
         # test that a new type is added, and points to the same type
         types: Types = Types()
         types.add("non_existing_type_1337")
-        self.assertTrue(types._types.get("non_existing_type_1337"))
+        self.assertTrue(types.types.get("non_existing_type_1337"))
 
     def test_get_nonexisting_type(self):
         # test that None is returned when a type doesn't exist

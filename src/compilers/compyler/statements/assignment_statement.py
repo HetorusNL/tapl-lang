@@ -41,13 +41,6 @@ class AssignmentStatement(Statement):
     def accept[T](self, visitor: BaseStatementVisitor[T]) -> T:
         return visitor.visit_assignment_statement(self)
 
-    def c_code(self) -> str:
-        identifier: str = self.expression.c_code()
-        assignment_form: str = self.assignment_token.token_type.value
-        value: str = self.value.c_code()
-
-        return f"{identifier} {assignment_form} {value};"
-
     def __str__(self) -> str:
         identifier: str = self.expression.__str__()
         value: str = self.value.__str__()

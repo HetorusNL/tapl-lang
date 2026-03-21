@@ -42,44 +42,6 @@ class FunctionStatement(Statement):
             return f"{self.class_type}_{self.name}"
         return f"{self.name}"
 
-    def _c_declaration_base(self) -> str:
-        """returns the function declaration line, without anything after the closing paren"""
-        # start with the function return type and name
-        code: str = f"{self.return_type.c_code()} {self.function_name()}("
-
-        # create a list of argument type-name pairs
-        arguments: list[str] = []
-        # if this is a class, also add the this pointer to the function
-        if self.class_type:
-            arguments.append(f"{self.class_type}* this")
-        # construct the function declaration arguments from the list of arguments
-        for argument_type, argument_name in self.arguments:
-            arguments.append(f"{argument_type.c_code()} {argument_name}")
-        # add comma separated list of the argument type-name pairs
-        code += ", ".join(arguments)
-        code += f")"
-
-        return code
-
-    def c_declaration(self) -> str:
-        """returns the function declaration with terminating semicolon"""
-        code: str = f"{self._c_declaration_base()};"
-
-        return code
-
-    def c_code(self) -> str:
-        """returns declaration and body of the function"""
-        code: str = f"{self._c_declaration_base()} {{\n"
-
-        # add the statements if they exist
-        for statement in self.statements:
-            code += f"{statement.c_code()}\n"
-
-        # end with the closing bracket
-        code += f"}}"
-
-        return code
-
     def __str__(self) -> str:
         return f"{self.return_type} {self.function_name()}: ..."
 

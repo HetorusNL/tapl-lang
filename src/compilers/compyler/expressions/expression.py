@@ -31,9 +31,6 @@ class Expression:
         # always store a copy of the type
         self._internal_type_ref_ = deepcopy(type_)
 
-    def c_code(self) -> str:
-        assert False, f"we can't generate code for a {type(self)}!"
-
     def __str__(self) -> str:
         return f""
 

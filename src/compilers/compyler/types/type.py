@@ -42,7 +42,9 @@ class Type:
         """returns whether the type is not of type void"""
         return self.keyword != "void"
 
-    def c_code(self) -> str:
+    @property
+    def name(self) -> str:
+        """the name of the type, which is its keyword"""
         return self.keyword
 
     def __eq__(self, other: object) -> bool:

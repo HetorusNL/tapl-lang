@@ -14,7 +14,6 @@ from typing import NoReturn
 from .ast_checks.ast_check import AstCheck
 from .ast_generator import AstGenerator
 from .backends.c_backend_code_generator import CBackendCodeGenerator
-from .code_generator import CodeGenerator
 from .tokenizer import Tokenizer
 from .tokens.token import Token
 from .types.type_applier import TypeApplier
@@ -80,10 +79,6 @@ def generate_code(ast: AST, build_folder: Path, header_folder: Path, templates_f
     generator = CBackendCodeGenerator(ast, build_folder, header_folder, templates_folder)
     generator.generate()
     return generator.get_main_file()
-
-    main_c_file: Path = build_folder / "main.c"
-    CodeGenerator(ast, build_folder, header_folder, templates_folder).generate_c(main_c_file)
-    return main_c_file
 
 
 def copy_stdlib(header_folder: Path, stdlib_folder: Path) -> None:

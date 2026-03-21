@@ -20,9 +20,6 @@ class BreakStatement(Statement):
     def accept[T](self, visitor: BaseStatementVisitor[T]) -> T:
         return visitor.visit_break_statement(self)
 
-    def c_code(self) -> str:
-        return "break;"
-
     def __str__(self) -> str:
         return "break"
 

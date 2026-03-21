@@ -23,11 +23,6 @@ class ExpressionStatement(Statement):
     def accept[T](self, visitor: BaseStatementVisitor[T]) -> T:
         return visitor.visit_expression_statement(self)
 
-    def c_code(self) -> str:
-        expression_code: str = self.expression.c_code()
-
-        return f"{expression_code};"
-
     def __str__(self) -> str:
         return self.expression.__str__()
 

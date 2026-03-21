@@ -5,7 +5,6 @@
 # This file is part of compyler, a TAPL compiler.
 
 from copy import deepcopy
-from pathlib import Path
 
 from .character_type import CharacterType
 from .class_type import ClassType
@@ -17,10 +16,10 @@ from .type import Type
 
 class Types:
     def __init__(self):
-        self._types: dict[str, Type] = self.builtin_types()
+        self.types: dict[str, Type] = self.builtin_types()
 
         # make sure also the list[char] exists for the file stdlib functions
-        self.add_list_type(self._types["char"])
+        self.add_list_type(self.types["char"])
 
     def builtin_types(self) -> dict[str, Type]:
         """returns the builtin types of the language as a dictionary:
@@ -85,10 +84,10 @@ class Types:
         returns the existing or newly added type
         """
         # check if the type is already in the collection
-        if keyword not in self._types:
+        if keyword not in self.types:
             # create the Type, and add the keyword:Type to the collection
             type_ = Type(keyword)
-            self._types[keyword] = type_
+            self.types[keyword] = type_
 
         # return the existing or newly created type
         return self[keyword]
@@ -99,10 +98,10 @@ class Types:
         returns the existing or newly added class type
         """
         # check if the type is already in the collection
-        if keyword not in self._types:
+        if keyword not in self.types:
             # create the Type, and add the keyword:Type to the collection
             type_ = ClassType(keyword)
-            self._types[keyword] = type_
+            self.types[keyword] = type_
 
         # return the existing or newly created class type
         class_type: Type = self[keyword]
@@ -117,10 +116,10 @@ class Types:
         # construct the keyword of the list type
         keyword: str = f"list[{inner_type.keyword}]"
         # check if the type is already in the collection
-        if keyword not in self._types:
+        if keyword not in self.types:
             # create the Type, and add the keyword:Type to the collection
             new_list_type = ListType(inner_type)
-            self._types[keyword] = new_list_type
+            self.types[keyword] = new_list_type
 
         # return the existing or newly created list type
         list_type: Type = self[keyword]
@@ -129,7 +128,7 @@ class Types:
 
     def get(self, keyword: str) -> Type | None:
         """returns the Type with the provided keyword, None if not present"""
-        type_: Type | None = self._types.get(keyword)
+        type_: Type | None = self.types.get(keyword)
         if type_:
             # always return a copy, as types can be modified
             type_ = deepcopy(type_)
@@ -139,62 +138,3 @@ class Types:
         keyword_type: Type | None = self.get(keyword)
         assert keyword_type
         return keyword_type
-
-    def generate_c_headers(self, header_folder: Path, templates_folder: Path) -> None:
-        """generates a c types header for all builtin basic types, and the list types in the header folder"""
-        self._generate_basic_type_header(header_folder)
-        self._generate_list_type_header(header_folder, templates_folder)
-
-    def _generate_basic_type_header(self, header_folder: Path) -> None:
-        # add the strings to be added to the types header
-        c_code: list[str] = [
-            "#pragma once\n",
-            "\n",
-            "#include <stdbool.h>\n",
-            "#include <stdint.h>\n",
-            "\n",
-            "// typedefs for the builtin basic types defined in TAPL\n",
-        ]
-
-        # formulate the typedefs for the basic types used in TAPL
-        for type_ in self._types.values():
-            if type_.is_basic_type:
-                # only add the type if it has a different name in c
-                if type_.underlying_type != type_.keyword:
-                    c_code.append(f"typedef {type_.underlying_type} {type_.keyword};\n")
-
-        # write the content to the file
-        types_header: Path = header_folder / "types.h"
-        with open(types_header, "w") as f:
-            f.writelines(c_code)
-
-    def _generate_list_type_header(self, header_folder: Path, templates_folder: Path) -> None:
-        # add the strings to be added to the types header
-        c_code: list[str] = [
-            "#pragma once\n",
-            "\n",
-            "// include the needed system headers\n",
-            "#include <stdio.h>\n",
-            "#include <stdlib.h>\n",
-            "\n",
-            "// also include the needed TAPL headers\n",
-            "#include <tapl_headers/types.h>\n",
-            "#include <tapl_headers/utility_functions.h>\n",
-            "\n",
-        ]
-
-        # for every list type, add the filled in template to the source lines
-        for type_ in self._types.values():
-            if isinstance(type_, ListType):
-                # read the lines from the template
-                with open(templates_folder / "list.h") as f:
-                    lines: list[str] = f.readlines()
-                # replace the "TYPE" text with the actual internal type of the ListType
-                list_type: str = type_.inner_type.keyword
-                lines = [line.replace("TYPE", list_type) for line in lines]
-                c_code.extend(lines)
-
-        # write the content to the file
-        list_header: Path = header_folder / "list.h"
-        with open(list_header, "w") as f:
-            f.writelines(c_code)

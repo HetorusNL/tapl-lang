@@ -17,6 +17,9 @@ from compyler.types.types import Types
 from compyler.utils.ast import AST
 from compyler.utils.stream import Stream
 from compyler.ast_checks.ast_check import AstCheck
+from compyler.backends.c_backend_expression_visitor import CBackendExpressionVisitor
+from compyler.backends.c_backend_state import CBackendState
+from compyler.backends.c_backend_statement_visitor import CBackendStatementVisitor
 
 
 class TestAstGenerator(unittest.TestCase):
@@ -57,10 +60,15 @@ class TestAstGenerator(unittest.TestCase):
         result_file: Path = this_folder / result_statements_file
         with open(result_file) as f:
             result: list[str] = f.readlines()
+        # create the state and the visitors for the C backend
+        state = CBackendState()
+        expression_visitor = CBackendExpressionVisitor(state)
+        statement_visitor = CBackendStatementVisitor(state, expression_visitor)
         # convert code lines to single lines and strip newlines
         code_lines: list[str] = []
         for statement in ast_statements:
-            code_lines.extend(line.strip() for line in statement.c_code().split("\n"))
+            if code := statement.accept(statement_visitor):
+                code_lines.extend(line.strip() for line in code.split("\n"))
         # do the same for the result lines
         result_lines: list[str] = [line.strip() for line in result]
         # check that the lists are equal

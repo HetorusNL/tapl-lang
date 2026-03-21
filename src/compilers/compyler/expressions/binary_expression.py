@@ -25,12 +25,6 @@ class BinaryExpression(TokenExpression):
     def accept[T](self, visitor: BaseExpressionVisitor[T]) -> T:
         return visitor.visit_binary_expression(self)
 
-    def c_code(self) -> str:
-        left_code: str = self.left.c_code()
-        token_code: str = self.token.token_type.value
-        right_code: str = self.right.c_code()
-        return f"({left_code} {token_code} {right_code})"
-
     def __str__(self) -> str:
         return f"({self.left} {self.token.token_type} {self.right})"
 

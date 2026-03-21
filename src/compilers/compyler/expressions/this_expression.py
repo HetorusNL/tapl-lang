@@ -6,7 +6,6 @@
 
 from typing import TYPE_CHECKING
 
-from .call_expression import CallExpression
 from .expression import Expression
 from ..utils.source_location import SourceLocation
 
@@ -21,13 +20,6 @@ class ThisExpression(Expression):
 
     def accept[T](self, visitor: BaseExpressionVisitor[T]) -> T:
         return visitor.visit_this_expression(self)
-
-    def c_code(self) -> str:
-        # if the inner expression is a CallExpression, transform it into a function call
-        if isinstance(self.inner_expression, CallExpression):
-            return f"{self.inner_expression.c_code()}"
-        # otherwise return a 'this' variable access on the class instance pointer
-        return f"this->{self.inner_expression.c_code()}"
 
     def __str__(self) -> str:
         return f"this.{self.inner_expression}"

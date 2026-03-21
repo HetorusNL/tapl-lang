@@ -23,24 +23,6 @@ class UnaryExpression(Expression):
     def accept[T](self, visitor: BaseExpressionVisitor[T]) -> T:
         return visitor.visit_unary_expression(self)
 
-    def c_code(self) -> str:
-        match self.expression_type:
-            case ExpressionType.GROUPING:
-                return f"({self.expression.c_code()})"
-            case ExpressionType.NOT:
-                return f"(!({self.expression.c_code()}))"
-            case ExpressionType.MINUS:
-                return f"(-({self.expression.c_code()}))"
-            case ExpressionType.POST_DECREMENT:
-                return f"(({self.expression.c_code()})--)"
-            case ExpressionType.POST_INCREMENT:
-                return f"(({self.expression.c_code()})++)"
-            case ExpressionType.PRE_DECREMENT:
-                return f"(--({self.expression.c_code()}))"
-            case ExpressionType.PRE_INCREMENT:
-                return f"(++({self.expression.c_code()}))"
-        assert False, f"{self.expression_type} not in UnaryExpression!"
-
     def __str__(self) -> str:
         return f"({self.expression})"
 

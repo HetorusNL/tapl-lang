@@ -101,11 +101,13 @@ the following 'features' were found during AoC solving, and should be fixed
   - https://pygls.readthedocs.io/en/latest/servers/getting-started.html
   - example: https://github.com/windelbouwman/sauce-os/tree/main/language-server/slang-lang
 - use hypothesis tests: https://hypothesis.readthedocs.io/en/latest/
-- rewrite code generation to separate backend module instead of in statement/expression
-  - refactor remainder of the `c_code()` functions out of the following locations:
-    - `Type`
-    - `TypeToken`
-  - remove the old c_code() shit from the statements/expressions and code generator
+- refactor all type-hints-only imports to a block like:
+  ```python
+  from typing import TYPE_CHECKING
+  # ...rest of imports...
+  if TYPE_CHECKING:
+    from ..visitors.base_expression_visitor import BaseExpressionVisitor
+  ```
 
 ## Ideas
 

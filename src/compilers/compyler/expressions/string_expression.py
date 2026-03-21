@@ -7,12 +7,10 @@
 from typing import TYPE_CHECKING
 
 from .expression import Expression
-from .string_equal_expression import StringEqualExpression
 from ..tokens.string_chars_token import StringCharsToken
 from ..tokens.token import Token
 from ..tokens.token_type import TokenType
 from ..utils.source_location import SourceLocation
-from ..utils.utils import Utils
 
 if TYPE_CHECKING:
     from ..visitors.base_expression_visitor import BaseExpressionVisitor
@@ -36,9 +34,9 @@ class StringExpression(Expression):
     def _raw_string(self) -> str:
         string: str = ""
         for element in self.string_elements:
-            # check if the element is an expression, if so add its c_code
+            # check if the element is an expression, if so add its __str__ function
             if isinstance(element, Expression):
-                string += element.c_code()
+                string += str(element)
                 continue
             # otherwise it's a string-related token, process it
             token: Token = element
@@ -57,38 +55,6 @@ class StringExpression(Expression):
                 case _:
                     assert False, f"found an unknown token of type {token.token_type} in a string expression!"
         return string
-
-    def c_code(self) -> str:
-        # TODO: support more than only print statements
-        format_string: str = ""
-        arguments: list[str] = []
-
-        for element in self.string_elements:
-            # check if the element is a StringEqualExpression, if so add it to the format string and add the arguments
-            if isinstance(element, StringEqualExpression):
-                format_string += f"%s"
-                format_string += Utils.get_type_format_string(element.inner)
-                arguments.append(f'"{element.source_text()}"')
-                arguments.append(element.inner.c_code())
-                continue
-            # check if the element is a form of an expression, if so add it to the format string and add the argument
-            if isinstance(element, Expression):
-                format_string += Utils.get_type_format_string(element)
-                arguments.append(element.c_code())
-                continue
-            # otherwise it's a string-related token, process it
-            token: Token = element
-            if token.token_type == TokenType.STRING_START:
-                format_string += '"'
-            elif token.token_type == TokenType.STRING_END:
-                format_string += self.line_end
-                format_string += '"'
-            elif token.token_type == TokenType.STRING_CHARS:
-                assert isinstance(token, StringCharsToken)
-                format_string += token.value
-
-        print_string: str = ", ".join([format_string, *arguments])
-        return print_string
 
     def __str__(self) -> str:
         return self._raw_string()

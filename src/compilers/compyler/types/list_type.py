@@ -26,6 +26,7 @@ class ListType(Type):
             "insert": "bool",
         }
 
-    def c_code(self) -> str:
-        inner_type_code: str = self.inner_type.c_code()
-        return f"list_{inner_type_code}{self.reference()}"
+    @property
+    def name(self) -> str:
+        inner_type_name: str = self.inner_type.name
+        return f"list_{inner_type_name}{self.reference()}"

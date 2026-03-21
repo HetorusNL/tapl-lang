@@ -20,9 +20,6 @@ class ContinueStatement(Statement):
     def accept[T](self, visitor: BaseStatementVisitor[T]) -> T:
         return visitor.visit_continue_statement(self)
 
-    def c_code(self) -> str:
-        return "continue;"
-
     def __str__(self) -> str:
         return "continue"
 

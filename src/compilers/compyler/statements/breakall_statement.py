@@ -23,9 +23,6 @@ class BreakallStatement(Statement):
     def accept[T](self, visitor: BaseStatementVisitor[T]) -> T:
         return visitor.visit_breakall_statement(self)
 
-    def c_code(self) -> str:
-        return "goto " + self.breakall_label + ";"
-
     def __str__(self) -> str:
         return "breakall"
 
