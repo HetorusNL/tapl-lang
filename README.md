@@ -55,14 +55,11 @@ uv run -m src.compilers.compyler /path/to/file.tim
 the following 'features' were found during AoC solving, and should be fixed
 
 - make char and base/u16-related types be used together
-- python IndexError in unterminated string on the last line
 - fix type checking after boolean operators (e.g. "(value1 >= value2) && !flag" should end up as "bool && bool" and eventually "bool")
 - implement a list of class instances
 - same symbols multiple times defined should show the correct error, also with functions and lists
 - list.add() should support a function call as 'argument'
 - add (fancy) enumeration type (that also has something like a to_string() function)
-- parsing in string interpolation function skips everything including and after ':'
-- string parsing results in errors when the terminating '"' is within the string interpolation section
 
 ## TODO
 
@@ -81,8 +78,6 @@ the following 'features' were found during AoC solving, and should be fixed
 - add list tests
 - clean up list implementation
 - make SourceLocation also able to 'add' a Token/Expression/Statement('s source_location)
-- refactor identifier expression from TokenExpression to IdentifierExpression
-- allow nested IdentifierExpressions/ThisExpressions
 - implement or not allow variable assignment during declaration in class
 - fix open TODOs in `tokenizer.py`
   - add 0o / e number parsing

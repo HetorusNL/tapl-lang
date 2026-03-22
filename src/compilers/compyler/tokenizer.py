@@ -30,7 +30,7 @@ class Tokenizer:
         # some variables to store the state of the tokenizer
         self._current_index: int = 0
         self._line: int = 1
-        self._string_var_parsing = False
+        self._string_var_parsing_depth = 0  # an int as nested strings can happen
         # indent and dedent related variables
         self._at_start_of_line: bool = True
         self._current_indent: int = 0  # current number of INDENT_SPACES indentations
@@ -53,12 +53,12 @@ class Tokenizer:
             match char := self._next():
                 # match all single-character tokens
                 case TokenType.BRACE_CLOSE.value:
-                    # check if we're in string var parsing mode
-                    if self._string_var_parsing:
+                    # check if we're in string var parsing mode (at least 1 level deep)
+                    if self._string_var_parsing_depth > 0:
                         # add the string var end token
                         self._add_token(TokenType.STRING_EXPR_END)
-                        # reset the flag (as it can be set again in the add string chars)
-                        self._string_var_parsing = False
+                        # exit from one level of depth of the string var parsing counter
+                        self._string_var_parsing_depth -= 1
                         # continue parsing string chars
                         self._add_string_chars()
                     else:
@@ -386,8 +386,8 @@ class Tokenizer:
                 # consume and add the string var start token
                 self._current_index += 1
                 self._add_token(TokenType.STRING_EXPR_START)
-                # transition to string var parsing mode
-                self._string_var_parsing = True
+                # transition to string var parsing mode (one level deeper)
+                self._string_var_parsing_depth += 1
                 return
             # if we have a newline, then raise an error as the string is unterminated
             if char == "\n":

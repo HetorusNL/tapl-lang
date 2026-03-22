@@ -749,27 +749,7 @@ class AstGenerator:
         if token := self.match(TokenType.NUMBER):
             return TokenExpression(token.source_location, token)
         if token := self.match(TokenType.STRING_START):
-            # start constructing a string expression
-            string_expression: StringExpression = StringExpression(token)
-            while token := self.consume():
-                # add the token to the string expression
-                string_expression.add_token(token)
-                # check for the end of the string, then we return
-                if token.token_type == TokenType.STRING_END:
-                    break
-                # check for a start of an expression
-                if token.token_type == TokenType.STRING_EXPR_START:
-                    expression: Expression = self.expression()
-                    # check for the end of the expression and expression modifiers
-                    if self.match(TokenType.STRING_EXPR_END):
-                        # found an expression end, add it to the string expression and continue
-                        string_expression.add_token(expression)
-                    elif equal_token := self.match(TokenType.EQUAL):
-                        # found a string equal expression, add it to the string expression and continue
-                        string_expression.add_token(StringEqualExpression(expression, equal_token, self._filename))
-                    # later expression format modifiers can be added here as well
-
-            return string_expression
+            return self.string_expression(token)
 
         # match expressions between parenthesis
         if paren_open := self.match(TokenType.PAREN_OPEN):
@@ -839,6 +819,45 @@ class AstGenerator:
 
         # otherwise we have an error, there must be an expression here
         self.ast_error(f"expected an expression, found '{self.current()}'!")
+
+    def string_expression(self, token: Token) -> StringExpression:
+        # start constructing a string expression
+        string_expression: StringExpression = StringExpression(token)
+        while token := self.consume():
+            match token.token_type:
+                case TokenType.STRING_CHARS:
+                    # add the string characters to the string
+                    string_expression.add_token(token)
+                case TokenType.STRING_END:
+                    # when it is the end of the string, then we return
+                    string_expression.add_token(token)
+                    break
+                case TokenType.STRING_EXPR_START:
+                    # when it's the start of an expression, parse the string interpolation expression
+                    string_expression.add_token(token)
+                    self.string_interpolation_expression(string_expression)
+                case _:
+                    self.ast_error(f"expected '{{' or '\"', but found {self.previous()}!")
+        return string_expression
+
+    def string_interpolation_expression(self, string_expression: StringExpression) -> None:
+        # when it is a start of an expression, parse it
+        expression: Expression = self.expression()
+        # check for the end of the expression and expression modifiers
+        while True:
+            if token := self.match(TokenType.STRING_EXPR_END):
+                # found an expression end, add the expression and end to the string expression and return
+                string_expression.add_token(expression)
+                string_expression.add_token(token)
+                return
+            elif equal_token := self.match(TokenType.EQUAL):
+                # found a string equal expression, add it to the string expression and continue
+                string_expression.add_token(StringEqualExpression(expression, equal_token, self._filename))
+                string_expression.add_token(self.expect(TokenType.STRING_EXPR_END))
+                return
+            else:
+                # later expression format modifiers can be added here as well
+                self.ast_error(f"expected '}}' or '=', but found {self.current()}!")
 
     def identifier_expression(self, token: IdentifierToken) -> Expression:
         expression: IdentifierExpression = IdentifierExpression(token.source_location, token)

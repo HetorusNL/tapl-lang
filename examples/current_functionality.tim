@@ -383,3 +383,7 @@ println("and a more complicated expression: {15*some_value+5/5=}")
 
 list[u8] list1
 println("adding list1.get(10) here, results in a panic")
+
+println("\nthere's also nested string interpolation :)")
+println("start {"-abcdef and {3+1=} also-"=} end {1337}")
+println("something else")

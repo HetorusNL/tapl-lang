@@ -97,5 +97,14 @@ class Utils:
                         return f"%{long}u"
                     case NumericTypeType.FLOATING_POINT:
                         return f"%{long}f"
+            case Type():
+                if type_.name == "string":
+                    return f"%s"
+                assert False, f"internal compiler error, type with name {type_.name} not handled!"
             case _:
                 assert False, f"internal compiler error, {type(type_)} not handled!"
+
+    @classmethod
+    def escape_string(cls, string: str) -> str:
+        string = string.replace('"', '\\"')
+        return string

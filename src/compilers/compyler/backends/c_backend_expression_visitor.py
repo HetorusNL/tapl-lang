@@ -115,30 +115,52 @@ class CBackendExpressionVisitor(BaseExpressionVisitor[str]):
         format_string: str = ""
         arguments: list[str] = []
 
-        for element in expression.string_elements:
-            # check if the element is a StringEqualExpression, if so add it to the format string and add the arguments
-            if isinstance(element, StringEqualExpression):
-                format_string += f"%s"
-                format_string += Utils.get_type_format_string(element.inner)
-                arguments.append(f'"{element.source_text()}"')
-                arguments.append(element.inner.accept(self))
-                continue
-            # check if the element is a form of an expression, if so add it to the format string and add the argument
-            if isinstance(element, Expression):
-                format_string += Utils.get_type_format_string(element)
-                arguments.append(element.accept(self))
-                continue
-            # otherwise it's a string-related token, process it
-            token: Token = element
-            if token.token_type == TokenType.STRING_START:
-                format_string += '"'
-            elif token.token_type == TokenType.STRING_END:
-                format_string += expression.line_end
-                format_string += '"'
-            elif token.token_type == TokenType.STRING_CHARS:
-                assert isinstance(token, StringCharsToken)
-                format_string += token.value
+        # start with the string start
+        format_string += '"'
 
+        # process all elements
+        def _process(elements: list[Token | Expression]) -> str:
+            format_string = ""
+            for element in elements:
+                # check if the element is a StringEqualExpression, if so add it to the format string and arguments
+                if isinstance(element, StringEqualExpression):
+                    # add the source text to the format string directly
+                    format_string += Utils.escape_string(element.source_text())
+
+                    # process the inner expression
+                    if isinstance(element.inner, StringExpression):
+                        # a nested string expression, include the format string and arguments of the elements
+                        format_string += _process(element.inner.string_elements)
+                    else:
+                        # some other nested expression, add the format string and arguments by means of the visitor
+                        format_string += Utils.get_type_format_string(element.inner)
+                        arguments.append(element.inner.accept(self))
+
+                    # element is processed, continue to the next one
+                    continue
+
+                # check if the element is a form of an expression, if so add it to the format string and arguments
+                if isinstance(element, Expression):
+                    format_string += Utils.get_type_format_string(element)
+                    arguments.append(element.accept(self))
+                    continue
+
+                # otherwise it's a string-related token, process it
+                token: Token = element
+                if token.token_type == TokenType.STRING_CHARS:
+                    assert isinstance(token, StringCharsToken)
+                    format_string += token.value
+                # we don't care about the other string-related tokens
+
+            return format_string
+
+        format_string += _process(expression.string_elements)
+
+        # end with the string end (keeping the line_end in mind)
+        format_string += expression.line_end
+        format_string += '"'
+
+        # construct the final string, consisting of comma-separated format string and the arguments
         print_string: str = ", ".join([format_string, *arguments])
         return print_string
 

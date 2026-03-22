@@ -23,6 +23,21 @@ Currently there are no extension settings exposed.
 
 No known issues yet.
 
+## Building and Deploying Extension
+
+```bash
+# enter the directory
+cd tools/vscode/tapl-lang
+
+# package the extension
+vsce package
+# tapl-lang-x.y.z.vsix generated
+
+# publish the extension
+vsce publish
+# tapl-lang.tapl-lang published to VS Code Marketplace
+```
+
 ## Release Notes
 
 Release notes and changelog can be found [here](/tools/vscode/tapl-lang/CHANGELOG.md).

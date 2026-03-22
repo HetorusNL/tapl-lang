@@ -2,27 +2,14 @@
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "name": "TAPL",
   "patterns": [
-    {
-      "include": "#comments"
-    },
-    {
-      "include": "#constants"
-    },
-    {
-      "include": "#types"
-    },
-    {
-      "include": "#keywords"
-    },
-    {
-      "include": "#strings"
-    },
-    {
-      "include": "#functions"
-    },
-    {
-      "include": "#variables"
-    }
+    { "include": "#comments" },
+    { "include": "#constants" },
+    { "include": "#types" },
+    { "include": "#keywords" },
+    { "include": "#strings" },
+    { "include": "#interpolation" },
+    { "include": "#functions" },
+    { "include": "#variables" }
   ],
   "repository": {
     "comments": {
@@ -83,30 +70,7 @@
       "begin": "\"",
       "end": "\"",
       "patterns": [
-        {
-          "name": "meta.interpolation.tapl",
-          "begin": "(\\{)",
-          "beginCaptures": {
-            "1": {
-              "name": "constant.character.brace.open.tapl"
-            }
-          },
-          "end": "(\\})",
-          "endCaptures": {
-            "1": {
-              "name": "constant.character.brace.close.tapl"
-            }
-          },
-          "contentName": "source.tim",
-          "patterns": [
-            { "include": "#constants" },
-            { "include": "#types" },
-            { "include": "#keywords" },
-            { "include": "#string-single" },
-            { "include": "#functions" },
-            { "include": "#variables" }
-          ]
-        },
+        { "include": "#interpolation" },
         {
           "name": "constant.character.escape.tapl",
           "match": "\\\\."
@@ -126,12 +90,30 @@
     },
     "strings": {
       "patterns": [
-        {
-          "include": "#string-double"
-        },
-        {
-          "include": "#string-single"
-        }
+        { "include": "#string-double" },
+        { "include": "#string-single" }
+      ]
+    },
+    "interpolation": {
+      "name": "meta.interpolation.tapl",
+      "begin": "(\\{)",
+      "beginCaptures": {
+        "1": { "name": "constant.character.brace.open.tapl" }
+      },
+      "end": "(\\})",
+      "endCaptures": {
+        "1": { "name": "constant.character.brace.close.tapl" }
+      },
+      "contentName": "source.tim",
+      "patterns": [
+        { "include": "#constants" },
+        { "include": "#types" },
+        { "include": "#keywords" },
+        { "include": "#string-double" },
+        { "include": "#string-single" },
+        { "include": "#interpolation" },
+        { "include": "#functions" },
+        { "include": "#variables" }
       ]
     },
     "functions": {
