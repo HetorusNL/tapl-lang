@@ -13,8 +13,10 @@ from ..statements.expression_statement import ExpressionStatement
 from ..statements.for_loop_statement import ForLoopStatement
 from ..statements.function_statement import FunctionStatement
 from ..statements.if_statement import IfStatement
+from ..statements.import_statement import ImportStatement
 from ..statements.lifecycle_statement import LifecycleStatement
 from ..statements.list_statement import ListStatement
+from ..statements.module_statement import ModuleStatement
 from ..statements.print_statement import PrintStatement
 from ..statements.return_statement import ReturnStatement
 from ..statements.statement import Statement
@@ -49,10 +51,16 @@ class BaseStatementVisitor[T]:
     def visit_if_statement(self, statement: IfStatement) -> T:
         raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
 
+    def visit_import_statement(self, statement: ImportStatement) -> T:
+        raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
+
     def visit_lifecycle_statement(self, statement: LifecycleStatement) -> T:
         raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
 
     def visit_list_statement(self, statement: ListStatement) -> T:
+        raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
+
+    def visit_module_statement(self, statement: ModuleStatement) -> T:
         raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
 
     def visit_print_statement(self, statement: PrintStatement) -> T:

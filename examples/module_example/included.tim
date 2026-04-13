@@ -1,0 +1,7 @@
+// this module is included in the main .tim file in the same folder
+// as there is no subfolder, it's simply called included
+module module_example.included
+
+// the functions in this module can be used in the main module, e.g. the one below
+void hello_module_world():
+    println("Hello world from the included module!")

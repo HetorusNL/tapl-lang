@@ -1,5 +1,7 @@
 // examples how functions are implemented
 
+module main
+
 void function_name():
     // indentation in TAPL is with 4 spaces, and functions use colons
     u32 variable = 10

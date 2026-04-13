@@ -1,5 +1,7 @@
 // example program using buitin variables
 
+module main
+
 u32 variable = 0
 variable = 1300 + 37
 println("value of variable is: {variable}")

@@ -1,3 +1,5 @@
+module main
+
 println("basic print functionality")
 println(1100 + 150 * 2 + 37 - 100)
 println(1 * 2 + 3 / (4 + true))

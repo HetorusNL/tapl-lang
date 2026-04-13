@@ -1,0 +1,25 @@
+// all source files should start with a module declaration on the top
+// where module main is special, as it is the entry point of the program
+// so this is compiled as module main, as it will provided to the compiler
+// also the folder housing the module main, is automagically included to find other source files
+module main
+
+// we can now import other modules, e.g. included in the same folder
+import module_example.included
+
+void hello_world():
+    println("Hello world from the main module!")
+
+// as a first step we can call the functions from the included module
+// as it's simply compiled before this module is compiled :)
+void main():
+    hello_world()
+    hello_module_world()
+    // soonTM to be included.hello_module_world()
+
+// later there will probably be named things, like included.hello_module_world
+// or import some_module.SomeClass, after which 'SomeClass' is available
+// where with import some_module, some_module.SomeClass is available
+// or import some_long_module_name as slmn, after which slmn.SomeClass can be used
+
+main()

@@ -22,7 +22,7 @@ class Utils:
     @classmethod
     def get_source_line_number(cls, filename: Path, source_location: SourceLocation | None) -> int:
         # initial check if a valid SourceLocation is passed
-        if not source_location:
+        if not source_location or source_location.start < 0:
             return -1
 
         # read the entire file info a string

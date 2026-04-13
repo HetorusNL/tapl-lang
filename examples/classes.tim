@@ -1,5 +1,7 @@
 // example classes
 
+module main
+
 class ExampleClass:
     // first we define the variables that the class contain (like entries of a struct)
     u32 variable1

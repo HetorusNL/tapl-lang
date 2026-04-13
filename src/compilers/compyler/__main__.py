@@ -20,6 +20,7 @@ from .types.type_applier import TypeApplier
 from .types.type_resolver import TypeResolver
 from .types.types import Types
 from .utils.ast import AST
+from .utils.module_map import ModuleMap
 from .utils.stream import Stream
 
 
@@ -154,6 +155,14 @@ def handle_error(error_msg: str) -> NoReturn:
 def main():
     # get the 'file' argument from the argument parser
     file: Path = argument_parser()
+
+    # recursively modularize the folder of the provided file
+    module_map: ModuleMap = ModuleMap()
+    containing_folder: Path = file.parent
+    prefix: str = containing_folder.name
+    if module_errors := module_map.modularize(containing_folder, prefix):
+        [print(e) for e in module_errors]
+        exit(1)
 
     # tokenize the provided file
     tokens: Stream[Token] = tokenize(file)

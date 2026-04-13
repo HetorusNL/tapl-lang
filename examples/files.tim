@@ -1,3 +1,5 @@
+module main
+
 // create a nice buffer to hold our chars of the file
 list[char] buffer
 

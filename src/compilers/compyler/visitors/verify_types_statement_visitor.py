@@ -15,8 +15,10 @@ from ..statements.expression_statement import ExpressionStatement
 from ..statements.for_loop_statement import ForLoopStatement
 from ..statements.function_statement import FunctionStatement
 from ..statements.if_statement import IfStatement
+from ..statements.import_statement import ImportStatement
 from ..statements.lifecycle_statement import LifecycleStatement
 from ..statements.list_statement import ListStatement
+from ..statements.module_statement import ModuleStatement
 from ..statements.print_statement import PrintStatement
 from ..statements.return_statement import ReturnStatement
 from ..statements.var_decl_statement import VarDeclStatement
@@ -78,12 +80,18 @@ class VerifyTypesStatementVisitor(BaseStatementVisitor[None]):
         for stm in statement.statements:
             stm.accept(self)
 
+    def visit_import_statement(self, statement: ImportStatement) -> None:
+        pass  # nothing to check in an ImportStatement
+
     def visit_lifecycle_statement(self, statement: LifecycleStatement) -> None:
         for stm in statement.statements:
             stm.accept(self)
 
     def visit_list_statement(self, statement: ListStatement) -> None:
         pass  # nothing to check in a ListStatement
+
+    def visit_module_statement(self, statement: ModuleStatement) -> None:
+        pass  # nothing to check in a ModuleStatement
 
     def visit_print_statement(self, statement: PrintStatement) -> None:
         statement.value.accept(self._expression_visitor)

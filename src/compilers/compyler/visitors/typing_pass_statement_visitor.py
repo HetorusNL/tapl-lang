@@ -17,8 +17,10 @@ from ..statements.expression_statement import ExpressionStatement
 from ..statements.for_loop_statement import ForLoopStatement
 from ..statements.function_statement import FunctionStatement
 from ..statements.if_statement import IfStatement
+from ..statements.import_statement import ImportStatement
 from ..statements.lifecycle_statement import LifecycleStatement
 from ..statements.list_statement import ListStatement
+from ..statements.module_statement import ModuleStatement
 from ..statements.print_statement import PrintStatement
 from ..statements.return_statement import ReturnStatement
 from ..statements.var_decl_statement import VarDeclStatement
@@ -131,6 +133,9 @@ class TypingPassStatementVisitor(BaseStatementVisitor[None]):
                 for else_statement in else_statements:
                     self._typing_pass.parse_statement(else_statement)
 
+    def visit_import_statement(self, statement: ImportStatement) -> None:
+        pass  # nothing to check in an ImportStatement
+
     def visit_lifecycle_statement(self, statement: LifecycleStatement) -> None:
         # create a new scope for the lifecycle statement arguments and body statements
         with self._typing_pass.new_scope():
@@ -149,6 +154,9 @@ class TypingPassStatementVisitor(BaseStatementVisitor[None]):
     def visit_list_statement(self, statement: ListStatement) -> None:
         # add the variable declaration to the scope
         self._typing_pass.add_identifier(statement.name, statement.list_type)
+
+    def visit_module_statement(self, statement: ModuleStatement) -> None:
+        pass  # nothing to check in a ModuleStatement
 
     def visit_print_statement(self, statement: PrintStatement) -> None:
         # check the expression

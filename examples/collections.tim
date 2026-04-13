@@ -1,3 +1,5 @@
+module main
+
 println("example usage of 'list' collection")
 
 println("create an instance of a list, which has a size of 0")

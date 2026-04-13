@@ -1,5 +1,7 @@
 // examples how the builtin print function can be used
 
+module main
+
 println("this is an example string printed using print")
 print(" (don't forget to add a line terminator, as this is not done in the language)\n")
 println(" (unless you use a println keyword instead of print obviously)")

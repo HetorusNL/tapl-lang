@@ -1,5 +1,7 @@
 // example how templates can be used to customize types in a class (or function?)
 
+module main
+
 timplate<T>
 class Object:
     T element

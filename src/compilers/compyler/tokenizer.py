@@ -424,8 +424,12 @@ class Tokenizer:
                 self._add_token_of_length(TokenType.FOR)
             case TokenType.IF.value:
                 self._add_token_of_length(TokenType.IF)
+            case TokenType.IMPORT.value:
+                self._add_token_of_length(TokenType.IMPORT)
             case TokenType.LIST.value:
                 self._add_token_of_length(TokenType.LIST)
+            case TokenType.MODULE.value:
+                self._add_token_of_length(TokenType.MODULE)
             case TokenType.NULL.value:
                 self._add_token_of_length(TokenType.NULL)
             case TokenType.PRINT.value:

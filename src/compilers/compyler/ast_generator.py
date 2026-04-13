@@ -29,9 +29,11 @@ from .statements.expression_statement import ExpressionStatement
 from .statements.for_loop_statement import ForLoopStatement
 from .statements.function_statement import FunctionStatement
 from .statements.if_statement import IfStatement
+from .statements.import_statement import ImportStatement
 from .statements.lifecycle_statement import LifecycleStatement
 from .statements.lifecycle_statement_type import LifecycleStatementType
 from .statements.list_statement import ListStatement
+from .statements.module_statement import ModuleStatement
 from .statements.print_statement import PrintStatement
 from .statements.return_statement import ReturnStatement
 from .statements.statement import Statement
@@ -527,6 +529,44 @@ class AstGenerator:
         # parse the rest of the destructor
         return self._finish_lifecycle_statement(destructor)
 
+    def import_statement(self) -> ImportStatement | None:
+        # will generate an import statement if an import declaration is found
+        # early return if we don't have an import keyword
+        token: Token | None = self.match(TokenType.IMPORT)
+        if not token:
+            return None
+
+        # consume the name(s) of the module to import, which are identifier tokens separated by dots
+        names: list[IdentifierToken] = []
+        while True:
+            name: Token = self.expect(TokenType.IDENTIFIER)
+            assert type(name) == IdentifierToken
+            names.append(name)
+
+            # if we don't have a dot, it's the end of the import line
+            if not self.match(TokenType.DOT):
+                break
+
+        self.expect_newline(f"'{name}'")
+
+        # return the import statement
+        return ImportStatement(token, names)
+
+    def module_statement(self) -> ModuleStatement | None:
+        # will generate a module statement if a module declaration is found
+        # early return if we don't have a module keyword
+        token: Token | None = self.match(TokenType.MODULE)
+        if not token:
+            return None
+
+        # consume the module name (which is an identifier token)
+        name: Token = self.expect(TokenType.IDENTIFIER)
+        assert type(name) == IdentifierToken
+        self.expect_newline(f"'{name}'")
+
+        # return the module statement
+        return ModuleStatement(token, name)
+
     def class_statement(self) -> ClassStatement | None:
         # will generate a class statement if a class declaration is found
         # early return if we don't have a class keyword
@@ -647,6 +687,14 @@ class AstGenerator:
 
         # check for a while-loop statement
         if statement := self.while_loop_statement():
+            return statement
+
+        # check for an import statement
+        if statement := self.import_statement():
+            return statement
+
+        # check for a module statement
+        if statement := self.module_statement():
             return statement
 
         # check for a class 'statement'
