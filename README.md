@@ -65,7 +65,6 @@ the following 'features' were found during AoC solving, and should be fixed
 
 - modules
   - only modularize the provided file, and resolved import folders
-  - ignore other main modules that are found
   - in AstGenerator: first statement should be module
   - optional:
     - add --debug-imports flag to warn for wrongly formatted modularized files

@@ -32,7 +32,7 @@ class ModuleMap:
             return [ModuleError(f"file '{self.main_file}' does not exist!", self.main_file, None)]
 
         # TODO: only modularize the provided file, and resolved import folders
-        self._modularize(self.containing_folder, self.prefix)
+        self._modularize_folder(self.containing_folder, self.prefix)
 
         # parse the raw_imports from ModuleFile objects to imports on Module level
         self._parse_raw_imports()
@@ -40,39 +40,42 @@ class ModuleMap:
         # return the collected module errors, if any
         return self.module_errors
 
-    def _modularize(self, folder: Path, prefix: str) -> None:
+    def _modularize_folder(self, folder: Path, prefix: str) -> None:
         # loop through the objects in the folder
         for obj in folder.iterdir():
             # if the object is a folder, modularize it recursively
             if obj.is_dir():
-                self._modularize(obj, f"{prefix}.{obj.name}")
+                self._modularize_folder(obj, f"{prefix}.{obj.name}")
                 continue
 
             # if the object is not a .tim file, ignore it
             if obj.suffix != ".tim":
                 continue
 
-            # parse the .tim file and check if the naming is correct
-            try:
-                module_file = self._modularize_file(obj)
-            except ModuleError as e:
-                # in case of an error, add it to the errors list and continue with the next file
-                self.module_errors.append(e)
-                continue
+            self._modularize_file(obj, prefix)
 
-            # check that the module name is correct
-            if not self._check_name(module_file, prefix):
-                # _check_name already added the error, continue with the next file
-                continue
+    def _modularize_file(self, filename: Path, prefix: str) -> None:
+        # parse the .tim file and check if the naming is correct
+        try:
+            module_file = self._create_module_file(filename)
+        except ModuleError as e:
+            # in case of an error, add it to the errors list and continue with the next file
+            self.module_errors.append(e)
+            return
 
-            # add it to the module map or append the ModuleFile if the module_name already exists
-            module_name: str = module_file.name
-            if module_name in self.modules:
-                self.modules[module_name].module_files.append(module_file)
-            else:
-                self.modules[module_name] = Module(module_name, module_file)
+        # check that the module name is correct
+        if not self._check_name(module_file, prefix):
+            # _check_name already added the error (if applicable), continue with the next file
+            return
 
-    def _modularize_file(self, filename: Path) -> ModuleFile:
+        # add it to the module map or append the ModuleFile if the module_name already exists
+        module_name: str = module_file.name
+        if module_name in self.modules:
+            self.modules[module_name].module_files.append(module_file)
+        else:
+            self.modules[module_name] = Module(module_name, module_file)
+
+    def _create_module_file(self, filename: Path) -> ModuleFile:
         tokens: Stream[Token] = self._tokenize_file(filename)
         module_file: ModuleFile = self._parse_stream(filename, tokens)
         return module_file
@@ -155,6 +158,9 @@ class ModuleMap:
                 self.module_errors.append(ModuleError(message, filename, module_file.source_location))
                 return False
         else:
+            if module_name == "main":
+                # silently ignore main modules for other files, as they are not the main_file provided to the compiler
+                return False
             if not module_name.startswith(prefix):
                 # misformed module name, add it to the errors list and return False
                 message: str = f"module name misformed, '{module_name}' doesn't start with '{prefix}.'!"
