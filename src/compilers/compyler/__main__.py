@@ -14,7 +14,6 @@ from typing import NoReturn
 from .ast_checks.ast_check import AstCheck
 from .ast_generator import AstGenerator
 from .backends.c_backend_code_generator import CBackendCodeGenerator
-from .tokenizer import Tokenizer
 from .tokens.token import Token
 from .types.type_applier import TypeApplier
 from .types.type_resolver import TypeResolver
@@ -37,11 +36,15 @@ def argument_parser() -> Path:
     return Path(parsed_args.file)
 
 
-def tokenize(file: Path) -> Stream[Token]:
-    print(f"calling the compiler with file '{file}'")
-    tokens: Stream[Token] = Tokenizer(file).tokenize()
-    print(tokens.objects)
-    return tokens
+def modularize(file: Path) -> ModuleMap:
+    module_map: ModuleMap = ModuleMap(file)
+
+    # recursively modularize the folder of the provided file
+    if module_errors := module_map.modularize():
+        [print(e) for e in module_errors]
+        exit(1)
+
+    return module_map
 
 
 def typing_passes(filename: Path, tokens: Stream[Token]) -> Types:
@@ -156,16 +159,11 @@ def main():
     # get the 'file' argument from the argument parser
     file: Path = argument_parser()
 
-    # recursively modularize the folder of the provided file
-    module_map: ModuleMap = ModuleMap()
-    containing_folder: Path = file.parent
-    prefix: str = containing_folder.name
-    if module_errors := module_map.modularize(containing_folder, prefix):
-        [print(e) for e in module_errors]
-        exit(1)
+    # modularize the main and imported files
+    module_map: ModuleMap = modularize(file)
 
-    # tokenize the provided file
-    tokens: Stream[Token] = tokenize(file)
+    # get the main module from the map to process further
+    tokens: Stream[Token] = module_map.modules["main"].module_files[0].tokens
 
     # apply the two typing passes to the token stream
     types: Types = typing_passes(file, tokens)

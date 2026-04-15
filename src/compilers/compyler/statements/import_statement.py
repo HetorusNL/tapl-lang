@@ -31,7 +31,7 @@ class ImportStatement(Statement):
         return visitor.visit_import_statement(self)
 
     def __str__(self) -> str:
-        return f"{self.token} {'.'.join(str(name) for name in self.names)}"
+        return f"{self.token.token_type.value} {'.'.join(str(name) for name in self.names)}"
 
     def __repr__(self) -> str:
         return f"<ImportStatement: location {self.source_location}, {self.__str__()}>"

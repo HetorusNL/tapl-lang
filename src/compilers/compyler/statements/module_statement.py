@@ -29,7 +29,7 @@ class ModuleStatement(Statement):
         return visitor.visit_module_statement(self)
 
     def __str__(self) -> str:
-        return f"{self.token} {self.name}"
+        return f"{self.token.token_type.value} {self.name}"
 
     def __repr__(self) -> str:
-        return f"<ModuleStatement: location {self.source_location}, {self.token} {self.name}>"
+        return f"<ModuleStatement: location {self.source_location}, {self.__str__()}>"

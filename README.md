@@ -63,6 +63,13 @@ the following 'features' were found during AoC solving, and should be fixed
 
 ## TODO
 
+- modules
+  - only modularize the provided file, and resolved import folders
+  - ignore other main modules that are found
+  - in AstGenerator: first statement should be module
+  - optional:
+    - add --debug-imports flag to warn for wrongly formatted modularized files
+    - refactor ModuleError to ModuleProblem, and add ModuleError/ModuleWarning
 - add warning for unused variables
 - char type should be generated as u8, not char
 - add error message to the error token and print that instead of "found 'TokenType.ERROR'!"
@@ -107,10 +114,7 @@ the following 'features' were found during AoC solving, and should be fixed
 ## Ideas
 
 - add public/private to classes, functions
-- make everything private by default (classes, functions, members)
-- implicit "python modules' class imports", example:
-  - `modules/some_module.tim`: `class SomeModule: // blabla`
-  - `file.tim`: `from module import SomeModule`
+  - make everything private by default (classes, functions, members)
 - REPL
   - use Tom's "hot-reload" functionality to 'inject' REPL lines
   - store persistent variables somewhere

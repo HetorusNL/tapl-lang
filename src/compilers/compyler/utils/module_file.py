@@ -17,11 +17,11 @@ class ModuleFile:
         name: str,
         source_location: SourceLocation,
         filename: Path,
-        str_imports: list[str],
+        raw_imports: list[tuple[str, SourceLocation]],
         tokens: Stream[Token],
     ):
         self.name: str = name
         self.source_location: SourceLocation = source_location
         self.filename: Path = filename
-        self.str_imports: list[str] = str_imports
+        self.raw_imports: list[tuple[str, SourceLocation]] = raw_imports
         self.tokens: Stream[Token] = tokens
