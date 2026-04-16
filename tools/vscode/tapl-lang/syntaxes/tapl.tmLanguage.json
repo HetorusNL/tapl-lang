@@ -5,6 +5,7 @@
     { "include": "#comments" },
     { "include": "#constants" },
     { "include": "#types" },
+    { "include": "#imports_modules" },
     { "include": "#keywords" },
     { "include": "#strings" },
     { "include": "#interpolation" },
@@ -62,6 +63,27 @@
         {
           "name": "keyword.operator.tapl",
           "match": "(?:\\}|\\{|\\]|\\[|:|,|\\.|\\)|\\(|;|~|=|==|>|>=|<|<=|-|-=|!|!=|\\+|\\+=|\/|\/=|\\*|\\*=|\\+\\+|--|&|&&|\\||\\|\\|)"
+        }
+      ]
+    },
+    "imports_modules": {
+      "patterns": [
+        {
+          "name": "meta.import.module.tapl",
+          "begin": "\\b(?:import|module)\\b\\s+",
+          "beginCaptures": {
+            "0": { "name": "keyword.control.tapl" }
+          },
+          "end": "$",
+          "patterns": [
+            {
+              "match": "\\b([A-Za-z_][A-Za-z0-9_]*)(\\.)?",
+              "captures": {
+                "1": { "name": "support.class.tapl" },
+                "2": { "name": "punctuation.separator.namespace.tapl" }
+              }
+            }
+          ]
         }
       ]
     },
