@@ -6,9 +6,10 @@
 
 from pathlib import Path
 
-from .stream import Stream
+from ..utils.stream import Stream
 from ..tokens.token import Token
 from ..utils.source_location import SourceLocation
+from .raw_import import RawImport
 
 
 class ModuleFile:
@@ -17,11 +18,11 @@ class ModuleFile:
         name: str,
         source_location: SourceLocation,
         filename: Path,
-        raw_imports: list[tuple[str, SourceLocation]],
+        raw_imports: list[RawImport],
         tokens: Stream[Token],
     ):
         self.name: str = name
         self.source_location: SourceLocation = source_location
         self.filename: Path = filename
-        self.raw_imports: list[tuple[str, SourceLocation]] = raw_imports
+        self.raw_imports: list[RawImport] = raw_imports
         self.tokens: Stream[Token] = tokens

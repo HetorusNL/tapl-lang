@@ -19,7 +19,7 @@ from .types.type_applier import TypeApplier
 from .types.type_resolver import TypeResolver
 from .types.types import Types
 from .utils.ast import AST
-from .utils.module_map import ModuleMap
+from .module.module_map import ModuleMap
 from .utils.stream import Stream
 
 

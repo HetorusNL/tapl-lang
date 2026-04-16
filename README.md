@@ -64,9 +64,6 @@ the following 'features' were found during AoC solving, and should be fixed
 ## TODO
 
 - modules
-  - cleanup module implementation
-    - move to module folder
-    - refactor tuples to classes
   - in AstGenerator: first statement should be module
   - add module/import syntax highlighting in the tapl-lang extension
   - optional:
