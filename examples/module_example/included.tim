@@ -1,5 +1,5 @@
 // this module is included in the main .tim file in the same folder
-// as there is no subfolder, it's simply called included
+// it is imported as main module's parent folder 'dot' module name ('included' can be any module name)
 module module_example.included
 
 // the functions in this module can be used in the main module, e.g. the one below

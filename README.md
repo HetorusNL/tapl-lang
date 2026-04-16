@@ -64,8 +64,11 @@ the following 'features' were found during AoC solving, and should be fixed
 ## TODO
 
 - modules
-  - only modularize the provided file, and resolved import folders
+  - cleanup module implementation
+    - move to module folder
+    - refactor tuples to classes
   - in AstGenerator: first statement should be module
+  - add module/import syntax highlighting in the tapl-lang extension
   - optional:
     - add --debug-imports flag to warn for wrongly formatted modularized files
     - refactor ModuleError to ModuleProblem, and add ModuleError/ModuleWarning

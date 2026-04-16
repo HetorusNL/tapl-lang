@@ -6,6 +6,8 @@ module main
 
 // we can now import other modules, e.g. included in the same folder
 import module_example.included
+// or in a nested subfolder, where the 'nested' is the folder name
+import module_example.nested.some_module_name
 
 void hello_world():
     println("Hello world from the main module!")
@@ -15,7 +17,7 @@ void hello_world():
 void main():
     hello_world()
     hello_module_world()
-    // soonTM to be included.hello_module_world()
+    hello_nested_module_world()
 
 // later there will probably be named things, like included.hello_module_world
 // or import some_module.SomeClass, after which 'SomeClass' is available

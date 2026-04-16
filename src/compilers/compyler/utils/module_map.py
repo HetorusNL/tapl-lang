@@ -20,19 +20,34 @@ from .source_location import SourceLocation
 
 class ModuleMap:
     def __init__(self, main_file: Path):
+        # objects to store the modules and errors found during modularization
         self.modules: dict[str, Module] = {}
         self.module_errors: list[ModuleError] = []
+
+        # store the main_file and properties related to the main file in the class
         self.main_file: Path = main_file
         self.containing_folder: Path = self.main_file.parent
         self.prefix: str = self.containing_folder.name
+        self.parent_folder: Path = self.containing_folder.parent
+
+        # store the remaining folders to modularize and already modularized folders and files
+        self._remaining_folders: list[tuple[Path, str]] = []
+        self._modularized_folders: list[tuple[Path, str]] = []
+        self._modularized_files: list[Path] = []
 
     def modularize(self) -> list[ModuleError]:
         # sanity check that the provided file is a file
         if not self.main_file.is_file():
             return [ModuleError(f"file '{self.main_file}' does not exist!", self.main_file, None)]
 
-        # TODO: only modularize the provided file, and resolved import folders
-        self._modularize_folder(self.containing_folder, self.prefix)
+        # start by modularizing the main file
+        self._modularize_file(self.main_file, self.prefix)
+
+        # while there are remaining_folders to modularize, modularize the next one
+        while self._remaining_folders:
+            folder, prefix = self._remaining_folders.pop()
+            self._modularized_folders.append((folder, prefix))
+            self._modularize_folder(folder, prefix)
 
         # parse the raw_imports from ModuleFile objects to imports on Module level
         self._parse_raw_imports()
@@ -41,11 +56,11 @@ class ModuleMap:
         return self.module_errors
 
     def _modularize_folder(self, folder: Path, prefix: str) -> None:
+        print(f'modularizing folder "{folder}" with prefix "{prefix}"')
         # loop through the objects in the folder
         for obj in folder.iterdir():
-            # if the object is a folder, modularize it recursively
+            # don't recursively modularize folders, only when explicitly imported
             if obj.is_dir():
-                self._modularize_folder(obj, f"{prefix}.{obj.name}")
                 continue
 
             # if the object is not a .tim file, ignore it
@@ -55,6 +70,15 @@ class ModuleMap:
             self._modularize_file(obj, prefix)
 
     def _modularize_file(self, filename: Path, prefix: str) -> None:
+        print(f'modularizing file "{filename}" with prefix "{prefix}"')
+
+        # check if the file is already modularized, if so ignore it
+        if filename in self._modularized_files:
+            return
+
+        # add the file to the modularized files, so we don't modularize it again
+        self._modularized_files.append(filename)
+
         # parse the .tim file and check if the naming is correct
         try:
             module_file = self._create_module_file(filename)
@@ -74,6 +98,10 @@ class ModuleMap:
             self.modules[module_name].module_files.append(module_file)
         else:
             self.modules[module_name] = Module(module_name, module_file)
+
+        # check the imports of the file, and add non-existing ones to the remaining folders
+        for import_name, source_location in module_file.raw_imports:
+            self._check_module_import(import_name, filename, source_location)
 
     def _create_module_file(self, filename: Path) -> ModuleFile:
         tokens: Stream[Token] = self._tokenize_file(filename)
@@ -169,6 +197,33 @@ class ModuleMap:
 
         return True
 
+    def _check_module_import(self, import_name: str, filename: Path, source_location: SourceLocation) -> None:
+        # extract the folder name from the import name, everthing except the last segment
+        import_name_segments: list[str] = import_name.split(".")[:-1]
+
+        # if there are no segments, the import is misformed, so ignore it
+        if not import_name_segments:
+            message: str = f"import name '{import_name}' is misformed, "
+            message += f"it should be a dot separated name from main module's parent folder!"
+            self.module_errors.append(ModuleError(message, filename, source_location))
+            return
+
+        # construct the folder name from the parent folder and segments
+        folder_name: Path = self.parent_folder
+        for segment in import_name_segments:
+            folder_name /= segment
+
+        # sanity check that the folder is in fact a folder
+        if not folder_name.is_dir():
+            return
+
+        folder_prefix: str = ".".join(import_name_segments)
+        new_folder: tuple[Path, str] = (folder_name, folder_prefix)
+        # check that the folder is not already modularized or in the remaining folders
+        if new_folder not in self._modularized_folders and new_folder not in self._remaining_folders:
+            # if not add it to the remaining folders
+            self._remaining_folders.append(new_folder)
+
     def _parse_raw_imports(self) -> None:
         for module in self.modules.values():
             for module_file in module.module_files:
@@ -178,7 +233,7 @@ class ModuleMap:
 
                     # verify that the module is found
                     if not module_import:
-                        message: str = f"module '{module_name}' not found!"
+                        message: str = f"module '{module_name}' not found in '{self.parent_folder}'!"
                         self.module_errors.append(ModuleError(message, module_file.filename, source_location))
                         continue
 
