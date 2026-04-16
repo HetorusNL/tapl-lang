@@ -51,7 +51,8 @@ class TestAstGenerator(unittest.TestCase):
         type_applier: TypeApplier = TypeApplier(example_file, types)
         type_applier.apply(tokens)
         # generate the ast and resulting statements to verify
-        ast: AST = AstGenerator(example_file, tokens, types).generate()
+        ast_generator: AstGenerator = AstGenerator(example_file, tokens, types).generate()
+        ast: AST = ast_generator.ast
         AstCheck(ast).run()
         ast_statements: list[Statement] = ast.statements.objects
         print(*ast_statements, sep="\n")

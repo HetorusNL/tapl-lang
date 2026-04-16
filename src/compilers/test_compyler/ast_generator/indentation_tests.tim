@@ -1,3 +1,5 @@
+module main
+
 // parse an if-statement
 if 1337:
 

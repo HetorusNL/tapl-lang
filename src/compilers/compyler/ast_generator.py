@@ -49,6 +49,7 @@ from .types.types import Types
 from .utils.ast import AST
 from .utils.source_location import SourceLocation
 from .utils.stream import Stream
+from .utils.utils import Utils
 
 
 class AstGenerator:
@@ -975,15 +976,15 @@ class AstGenerator:
 
         raise AstError(message, self._filename, source_location)
 
-    def generate(self) -> AST:
+    def generate(self) -> AstGenerator:
         """parses the token stream to a list of statements, until EOF is reached"""
-        errors: list[TaplError] = []
-        ast: AST = AST(self._filename, self._types)
+        self.errors: list[TaplError] = []
+        self.ast: AST = AST(self._filename, self._types)
         while not self.is_at_end():
             try:
-                ast.append(self.statement())
+                self.ast.append(self.statement())
             except TaplError as e:
-                errors.append(e)
+                self.errors.append(e)
                 # continue until we get to a newline, indicating a new statement
                 while not self.match(TokenType.NEWLINE, TokenType.EOF):
                     self.consume()
@@ -994,9 +995,17 @@ class AstGenerator:
                 while self.match(TokenType.INDENT, TokenType.DEDENT):
                     pass
 
+        # check that the module statement is the first statement of the file
+        if self.ast.statements:
+            first_statement = self.ast.statements.objects[0]
+            if not isinstance(first_statement, ModuleStatement):
+                source_text: str = Utils.get_source_text(self._filename, first_statement.source_location)
+                message: str = f"expected 'module <name>' found '{source_text}'"
+                self.errors.append(AstError(message, self._filename, first_statement.source_location))
+
         # if we found errors, print them and exit with exit code 1
-        if errors:
-            [print(e) for e in errors]
+        if self.errors:
+            [print(e) for e in self.errors]
             exit(1)
 
-        return ast
+        return self

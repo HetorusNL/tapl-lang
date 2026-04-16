@@ -1,3 +1,5 @@
+module main
+
 // parse two functions
 u8 func(u8 argument):
     println(argument)

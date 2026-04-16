@@ -1,3 +1,5 @@
+module main
+
 // parse a for-loop statement
 for u8 i = 0; i < 10; i++:
     println(i)

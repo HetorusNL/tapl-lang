@@ -64,7 +64,6 @@ the following 'features' were found during AoC solving, and should be fixed
 ## TODO
 
 - modules
-  - in AstGenerator: first statement should be module
   - add module/import syntax highlighting in the tapl-lang extension
   - optional:
     - add --debug-imports flag to warn for wrongly formatted modularized files

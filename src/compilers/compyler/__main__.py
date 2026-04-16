@@ -59,7 +59,8 @@ def typing_passes(filename: Path, tokens: Stream[Token]) -> Types:
 
 
 def generate_ast(file: Path, tokens: Stream[Token], types: Types) -> AST:
-    ast: AST = AstGenerator(file, tokens, types).generate()
+    ast_generator: AstGenerator = AstGenerator(file, tokens, types).generate()
+    ast: AST = ast_generator.ast
     print(*ast.statements.objects, sep="\n")
     return ast
 

@@ -1,3 +1,5 @@
+module main
+
 1100 + 150 * 2 + 37 - 100
 1 * 2 + 3 / (4 + true)
 println(1337)
