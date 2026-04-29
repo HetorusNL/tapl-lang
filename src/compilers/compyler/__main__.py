@@ -26,235 +26,227 @@ from .module.module_map import ModuleMap
 from .utils.stream import Stream
 
 
-# get to the repo root folder, several levels up
-repo_root: Path = Path(__file__).parents[3].resolve()
-stdlib_folder: Path = repo_root / "src" / "stdlib"
-templates_folder: Path = repo_root / "src" / "templates"
-
-
-def argument_parser() -> Path:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("file")
-    parsed_args = parser.parse_args()
-    return Path(parsed_args.file)
-
-
-def modularize(file: Path) -> ModuleMap:
-    module_map: ModuleMap = ModuleMap(file)
-
-    # recursively modularize the folder of the provided file
-    if module_errors := module_map.modularize():
-        [print(e) for e in module_errors]
-        exit(1)
-
-    return module_map
-
-
-def process_modules(module_map: ModuleMap) -> None:
-    # get the main module from the map to start processing
-    main_module = module_map.modules["main"]
-    typing_errors: list[TypingError] = []
-    class_types: dict[str, ClassType] = {}
-
-    # recursively process from the leaves until the main module itself
-    process_module(main_module, typing_errors, class_types)
-
-    # if there are any typing errors, print them and exit with failure
-    if typing_errors:
-        [print(e) for e in typing_errors]
-        exit(1)
-
-
-def process_module(module: Module, typing_errors: list[TypingError], class_types: dict[str, ClassType]) -> None:
-    # if the module is already processed, return early
-    if module.processed:
-        return
-
-    # if the module is already being processed we have a circular import, which we don't support
-    if module.processing_started:
-        message: str = f"circular import detected for module '{module.name}'!"
-        # simply add the first modulefile here, as there is at least one
-        typing_errors.append(TypingError(message, module.module_files[0].filename))
-        return
-
-    # mark the module as being processed
-    module.processing_started = True
-
-    # recursively process the imported modules first
-    for module_import in module.imports:
-        # TODO: actually the class types should not be shared between imports
-        process_module(module_import, typing_errors, class_types)
-
-    # apply the two typing passes to the token stream of the module
-    typing_passes(module, typing_errors, class_types)
-
-    # mark the module as having its types processed
-    module.types_processed = True
-
-
-def typing_passes(module: Module, typing_errors: list[TypingError], class_types: dict[str, ClassType]) -> None:
-    # first resolve all types in the token stream
-    for module_file in module.module_files:
-        # resolve the types in the file
-        type_resolver: TypeResolver = TypeResolver(module_file.tokens)
-        types: Types = type_resolver.resolve()
-
-        # add the resolved class types in the map to use in the type applier pass
-        for class_type in types.class_types.values():
-            # check if a class with the same name is already defined
-            if class_type.keyword in class_types:
-                message: str = f"class '{class_type.keyword}' is already defined!"
-                typing_errors.append(TypingError(message, module_file.filename))
-                continue
-
-            # otherwise add the class type to the map
-            class_types[class_type.keyword] = class_type
-
-    # construct a full types object for the type applier pass, with all resolved classes
-    module.types = Types()
-    module.types.class_types.update(class_types)
-
-    # then apply the resolved types to the token stream (in place)
-    for module_file in module.module_files:
-        type_applier: TypeApplier = TypeApplier(module_file.filename, module.types)
-        type_applier.apply(module_file.tokens)
-
-
-def generate_ast(file: Path, tokens: Stream[Token], types: Types) -> AST:
-    ast_generator: AstGenerator = AstGenerator(file, tokens, types).generate()
-    ast: AST = ast_generator.ast
-    print(*ast.statements.objects, sep="\n")
-    return ast
-
-
-def check_ast(ast: AST) -> None:
-    """run several checks on the generated AST"""
-    AstCheck(ast).run()
-
-
-def create_build_folders() -> tuple[Path, Path]:
+class Compyler:
+    # construct several path constants for the files and folders used in the Compyler
+    repo_root: Path = Path(__file__).parents[3].resolve()
+    stdlib_folder: Path = repo_root / "src" / "stdlib"
+    templates_folder: Path = repo_root / "src" / "templates"
     build_folder: Path = repo_root / "build" / "compyler"
     header_folder: Path = build_folder / "tapl_headers"
-    # ensure the build and header folders exists
-    build_folder.mkdir(parents=True, exist_ok=True)
-    header_folder.mkdir(parents=True, exist_ok=True)
-    return build_folder, header_folder
 
+    def __init__(self) -> None:
+        self.typing_errors: list[TypingError] = []
+        self.class_types: dict[str, ClassType] = {}
 
-def generate_code(ast: AST, build_folder: Path, header_folder: Path, templates_folder: Path) -> Path:
-    # the new visitor pattern code generator
-    generator = CBackendCodeGenerator(ast, build_folder, header_folder, templates_folder)
-    generator.generate()
-    return generator.get_main_file()
+    def _argument_parser(self) -> Path:
+        parser = argparse.ArgumentParser()
+        parser.add_argument("file")
+        parsed_args = parser.parse_args()
+        return Path(parsed_args.file)
 
+    def _modularize(self, file: Path) -> ModuleMap:
+        module_map: ModuleMap = ModuleMap(file)
 
-def copy_stdlib(header_folder: Path, stdlib_folder: Path) -> None:
-    # recursively copy all header files to the header folder
-    # using the neat Path.copy_into function, available since python 3.14
-    for header in stdlib_folder.glob("*.h"):
-        header.copy_into(header_folder)
+        # recursively modularize the folder of the provided file
+        if module_errors := module_map.modularize():
+            [print(e) for e in module_errors]
+            exit(1)
 
+        return module_map
 
-def format_files(folder: Path) -> None:
-    # recursively find all .c and .h files in the build folder and format all found files
-    for file_path in folder.rglob("*.[ch]"):
-        if file_path.is_file():
-            command: list[str] = ["clang-format", "-i", "--fallback-style=none", str(file_path)]
-            returncode: int = execute_command(command).returncode
-            if returncode != 0:
-                handle_error(f"clang-format failed to format {file_path} with error code {returncode}")
+    def _process_modules(self, module_map: ModuleMap) -> None:
+        # get the main module from the map to start processing
+        main_module = module_map.modules["main"]
 
+        # recursively process from the leaves until the main module itself
+        self._process_module(main_module)
 
-def compile_c(c_file: Path, build_folder: Path) -> Path:
-    executable: Path = c_file.parent / "main"
+        # if there are any typing errors, print them and exit with failure
+        if self.typing_errors:
+            [print(e) for e in self.typing_errors]
+            exit(1)
 
-    # remove the old executable (if it exists)
-    command: list[str] = ["rm", "-f", str(executable)]
-    execute_command(command)
+    def _process_module(self, module: Module) -> None:
+        # if the module is already processed, return early
+        if module.processed:
+            return
 
-    # directly call the gcc compiler, passing the build folder as additional include path
-    command: list[str] = ["gcc", "-O0", "-g3", f"-I{build_folder}", "-o", str(executable), str(c_file)]
-    returncode: int = execute_command(command).returncode
-    if returncode != 0:
-        handle_error(f"gcc returned error code {returncode}")
-    return executable
+        # if the module is already being processed we have a circular import, which we don't support
+        if module.processing_started:
+            message: str = f"circular import detected for module '{module.name}'!"
+            # simply add the first modulefile here, as there is at least one
+            self.typing_errors.append(TypingError(message, module.module_files[0].filename))
+            return
 
+        # mark the module as being processed
+        module.processing_started = True
 
-def run_executable(executable: Path):
-    command: list[str] = [str(executable)]
-    execute_command(command)
+        # recursively process the imported modules first
+        for module_import in module.imports:
+            # TODO: actually the class types should not be shared between imports
+            self._process_module(module_import)
 
+        # apply the two typing passes to the token stream of the module
+        self._typing_passes(module)
 
-def execute_command(command: list[str]) -> CompletedProcess[bytes]:
-    """print and execute a command and return its result"""
-    print(" ".join(command))
-    try:
-        result = run(command)
-        return result
-    except CalledProcessError as e:
-        handle_error(f"command '{' '.join(command)}' failed with error code {e.returncode}")
-    except FileNotFoundError:
-        handle_error(f"command '{command[0]}' not found")
+        # mark the module as having its types processed
+        module.types_processed = True
 
+    def _typing_passes(self, module: Module) -> None:
+        # first resolve all types in the token stream
+        for module_file in module.module_files:
+            # resolve the types in the file
+            type_resolver: TypeResolver = TypeResolver(module_file.tokens)
+            types: Types = type_resolver.resolve()
 
-def handle_error(error_msg: str) -> NoReturn:
-    # lazy import the inspect and colors modules for error handling
-    import inspect
-    from inspect import FrameInfo
+            # add the resolved class types in the map to use in the type applier pass
+            for class_type in types.class_types.values():
+                # check if a class with the same name is already defined
+                if class_type.keyword in self.class_types:
+                    message: str = f"class '{class_type.keyword}' is already defined!"
+                    self.typing_errors.append(TypingError(message, module_file.filename))
+                    continue
 
-    from .utils.colors import Colors
+                # otherwise add the class type to the map
+                self.class_types[class_type.keyword] = class_type
 
-    # try to get the line number of the function calling this function
-    stack: list[FrameInfo] = inspect.stack()
-    line: str = f"{stack[1].lineno}:" if len(stack) >= 2 else ""
+        # construct a full types object for the type applier pass, with all resolved classes
+        module.types = Types()
+        module.types.class_types.update(self.class_types)
 
-    # construct the filename and error message with colors
-    filename: str = f"\n{Colors.BOLD}{__file__}:{line} {Colors.RESET}"
-    error: str = f"{Colors.BOLD}{Colors.RED}internal compiler error: {Colors.RESET}"
+        # then apply the resolved types to the token stream (in place)
+        for module_file in module.module_files:
+            type_applier: TypeApplier = TypeApplier(module_file.filename, module.types)
+            type_applier.apply(module_file.tokens)
 
-    # print the error and exit with failure
-    print(f"{filename}{error}{error_msg}!")
-    print(f"{Colors.BOLD}{Colors.MAGENTA}terminating...{Colors.RESET}")
-    exit(1)
+    def _generate_ast(self, file: Path, tokens: Stream[Token], types: Types) -> AST:
+        ast_generator: AstGenerator = AstGenerator(file, tokens, types).generate()
+        ast: AST = ast_generator.ast
+        print(*ast.statements.objects, sep="\n")
+        return ast
 
+    def _check_ast(self, ast: AST) -> None:
+        """run several checks on the generated AST"""
+        AstCheck(ast).run()
 
-def main():
-    # get the 'file' argument from the argument parser
-    file: Path = argument_parser()
+    def _create_build_folders(self) -> None:
+        # ensure the build and header folders exists
+        self.build_folder.mkdir(parents=True, exist_ok=True)
+        self.header_folder.mkdir(parents=True, exist_ok=True)
 
-    # modularize the main and imported files
-    module_map: ModuleMap = modularize(file)
+    def _generate_code(self, ast: AST) -> Path:
+        # the new visitor pattern code generator
+        generator = CBackendCodeGenerator(ast, self.build_folder, self.header_folder, self.templates_folder)
+        generator.generate()
+        return generator.get_main_file()
 
-    # process the tree of modules to resolve the types and generate the AST(s)
-    process_modules(module_map)
+    def _copy_stdlib(self) -> None:
+        # recursively copy all header files to the header folder
+        # using the neat Path.copy_into function, available since python 3.14
+        for header in self.stdlib_folder.glob("*.h"):
+            header.copy_into(self.header_folder)
 
-    # generate an AST from the tokens
-    # get the main module from the map to process further
-    main_module: Module = module_map.modules["main"]
-    assert main_module.types is not None
-    ast: AST = generate_ast(file, main_module.module_files[0].tokens, main_module.types)
+    def _format_files(self) -> None:
+        # recursively find all .c and .h files in the build folder and format all found files
+        for file_path in self.build_folder.rglob("*.[ch]"):
+            if file_path.is_file():
+                command: list[str] = ["clang-format", "-i", "--fallback-style=none", str(file_path)]
+                returncode: int = self._execute_command(command).returncode
+                if returncode != 0:
+                    self.handle_error(f"clang-format failed to format {file_path} with error code {returncode}")
 
-    # run several checks on the generated AST
-    check_ast(ast)
+    def _compile_c(self, c_file: Path) -> Path:
+        executable: Path = c_file.parent / "main"
 
-    # formulate the path to output the c-code, and a subfolder for the headers
-    build_folder, header_folder = create_build_folders()
+        # remove the old executable (if it exists)
+        command: list[str] = ["rm", "-f", str(executable)]
+        self._execute_command(command)
 
-    # generate c-code from the AST and write the source files in the build folder
-    c_file: Path = generate_code(ast, build_folder, header_folder, templates_folder)
+        # directly call the gcc compiler, passing the build folder as additional include path
+        command: list[str] = ["gcc", "-O0", "-g3", f"-I{self.build_folder}", "-o", str(executable), str(c_file)]
+        returncode: int = self._execute_command(command).returncode
+        if returncode != 0:
+            self.handle_error(f"gcc returned error code {returncode}")
+        return executable
 
-    # copy the files in the standard library to the header folder
-    copy_stdlib(header_folder, stdlib_folder)
+    def _run_executable(self, executable: Path) -> None:
+        command: list[str] = [str(executable)]
+        self._execute_command(command)
 
-    # format the generated c-code files
-    format_files(build_folder)
+    def _execute_command(self, command: list[str]) -> CompletedProcess[bytes]:
+        """print and execute a command and return its result"""
+        print(" ".join(command))
+        try:
+            result = run(command)
+            return result
+        except CalledProcessError as e:
+            self.handle_error(f"command '{' '.join(command)}' failed with error code {e.returncode}")
+        except FileNotFoundError:
+            self.handle_error(f"command '{command[0]}' not found")
 
-    # run the c compiler to compile the file
-    executable: Path = compile_c(c_file, build_folder)
+    def handle_error(self, error_msg: str) -> NoReturn:
+        # lazy import the inspect and colors modules for error handling
+        import inspect
+        from inspect import FrameInfo
 
-    # run the executable
-    run_executable(executable)
+        from .utils.colors import Colors
+
+        # try to get the line number of the function calling this function
+        stack: list[FrameInfo] = inspect.stack()
+        line: str = f"{stack[1].lineno}:" if len(stack) >= 2 else ""
+
+        # construct the filename and error message with colors
+        filename: str = f"\n{Colors.BOLD}{__file__}:{line} {Colors.RESET}"
+        error: str = f"{Colors.BOLD}{Colors.RED}internal compiler error: {Colors.RESET}"
+
+        # print the error and exit with failure
+        print(f"{filename}{error}{error_msg}!")
+        print(f"{Colors.BOLD}{Colors.MAGENTA}terminating...{Colors.RESET}")
+        exit(1)
+
+    def compile(self) -> Path:
+        # get the 'file' argument from the argument parser
+        file: Path = self._argument_parser()
+
+        # modularize the main and imported files
+        module_map: ModuleMap = self._modularize(file)
+
+        # process the tree of modules to resolve the types and generate the AST(s)
+        self._process_modules(module_map)
+
+        # generate an AST from the tokens
+        # get the main module from the map to process further
+        main_module: Module = module_map.modules["main"]
+        assert main_module.types is not None
+        ast: AST = self._generate_ast(file, main_module.module_files[0].tokens, main_module.types)
+
+        # run several checks on the generated AST
+        self._check_ast(ast)
+
+        # formulate the path to output the c-code, and a subfolder for the headers
+        self._create_build_folders()
+
+        # generate c-code from the AST and write the source files in the build folder
+        c_file: Path = self._generate_code(ast)
+
+        # copy the files in the standard library to the header folder
+        self._copy_stdlib()
+
+        # format the generated c-code files
+        self._format_files()
+
+        # run the c compiler to compile the file
+        executable: Path = self._compile_c(c_file)
+
+        # return the path to the executable
+        return executable
+
+    def run(self, executable: Path) -> None:
+        # run the executable
+        self._run_executable(executable)
 
 
 if __name__ == "__main__":
-    main()
+    compyler: Compyler = Compyler()
+    executable: Path = compyler.compile()
+    compyler.run(executable)
