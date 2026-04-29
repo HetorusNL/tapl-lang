@@ -16,12 +16,14 @@ from .type import Type
 
 class Types:
     def __init__(self):
-        self.types: dict[str, Type] = self.builtin_types()
+        self.simple_types: dict[str, Type] = self._builtin_types()
+        self.list_types: dict[str, ListType] = {}
+        self.class_types: dict[str, ClassType] = {}
 
         # make sure also the list[char] exists for the file stdlib functions
-        self.add_list_type(self.types["char"])
+        self.add_list_type(self["char"])
 
-    def builtin_types(self) -> dict[str, Type]:
+    def _builtin_types(self) -> dict[str, Type]:
         """returns the builtin types of the language as a dictionary:
 
         key: keyword
@@ -84,10 +86,10 @@ class Types:
         returns the existing or newly added type
         """
         # check if the type is already in the collection
-        if keyword not in self.types:
+        if keyword not in self.simple_types:
             # create the Type, and add the keyword:Type to the collection
             type_ = Type(keyword)
-            self.types[keyword] = type_
+            self.simple_types[keyword] = type_
 
         # return the existing or newly created type
         return self[keyword]
@@ -98,10 +100,10 @@ class Types:
         returns the existing or newly added class type
         """
         # check if the type is already in the collection
-        if keyword not in self.types:
+        if keyword not in self.class_types:
             # create the Type, and add the keyword:Type to the collection
             type_ = ClassType(keyword)
-            self.types[keyword] = type_
+            self.class_types[keyword] = type_
 
         # return the existing or newly created class type
         class_type: Type = self[keyword]
@@ -116,19 +118,32 @@ class Types:
         # construct the keyword of the list type
         keyword: str = f"list[{inner_type.keyword}]"
         # check if the type is already in the collection
-        if keyword not in self.types:
+        if keyword not in self.list_types:
             # create the Type, and add the keyword:Type to the collection
             new_list_type = ListType(inner_type)
-            self.types[keyword] = new_list_type
+            self.list_types[keyword] = new_list_type
 
         # return the existing or newly created list type
         list_type: Type = self[keyword]
         assert isinstance(list_type, ListType)
         return list_type
 
+    def _get(self, keyword: str) -> Type | None:
+        """internal get method that returns a reference to one of the type types, if found, None otherwise"""
+        if builtin_type := self.simple_types.get(keyword):
+            return builtin_type
+
+        if list_type := self.list_types.get(keyword):
+            return list_type
+
+        if class_type := self.class_types.get(keyword):
+            return class_type
+
+        return None
+
     def get(self, keyword: str) -> Type | None:
         """returns the Type with the provided keyword, None if not present"""
-        type_: Type | None = self.types.get(keyword)
+        type_: Type | None = self._get(keyword)
         if type_:
             # always return a copy, as types can be modified
             type_ = deepcopy(type_)

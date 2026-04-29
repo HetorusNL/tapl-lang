@@ -9,7 +9,6 @@ from pathlib import Path
 from .c_backend_expression_visitor import CBackendExpressionVisitor
 from .c_backend_state import CBackendState
 from .c_backend_statement_visitor import CBackendStatementVisitor
-from ..types.list_type import ListType
 from ..types.types import Types
 from ..utils.ast import AST
 
@@ -94,7 +93,7 @@ class CBackendCodeGenerator:
         ]
 
         # formulate the typedefs for the basic types used in TAPL
-        for type_ in self._types.types.values():
+        for type_ in self._types.simple_types.values():
             if type_.is_basic_type:
                 # only add the type if it has a different name in c
                 if type_.underlying_type != type_.keyword:
@@ -121,15 +120,14 @@ class CBackendCodeGenerator:
         ]
 
         # for every list type, add the filled in template to the source lines
-        for type_ in self._types.types.values():
-            if isinstance(type_, ListType):
-                # read the lines from the template
-                with open(self._templates_folder / "list.h") as f:
-                    template_lines: list[str] = f.readlines()
-                # replace the "TYPE" text with the actual internal type of the ListType
-                list_type: str = type_.inner_type.keyword
-                template_lines = [line.replace("TYPE", list_type) for line in template_lines]
-                lines.extend(template_lines)
+        for type_ in self._types.list_types.values():
+            # read the lines from the template
+            with open(self._templates_folder / "list.h") as f:
+                template_lines: list[str] = f.readlines()
+            # replace the "TYPE" text with the actual internal type of the ListType
+            list_type: str = type_.inner_type.keyword
+            template_lines = [line.replace("TYPE", list_type) for line in template_lines]
+            lines.extend(template_lines)
 
         # write the content to the file
         list_header: Path = self._header_folder / "list.h"

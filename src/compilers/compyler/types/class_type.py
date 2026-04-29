@@ -8,6 +8,6 @@ from .type import Type
 
 
 class ClassType(Type):
-    def __init__(self, keyword: str, syntactic_sugar: list[str] = [], underlying_type: str | None = None):
+    def __init__(self, keyword: str):
         # create a simple super class for this class type
-        super().__init__(keyword, syntactic_sugar, underlying_type)
+        super().__init__(keyword)
