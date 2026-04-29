@@ -15,6 +15,7 @@ from compyler.types.type_applier import TypeApplier
 from compyler.types.type_resolver import TypeResolver
 from compyler.types.types import Types
 from compyler.utils.ast import AST
+from compyler.utils.ast_collection import AstCollection
 from compyler.utils.stream import Stream
 from compyler.ast_checks.ast_check import AstCheck
 from compyler.backends.c_backend_expression_visitor import CBackendExpressionVisitor
@@ -53,7 +54,9 @@ class TestAstGenerator(unittest.TestCase):
         # generate the ast and resulting statements to verify
         ast_generator: AstGenerator = AstGenerator(example_file, tokens, types).generate()
         ast: AST = ast_generator.ast
-        AstCheck(ast).run()
+        ast_collection: AstCollection = AstCollection()
+        ast_collection.append(ast)
+        AstCheck(ast_collection).run()
         ast_statements: list[Statement] = ast.statements.objects
         print(*ast_statements, sep="\n")
 
@@ -66,10 +69,18 @@ class TestAstGenerator(unittest.TestCase):
         expression_visitor = CBackendExpressionVisitor(state)
         statement_visitor = CBackendStatementVisitor(state, expression_visitor)
         # convert code lines to single lines and strip newlines
-        code_lines: list[str] = []
+        main_code_lines: list[str] = []
         for statement in ast_statements:
             if code := statement.accept(statement_visitor):
-                code_lines.extend(line.strip() for line in code.split("\n"))
+                main_code_lines.append(code)
+        # add the function declarations and definitions as well
+        code_lines: list[str] = []
+        for line in state.function_declarations:
+            code_lines.extend(l.strip() for l in line.strip().split("\n"))
+        for line in state.function_definitions:
+            code_lines.extend(l.strip() for l in line.strip().split("\n"))
+        for line in main_code_lines:
+            code_lines.extend(l.strip() for l in line.strip().split("\n"))
         # do the same for the result lines
         result_lines: list[str] = [line.strip() for line in result]
         # check that the lists are equal

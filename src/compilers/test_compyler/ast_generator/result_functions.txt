@@ -1,3 +1,6 @@
+u8 func(u8 argument);
+s16 func2();
+void func3(u8 a, u8 b, u8 c);
 u8 func(u8 argument) {
 printf("%u\n", argument);
 return argument;
