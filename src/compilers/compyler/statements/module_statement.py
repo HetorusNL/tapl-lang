@@ -16,20 +16,23 @@ if TYPE_CHECKING:
 
 
 class ModuleStatement(Statement):
-    def __init__(self, token: Token, name: IdentifierToken):
+    def __init__(self, token: Token, names: list[IdentifierToken]):
         # formulate the source location from the module token and name
-        source_location: SourceLocation = token.source_location + name.source_location
+        source_location: SourceLocation = token.source_location
+        for name in names:
+            source_location += name.source_location
         super().__init__(source_location)
 
         # store the rest of the variables in the class
         self.token: Token = token
-        self.name: IdentifierToken = name
+        self.names: list[IdentifierToken] = names
 
     def accept[T](self, visitor: BaseStatementVisitor[T]) -> T:
         return visitor.visit_module_statement(self)
 
     def __str__(self) -> str:
-        return f"{self.token.token_type.value} {self.name}"
+        module_name: str = ".".join(f"{name}" for name in self.names)
+        return f"{self.token.token_type.value} {module_name}"
 
     def __repr__(self) -> str:
         return f"<ModuleStatement: location {self.source_location}, {self.__str__()}>"

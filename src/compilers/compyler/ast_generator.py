@@ -530,6 +530,20 @@ class AstGenerator:
         # parse the rest of the destructor
         return self._finish_lifecycle_statement(destructor)
 
+    def _get_dot_separated_identifiers(self) -> list[IdentifierToken]:
+        # consume identifier tokens separated by a dot
+        identifiers: list[IdentifierToken] = []
+        while True:
+            identifier: Token = self.expect(TokenType.IDENTIFIER)
+            assert type(identifier) == IdentifierToken
+            identifiers.append(identifier)
+
+            # if we don't have a dot, it's the end
+            if not self.match(TokenType.DOT):
+                break
+
+        return identifiers
+
     def import_statement(self) -> ImportStatement | None:
         # will generate an import statement if an import declaration is found
         # early return if we don't have an import keyword
@@ -537,18 +551,9 @@ class AstGenerator:
         if not token:
             return None
 
-        # consume the name(s) of the module to import, which are identifier tokens separated by dots
-        names: list[IdentifierToken] = []
-        while True:
-            name: Token = self.expect(TokenType.IDENTIFIER)
-            assert type(name) == IdentifierToken
-            names.append(name)
-
-            # if we don't have a dot, it's the end of the import line
-            if not self.match(TokenType.DOT):
-                break
-
-        self.expect_newline(f"'{name}'")
+        # consume the import name and end with a newline
+        names: list[IdentifierToken] = self._get_dot_separated_identifiers()
+        self.expect_newline(f"'{names[-1]}'")
 
         # return the import statement
         return ImportStatement(token, names)
@@ -560,13 +565,12 @@ class AstGenerator:
         if not token:
             return None
 
-        # consume the module name (which is an identifier token)
-        name: Token = self.expect(TokenType.IDENTIFIER)
-        assert type(name) == IdentifierToken
-        self.expect_newline(f"'{name}'")
+        # consume the module name and end with a newline
+        names: list[IdentifierToken] = self._get_dot_separated_identifiers()
+        self.expect_newline(f"'{names[-1]}'")
 
         # return the module statement
-        return ModuleStatement(token, name)
+        return ModuleStatement(token, names)
 
     def class_statement(self) -> ClassStatement | None:
         # will generate a class statement if a class declaration is found

@@ -76,10 +76,18 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
         code += f"{destructor.accept(self)}\n"
 
         # add the methods to the class
-        for method in statement.functions:
-            code += f"{method.accept(self)}"
+        try:
+            # set the in_class flag to True so that the methods are added to the class, and not the functions header
+            self._state.in_class = True
+            for method in statement.functions:
+                code += f"{method.accept(self)}"
+        finally:
+            self._state.in_class = False
+        # add the class object to the state to be written to the classes header file later
+        self._state.class_objects.append(code)
 
-        return code
+        # nothing to add to the main c file for the class definition
+        return ""
 
     def visit_continue_statement(self, statement: ContinueStatement) -> str:
         return "continue;"
@@ -147,7 +155,17 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
         # end with the closing bracket
         code += f"}}"
 
-        return code
+        # if we're generating code for a class, add the function declaration and definition to the class
+        if self._state.in_class:
+            self._state.class_method_declarations.append(f"{_c_declaration_base()};\n")
+            self._state.class_method_definitions.append(code)
+        else:
+            # add the function declaration and definition to the state to be written to the functions header file later
+            self._state.function_declarations.append(f"{_c_declaration_base()};\n")
+            self._state.function_definitions.append(code)
+
+        # nothing to add to the main c file for the function declaration and definition
+        return ""
 
     def visit_if_statement(self, statement: IfStatement) -> str:
         # utility functions used in this IfStatement
@@ -192,24 +210,29 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
 
     def visit_lifecycle_statement(self, statement: LifecycleStatement) -> str:
         """returns the declaration and body of the lifecycle statement"""
-        code: str = f""
 
-        # add the declaration
-        match statement.statement_type:
-            case LifecycleStatementType.CONSTRUCTOR:
-                code += f"void {statement.type_.name}_constructor("
-            case LifecycleStatementType.DESTRUCTOR:
-                code += f"void {statement.type_.name}_destructor("
+        # utility functions used in this LifecycleStatement
+        def _c_declaration_base() -> str:
+            code: str = f""
 
-        # create a list of argument type-name pairs, start with the pointer to the instance
-        arguments: list[str] = [f"{statement.type_.name}* this"]
-        for argument_type, argument_name in statement.arguments:
-            arguments.append(f"{argument_type.type_.name} {argument_name}")
-        # add the arguments
-        code += ", ".join(arguments)
+            # add the declaration
+            match statement.statement_type:
+                case LifecycleStatementType.CONSTRUCTOR:
+                    code += f"void {statement.type_.name}_constructor("
+                case LifecycleStatementType.DESTRUCTOR:
+                    code += f"void {statement.type_.name}_destructor("
 
-        # add the closing parenthesis and opening bracket
-        code += f"){{"
+            # create a list of argument type-name pairs, start with the pointer to the instance
+            arguments: list[str] = [f"{statement.type_.name}* this"]
+            for argument_type, argument_name in statement.arguments:
+                arguments.append(f"{argument_type.type_.name} {argument_name}")
+            # add the arguments
+            code += ", ".join(arguments)
+            code += f")"
+
+            return code
+
+        code: str = f"{_c_declaration_base()} {{\n"
 
         # add the statements in the lifecycle statement
         for inner_statement in statement.statements:
@@ -218,7 +241,12 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
         # end with the closing bracket
         code += f"}}"
 
-        return code
+        # add the lifecycle statement declaration and definition to the class
+        self._state.class_method_declarations.append(f"{_c_declaration_base()};\n")
+        self._state.class_method_definitions.append(code)
+
+        # nothing to add to the main c file for the lifecycle statement declaration and definition
+        return ""
 
     def visit_list_statement(self, statement: ListStatement) -> str:
         list_base: str = statement.list_type.name

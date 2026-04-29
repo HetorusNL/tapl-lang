@@ -29,7 +29,6 @@ from ..types.class_type import ClassType
 from ..types.list_type import ListType
 from ..types.numeric_type import NumericType
 from ..types.type import Type
-from ..utils.ast import AST
 from ..utils.source_location import SourceLocation
 from ..utils.utils import Utils
 
@@ -38,8 +37,7 @@ if TYPE_CHECKING:
 
 
 class TypingPassExpressionVisitor(BaseExpressionVisitor[None]):
-    def __init__(self, ast: AST, typing_pass: TypingPass):
-        self._ast: AST = ast
+    def __init__(self, typing_pass: TypingPass):
         self._typing_pass: TypingPass = typing_pass
 
     def visit_binary_expression(self, expression: BinaryExpression) -> None:
@@ -64,7 +62,8 @@ class TypingPassExpressionVisitor(BaseExpressionVisitor[None]):
                 for argument in expression.arguments:
                     self._typing_pass.parse_expression(argument)
                 if identifier_token.value in type_.callable_functions():
-                    return_value_type: Type = self._ast.types[type_.callable_functions()[identifier_token.value]]
+                    return_value_keyword = type_.callable_functions()[identifier_token.value]
+                    return_value_type: Type = self._typing_pass.types[return_value_keyword]
                     expression.type_ = return_value_type
                     expression.expression.type_ = return_value_type
                     return
@@ -121,7 +120,7 @@ class TypingPassExpressionVisitor(BaseExpressionVisitor[None]):
         for element in expression.string_elements:
             if isinstance(element, Expression):
                 self._typing_pass.parse_expression(element)
-        expression.type_ = self._ast.types["string"]
+        expression.type_ = self._typing_pass.types["string"]
 
     def visit_this_expression(self, expression: ThisExpression) -> None:
         self._typing_pass.parse_expression(expression.inner_expression)
@@ -131,12 +130,12 @@ class TypingPassExpressionVisitor(BaseExpressionVisitor[None]):
     def visit_token_expression(self, expression: TokenExpression) -> None:
         match expression.token:
             case CharacterToken():
-                expression.type_ = self._ast.types["char"]
+                expression.type_ = self._typing_pass.types["char"]
             case NumberToken():
                 # no checking happens here so we're going to return a base type
-                expression.type_ = self._ast.types["base"]
+                expression.type_ = self._typing_pass.types["base"]
             case StringCharsToken():
-                expression.type_ = self._ast.types["string"]
+                expression.type_ = self._typing_pass.types["string"]
             case IdentifierToken():
                 # TODO: handle callables differently, this now results in gcc errors
                 # get the type from the identifier
@@ -145,12 +144,12 @@ class TypingPassExpressionVisitor(BaseExpressionVisitor[None]):
                 match expression.token.token_type:
                     # TODO: refactor true/false to special booleans
                     case TokenType.TRUE:
-                        expression.type_ = self._ast.types["base"]
+                        expression.type_ = self._typing_pass.types["base"]
                     case TokenType.FALSE:
-                        expression.type_ = self._ast.types["base"]
+                        expression.type_ = self._typing_pass.types["base"]
                     case TokenType.NULL:
                         # TODO: refactor when ptr implemented
-                        expression.type_ = self._ast.types["base"]
+                        expression.type_ = self._typing_pass.types["base"]
                     case _:
                         token: str = str(type(expression.token))
                         token_type: str = expression.token.token_type.value

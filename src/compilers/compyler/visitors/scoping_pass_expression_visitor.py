@@ -16,12 +16,10 @@ from ..expressions.token_expression import TokenExpression
 from ..expressions.type_cast_expression import TypeCastExpression
 from ..expressions.unary_expression import UnaryExpression
 from ..tokens.identifier_token import IdentifierToken
-from ..utils.ast import AST
 
 
 class ScopingPassExpressionVisitor(BaseExpressionVisitor[None]):
-    def __init__(self, ast: AST, pass_base: PassBase[None]):
-        self._ast: AST = ast
+    def __init__(self, pass_base: PassBase[None]):
         self._pass_base: PassBase[None] = pass_base
 
     def visit_binary_expression(self, expression: BinaryExpression) -> None:

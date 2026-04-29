@@ -4,19 +4,19 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
-from ..utils.ast import AST
+from ..utils.ast_collection import AstCollection
 from .scoping_pass import ScopingPass
 from .typing_pass import TypingPass
 
 
 class AstCheck:
-    def __init__(self, ast: AST):
-        self._ast: AST = ast
+    def __init__(self, ast_collection: AstCollection):
+        self._ast_collection: AstCollection = ast_collection
 
     def run(self) -> None:
         """run several passes on the AST to perform a variety of checks on the statements"""
-        scoping_pass: ScopingPass = ScopingPass(self._ast)
-        typing_pass: TypingPass = TypingPass(self._ast)
+        scoping_pass: ScopingPass = ScopingPass(self._ast_collection)
+        typing_pass: TypingPass = TypingPass(self._ast_collection)
 
         # check the variables defined in the scopes of the AST
         scoping_pass.run()

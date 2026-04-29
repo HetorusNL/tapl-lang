@@ -17,7 +17,7 @@ from ..types.numeric_type import NumericType
 from ..types.numeric_type_type import NumericTypeType
 from ..types.type import Type
 from ..types.types import Types
-from ..utils.ast import AST
+from ..utils.ast_collection import AstCollection
 from ..utils.source_location import SourceLocation
 from ..utils.utils import Utils
 from .scope_wrapper import ScopeWrapper
@@ -30,14 +30,14 @@ from ..visitors.verify_types_statement_visitor import VerifyTypesStatementVisito
 
 
 class TypingPass(PassBase[None]):
-    def __init__(self, ast: AST):
+    def __init__(self, ast_collection: AstCollection):
         # create the visitors of the TypingPass and pass them to the PassBase
-        expression_visitor = TypingPassExpressionVisitor(ast, self)
-        statement_visitor = TypingPassStatementVisitor(ast, self)
-        super().__init__(ast, expression_visitor, statement_visitor)
+        expression_visitor = TypingPassExpressionVisitor(self)
+        statement_visitor = TypingPassStatementVisitor(self)
+        super().__init__(ast_collection, expression_visitor, statement_visitor)
 
-        # extract the types as determined during the type resolving pass
-        self._types: Types = ast.types
+        # extract the types of the main module (last AST) for the stdlib functions
+        self._types: Types = ast_collection.asts[-1].types
 
         # TODO: functions should be callable from everywhere
         # TODO: classes should be usable from everywhere
@@ -56,17 +56,14 @@ class TypingPass(PassBase[None]):
         # add the functions from the standard library to the functions list
         dummy_location: SourceLocation = SourceLocation(0, 0)
         # add a bool type token
-        bool_type: Type | None = self._types.get("bool")
-        assert bool_type
+        bool_type: Type = self._types["bool"]
         bool_type_token: TypeToken = TypeToken(dummy_location, bool_type)
         # add a string type token and filename identifier
-        string_type: Type | None = self._types.get("string")
-        assert string_type
+        string_type: Type = self._types["string"]
         string_type_token: TypeToken = TypeToken(dummy_location, string_type)
         filename_identifier: IdentifierToken = IdentifierToken(dummy_location, "filename")
         # add a list[char] type token and list identifier
-        list_char_type: Type | None = self._types.get("list[char]")
-        assert list_char_type
+        list_char_type: Type = self._types["list[char]"]
         list_char_type_token: TypeToken = TypeToken(dummy_location, list_char_type)
         list_identifier: IdentifierToken = IdentifierToken(dummy_location, "list")
 
@@ -185,6 +182,6 @@ class TypingPass(PassBase[None]):
         expression_visitor: BaseExpressionVisitor[None] = VerifyTypesExpressionVisitor()
         statement_visitor: BaseStatementVisitor[None] = VerifyTypesStatementVisitor(expression_visitor)
 
-        # loop through all statements (and expressions) and verify that they have a type
-        for statement in self._ast.statements.iter():
+        # loop through all statements (and expressions) of the AstCollection and verify that they have a type
+        for statement in self._ast_collection.iter():
             statement.accept(statement_visitor)

@@ -6,6 +6,7 @@
 
 
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Generator
 from typing import NoReturn
 
@@ -15,7 +16,8 @@ from ..expressions.expression import Expression
 from ..statements.statement import Statement
 from ..tokens.identifier_token import IdentifierToken
 from ..types.type import Type
-from ..utils.ast import AST
+from ..types.types import Types
+from ..utils.ast_collection import AstCollection
 from ..utils.source_location import SourceLocation
 from .scope_wrapper import ScopeWrapper
 
@@ -28,12 +30,12 @@ class PassBase[T]:
 
     def __init__(
         self,
-        ast: AST,
+        ast_collection: AstCollection,
         expression_visitor: BaseExpressionVisitor[T],
         statement_visitor: BaseStatementVisitor[T],
     ):
 
-        self._ast: AST = ast
+        self._ast_collection: AstCollection = ast_collection
         # store a linked list of scopes inside a wrapper that stores the functions and variables
         self.scope_wrapper: ScopeWrapper = ScopeWrapper()
         # also create a scope stash to move the scope aside for a clean one
@@ -45,8 +47,17 @@ class PassBase[T]:
         self.statement_visitor: BaseStatementVisitor[T] = statement_visitor
 
     def run(self) -> None:
-        for statement in self._ast.statements.iter():
-            self.parse_statement(statement)
+        # process all ASTs in the AstCollection in sequence
+        for ast in self._ast_collection.asts:
+            print(f"running pass {self.__class__.__name__} on AST of file '{ast.filename}'")
+            # store the filename of the AST for error reporting
+            self._filename: Path = ast.filename
+            # store the types of this AST for easy access by the visitors during the pass
+            self.types: Types = ast.types
+
+            # parse all statements in the AST
+            for statement in ast.statements.iter():
+                self.parse_statement(statement)
 
         # ensure that we have the global scope and only the global scope left
         error: str = f"internal compiler error"
@@ -131,4 +142,4 @@ class PassBase[T]:
 
     def ast_error(self, message: str, source_location: SourceLocation) -> NoReturn:
         """constructs and raises an AStError"""
-        raise AstError(message, self._ast.filename, source_location)
+        raise AstError(message, self._filename, source_location)

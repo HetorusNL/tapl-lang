@@ -14,7 +14,7 @@ void hello_world():
 
 // as a first step we can call the functions from the included module
 // as it's simply compiled before this module is compiled :)
-void main():
+void main_function():
     hello_world()
     hello_module_world()
     hello_nested_module_world()
@@ -24,4 +24,4 @@ void main():
 // where with import some_module, some_module.SomeClass is available
 // or import some_long_module_name as slmn, after which slmn.SomeClass can be used
 
-main()
+main_function()

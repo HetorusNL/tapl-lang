@@ -65,11 +65,11 @@ the following 'features' were found during AoC solving, and should be fixed
 
 - modules
   - traverse the tree for ast generation
-    - run the ast generator on each module
     - combine everything in code generation (combine ASTs?)
   - optional:
     - add --debug-imports flag to warn for wrongly formatted modularized files
     - refactor ModuleError to ModuleProblem, and add ModuleError/ModuleWarning
+- using reserved functions like `main` result in a c-compiler error
 - add warning for unused variables
 - char type should be generated as u8, not char
 - add error message to the error token and print that instead of "found 'TokenType.ERROR'!"

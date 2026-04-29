@@ -45,13 +45,13 @@ class CBackendCodeGenerator:
                 self._state.main_lines.append(line)
 
         # write the classes to the classes c file
-        self._write_classes(self._state.class_definitions)
+        self._write_classes()
 
         # write the functions to the functions c file
-        self._write_functions(self._state.function_declarations, self._state.function_definitions)
+        self._write_functions()
 
         # write the main c file with the code
-        self._write_main_file(self._state.main_lines, self.get_main_file())
+        self._write_main_file()
 
     def _write_utility_functions(self) -> None:
         utility_functions_file: Path = self._header_folder / "utility_functions.h"
@@ -134,7 +134,7 @@ class CBackendCodeGenerator:
         with open(list_header, "w") as f:
             f.writelines(lines)
 
-    def _write_classes(self, definitions: list[str]) -> None:
+    def _write_classes(self) -> None:
         classes_file: Path = self._header_folder / "classes.h"
 
         initial_lines: list[str] = [
@@ -146,14 +146,26 @@ class CBackendCodeGenerator:
             "// also include the needed TAPL headers\n",
             "#include <tapl_headers/types.h>\n",
             "\n",
-            "// classes declarations\n",
+            "// classes objects\n",
+        ]
+        declaration_lines: list[str] = [
+            "\n",
+            "// classe method declarations\n",
+        ]
+        definition_lines: list[str] = [
+            "\n",
+            "// classe method definitions\n",
         ]
 
         with open(classes_file, "w") as f:
             f.writelines(initial_lines)
-            f.writelines(definitions)
+            f.writelines(self._state.class_objects)
+            f.writelines(declaration_lines)
+            f.writelines(self._state.class_method_declarations)
+            f.writelines(definition_lines)
+            f.writelines(self._state.class_method_definitions)
 
-    def _write_functions(self, declarations: list[str], definitions: list[str]) -> None:
+    def _write_functions(self) -> None:
         functions_file: Path = self._header_folder / "functions.h"
 
         initial_lines: list[str] = [
@@ -174,11 +186,11 @@ class CBackendCodeGenerator:
 
         with open(functions_file, "w") as f:
             f.writelines(initial_lines)
-            f.writelines(declarations)
+            f.writelines(self._state.function_declarations)
             f.writelines(definition_lines)
-            f.writelines(definitions)
+            f.writelines(self._state.function_definitions)
 
-    def _write_main_file(self, code_lines: list[str], c_file: Path) -> None:
+    def _write_main_file(self) -> None:
         initial_lines: list[str] = [
             "// include the needed system headers\n",
             "#include <stdio.h>\n",
@@ -193,7 +205,7 @@ class CBackendCodeGenerator:
             "int main(int argc, char** argv) {\n",
         ]
 
-        with open(c_file, "w") as f:
+        with open(self.get_main_file(), "w") as f:
             f.writelines(initial_lines)
-            f.writelines(code_lines)
+            f.writelines(self._state.main_lines)
             f.write("}\n")

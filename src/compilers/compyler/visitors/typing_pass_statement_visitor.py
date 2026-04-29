@@ -25,7 +25,6 @@ from ..statements.print_statement import PrintStatement
 from ..statements.return_statement import ReturnStatement
 from ..statements.var_decl_statement import VarDeclStatement
 from ..types.type import Type
-from ..utils.ast import AST
 from ..utils.source_location import SourceLocation
 from ..utils.utils import Utils
 
@@ -34,8 +33,7 @@ if TYPE_CHECKING:
 
 
 class TypingPassStatementVisitor(BaseStatementVisitor[None]):
-    def __init__(self, ast: AST, typing_pass: TypingPass):
-        self._ast: AST = ast
+    def __init__(self, typing_pass: TypingPass):
         self._typing_pass: TypingPass = typing_pass
 
     def visit_assignment_statement(self, statement: AssignmentStatement) -> None:
@@ -140,7 +138,7 @@ class TypingPassStatementVisitor(BaseStatementVisitor[None]):
         # create a new scope for the lifecycle statement arguments and body statements
         with self._typing_pass.new_scope():
             # add the return type (void) to the function return type stack
-            self._typing_pass.function_stack.append(self._ast.types["void"])
+            self._typing_pass.function_stack.append(self._typing_pass.types["void"])
             try:
                 # add the arguments to the newly created scope
                 for type_token, identifier_token in statement.arguments:

@@ -7,8 +7,13 @@
 
 class CBackendState:
     def __init__(self):
-        # create strings for the classes, functions and the main source code lines
-        self.class_definitions: list[str] = []
+        # create strings for the main source code and function declarations and definitions
+        self.main_lines: list[str] = []
         self.function_declarations: list[str] = []
         self.function_definitions: list[str] = []
-        self.main_lines: list[str] = []
+
+        # class specific state for the class objects and method declarations and definitions
+        self.in_class: bool = False
+        self.class_objects: list[str] = []
+        self.class_method_declarations: list[str] = []
+        self.class_method_definitions: list[str] = []

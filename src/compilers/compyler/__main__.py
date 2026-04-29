@@ -12,6 +12,7 @@ from subprocess import run
 from typing import NoReturn
 
 from .ast_checks.ast_check import AstCheck
+from .utils.ast_collection import AstCollection
 from .ast_generator import AstGenerator
 from .backends.c_backend_code_generator import CBackendCodeGenerator
 from .errors.typing_error import TypingError
@@ -22,6 +23,7 @@ from .types.type_resolver import TypeResolver
 from .types.types import Types
 from .utils.ast import AST
 from .module.module import Module
+from .module.module_file import ModuleFile
 from .module.module_map import ModuleMap
 from .utils.stream import Stream
 
@@ -37,6 +39,7 @@ class Compyler:
     def __init__(self) -> None:
         self.typing_errors: list[TypingError] = []
         self.class_types: dict[str, ClassType] = {}
+        self.ast_collection: AstCollection = AstCollection()
 
     def _argument_parser(self) -> Path:
         parser = argparse.ArgumentParser()
@@ -92,6 +95,13 @@ class Compyler:
         # mark the module as having its types processed
         module.types_processed = True
 
+        # generate the ast for the module files and add it to the AstCollection
+        # TODO: the module files should be merged before generating the AST, but for now we process them in sequence
+        for module_file in module.module_files:
+            assert module.types is not None
+            ast: AST = self._generate_ast(module_file, module.types)
+            self.ast_collection.append(ast)
+
     def _typing_passes(self, module: Module) -> None:
         # first resolve all types in the token stream
         for module_file in module.module_files:
@@ -119,15 +129,20 @@ class Compyler:
             type_applier: TypeApplier = TypeApplier(module_file.filename, module.types)
             type_applier.apply(module_file.tokens)
 
-    def _generate_ast(self, file: Path, tokens: Stream[Token], types: Types) -> AST:
-        ast_generator: AstGenerator = AstGenerator(file, tokens, types).generate()
+    def _generate_ast(self, module_file: ModuleFile, types: Types) -> AST:
+        # run the AST generator
+        filename: Path = module_file.filename
+        tokens: Stream[Token] = module_file.tokens
+        ast_generator: AstGenerator = AstGenerator(filename, tokens, types).generate()
+
+        # get the AST from the generator and return it
         ast: AST = ast_generator.ast
         print(*ast.statements.objects, sep="\n")
         return ast
 
-    def _check_ast(self, ast: AST) -> None:
-        """run several checks on the generated AST"""
-        AstCheck(ast).run()
+    def _check_ast_collection(self) -> None:
+        """run several checks on the generated AstCollection"""
+        AstCheck(self.ast_collection).run()
 
     def _create_build_folders(self) -> None:
         # ensure the build and header folders exists
@@ -211,22 +226,18 @@ class Compyler:
         # modularize the main and imported files
         module_map: ModuleMap = self._modularize(file)
 
-        # process the tree of modules to resolve the types and generate the AST(s)
+        # process the tree of modules to resolve the types and generate the AstCollection
         self._process_modules(module_map)
 
-        # generate an AST from the tokens
-        # get the main module from the map to process further
-        main_module: Module = module_map.modules["main"]
-        assert main_module.types is not None
-        ast: AST = self._generate_ast(file, main_module.module_files[0].tokens, main_module.types)
-
-        # run several checks on the generated AST
-        self._check_ast(ast)
+        # run several checks on the generated AstCollection
+        self._check_ast_collection()
 
         # formulate the path to output the c-code, and a subfolder for the headers
         self._create_build_folders()
 
         # generate c-code from the AST and write the source files in the build folder
+        # TODO: all this should run on an AstCollection instead of a single (main file) AST
+        ast: AST = self.ast_collection.asts[-1]
         c_file: Path = self._generate_code(ast)
 
         # copy the files in the standard library to the header folder

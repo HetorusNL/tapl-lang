@@ -21,12 +21,10 @@ from ..statements.module_statement import ModuleStatement
 from ..statements.print_statement import PrintStatement
 from ..statements.return_statement import ReturnStatement
 from ..statements.var_decl_statement import VarDeclStatement
-from ..utils.ast import AST
 
 
 class ScopingPassStatementVisitor(BaseStatementVisitor[None]):
-    def __init__(self, ast: AST, pass_base: PassBase[None]):
-        self._ast: AST = ast
+    def __init__(self, pass_base: PassBase[None]):
         self._pass_base: PassBase[None] = pass_base
 
     def visit_assignment_statement(self, statement: AssignmentStatement) -> None:

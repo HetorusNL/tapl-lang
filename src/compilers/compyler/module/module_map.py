@@ -165,7 +165,7 @@ class ModuleMap:
                 labels.append(identifier)
             else:
                 # we found something else than an IdentifierToken, this is an error
-                message: str = f"expected a '.' separated module name, found '{identifier}'!"
+                message: str = f"expected a dot-separated module name, found '{identifier}'!"
                 raise ModuleError(message, filename, identifier.source_location)
 
             # check if we have a dot, then we continue otherwise break from the loop
