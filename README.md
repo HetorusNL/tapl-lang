@@ -64,7 +64,9 @@ the following 'features' were found during AoC solving, and should be fixed
 ## TODO
 
 - modules
-  - add module/import syntax highlighting in the tapl-lang extension
+  - traverse the tree for ast generation
+    - run the ast generator on each module
+    - combine everything in code generation (combine ASTs?)
   - optional:
     - add --debug-imports flag to warn for wrongly formatted modularized files
     - refactor ModuleError to ModuleProblem, and add ModuleError/ModuleWarning

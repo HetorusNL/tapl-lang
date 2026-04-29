@@ -8,6 +8,7 @@ from collections.abc import Iterator
 
 from .module_file import ModuleFile
 from .raw_import import RawImport
+from ..types.types import Types
 
 
 class Module:
@@ -15,6 +16,14 @@ class Module:
         self.name: str = name
         self.module_files: list[ModuleFile] = [module_file]
         self.imports: list[Module] = []
+        self.types: Types | None = None
+        self.processing_started: bool = False
+        self.types_processed: bool = False
+        self.ast_generated: bool = False
+
+    @property
+    def processed(self) -> bool:
+        return self.types_processed and self.ast_generated
 
     @property
     def raw_imports(self) -> Iterator[RawImport]:

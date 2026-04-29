@@ -14,11 +14,14 @@ from typing import NoReturn
 from .ast_checks.ast_check import AstCheck
 from .ast_generator import AstGenerator
 from .backends.c_backend_code_generator import CBackendCodeGenerator
+from .errors.typing_error import TypingError
 from .tokens.token import Token
+from .types.class_type import ClassType
 from .types.type_applier import TypeApplier
 from .types.type_resolver import TypeResolver
 from .types.types import Types
 from .utils.ast import AST
+from .module.module import Module
 from .module.module_map import ModuleMap
 from .utils.stream import Stream
 
@@ -47,15 +50,74 @@ def modularize(file: Path) -> ModuleMap:
     return module_map
 
 
-def typing_passes(filename: Path, tokens: Stream[Token]) -> Types:
-    # resolve the types in the file
-    type_resolver: TypeResolver = TypeResolver(tokens)
-    types: Types = type_resolver.resolve()
-    # apply the types to the tokens in the stream (in place)
-    type_applier: TypeApplier = TypeApplier(filename, types)
-    type_applier.apply(tokens)
-    # return the processed tokens
-    return types
+def process_modules(module_map: ModuleMap) -> None:
+    # get the main module from the map to start processing
+    main_module = module_map.modules["main"]
+    typing_errors: list[TypingError] = []
+    class_types: dict[str, ClassType] = {}
+
+    # recursively process from the leaves until the main module itself
+    process_module(main_module, typing_errors, class_types)
+
+    # if there are any typing errors, print them and exit with failure
+    if typing_errors:
+        [print(e) for e in typing_errors]
+        exit(1)
+
+
+def process_module(module: Module, typing_errors: list[TypingError], class_types: dict[str, ClassType]) -> None:
+    # if the module is already processed, return early
+    if module.processed:
+        return
+
+    # if the module is already being processed we have a circular import, which we don't support
+    if module.processing_started:
+        message: str = f"circular import detected for module '{module.name}'!"
+        # simply add the first modulefile here, as there is at least one
+        typing_errors.append(TypingError(message, module.module_files[0].filename))
+        return
+
+    # mark the module as being processed
+    module.processing_started = True
+
+    # recursively process the imported modules first
+    for module_import in module.imports:
+        # TODO: actually the class types should not be shared between imports
+        process_module(module_import, typing_errors, class_types)
+
+    # apply the two typing passes to the token stream of the module
+    typing_passes(module, typing_errors, class_types)
+
+    # mark the module as having its types processed
+    module.types_processed = True
+
+
+def typing_passes(module: Module, typing_errors: list[TypingError], class_types: dict[str, ClassType]) -> None:
+    # first resolve all types in the token stream
+    for module_file in module.module_files:
+        # resolve the types in the file
+        type_resolver: TypeResolver = TypeResolver(module_file.tokens)
+        types: Types = type_resolver.resolve()
+
+        # add the resolved class types in the map to use in the type applier pass
+        for class_type in types.class_types.values():
+            # check if a class with the same name is already defined
+            if class_type.keyword in class_types:
+                message: str = f"class '{class_type.keyword}' is already defined!"
+                typing_errors.append(TypingError(message, module_file.filename))
+                continue
+
+            # otherwise add the class type to the map
+            class_types[class_type.keyword] = class_type
+
+    # construct a full types object for the type applier pass, with all resolved classes
+    module.types = Types()
+    module.types.class_types.update(class_types)
+
+    # then apply the resolved types to the token stream (in place)
+    for module_file in module.module_files:
+        type_applier: TypeApplier = TypeApplier(module_file.filename, module.types)
+        type_applier.apply(module_file.tokens)
 
 
 def generate_ast(file: Path, tokens: Stream[Token], types: Types) -> AST:
@@ -163,14 +225,14 @@ def main():
     # modularize the main and imported files
     module_map: ModuleMap = modularize(file)
 
-    # get the main module from the map to process further
-    tokens: Stream[Token] = module_map.modules["main"].module_files[0].tokens
-
-    # apply the two typing passes to the token stream
-    types: Types = typing_passes(file, tokens)
+    # process the tree of modules to resolve the types and generate the AST(s)
+    process_modules(module_map)
 
     # generate an AST from the tokens
-    ast: AST = generate_ast(file, tokens, types)
+    # get the main module from the map to process further
+    main_module: Module = module_map.modules["main"]
+    assert main_module.types is not None
+    ast: AST = generate_ast(file, main_module.module_files[0].tokens, main_module.types)
 
     # run several checks on the generated AST
     check_ast(ast)
