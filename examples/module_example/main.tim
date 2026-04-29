@@ -12,12 +12,24 @@ import module_example.nested.some_module_name
 void hello_world():
     println("Hello world from the main module!")
 
+u64 main_value():
+    return 1000
+
+u64 combined_value():
+    return main_value() + included_value() + nested_value()
+
+void print_combined_value():
+    println("combined value: {combined_value()}")
+
 // as a first step we can call the functions from the included module
 // as it's simply compiled before this module is compiled :)
 void main_function():
     hello_world()
     hello_module_world()
     hello_nested_module_world()
+
+    // and some more advanced things
+    print_combined_value()
 
 // later there will probably be named things, like included.hello_module_world
 // or import some_module.SomeClass, after which 'SomeClass' is available

@@ -10,17 +10,19 @@ from .c_backend_expression_visitor import CBackendExpressionVisitor
 from .c_backend_state import CBackendState
 from .c_backend_statement_visitor import CBackendStatementVisitor
 from ..types.types import Types
-from ..utils.ast import AST
+from ..utils.ast_collection import AstCollection
 
 
 class CBackendCodeGenerator:
-    def __init__(self, ast: AST, build_folder: Path, header_folder: Path, templates_folder: Path):
+    def __init__(self, ast_collection: AstCollection, build_folder: Path, header_folder: Path, templates_folder: Path):
         # store the passed objects in the class
-        self._ast: AST = ast
-        self._types: Types = ast.types
+        self._ast_collection: AstCollection = ast_collection
         self._build_folder: Path = build_folder
         self._header_folder: Path = header_folder
         self._templates_folder: Path = templates_folder
+
+        # extract the types of the main module (last AST) for the basic types and list types
+        self._types: Types = ast_collection.asts[-1].types
 
         # create the state and the visitors for the C backend
         self._state = CBackendState()
@@ -38,9 +40,9 @@ class CBackendCodeGenerator:
         self._write_basic_type_header()
         self._write_list_type_header()
 
-        # loop through the statements in the AST and generate code for each of them
+        # loop through the statements of all ASTs in the AstCollection and generate code for each of them
         # the visitors store the generated code in the state
-        for statement in self._ast.statements.iter():
+        for statement in self._ast_collection.iter():
             if line := statement.accept(self._statement_visitor):
                 self._state.main_lines.append(line)
 

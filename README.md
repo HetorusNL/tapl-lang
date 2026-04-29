@@ -63,12 +63,9 @@ the following 'features' were found during AoC solving, and should be fixed
 
 ## TODO
 
-- modules
-  - traverse the tree for ast generation
-    - combine everything in code generation (combine ASTs?)
-  - optional:
-    - add --debug-imports flag to warn for wrongly formatted modularized files
-    - refactor ModuleError to ModuleProblem, and add ModuleError/ModuleWarning
+- modules - optional:
+  - add --debug-imports flag to warn for wrongly formatted modularized files
+  - refactor ModuleError to ModuleProblem, and add ModuleError/ModuleWarning
 - using reserved functions like `main` result in a c-compiler error
 - add warning for unused variables
 - char type should be generated as u8, not char

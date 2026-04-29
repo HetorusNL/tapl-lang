@@ -102,6 +102,9 @@ class Compyler:
             ast: AST = self._generate_ast(module_file, module.types)
             self.ast_collection.append(ast)
 
+        # mark the module as AST generated
+        module.ast_generated = True
+
     def _typing_passes(self, module: Module) -> None:
         # first resolve all types in the token stream
         for module_file in module.module_files:
@@ -149,9 +152,9 @@ class Compyler:
         self.build_folder.mkdir(parents=True, exist_ok=True)
         self.header_folder.mkdir(parents=True, exist_ok=True)
 
-    def _generate_code(self, ast: AST) -> Path:
-        # the new visitor pattern code generator
-        generator = CBackendCodeGenerator(ast, self.build_folder, self.header_folder, self.templates_folder)
+    def _generate_code(self, ast_collection: AstCollection) -> Path:
+        # the new visitor pattern code generator for whole AstCollections
+        generator = CBackendCodeGenerator(ast_collection, self.build_folder, self.header_folder, self.templates_folder)
         generator.generate()
         return generator.get_main_file()
 
@@ -236,9 +239,7 @@ class Compyler:
         self._create_build_folders()
 
         # generate c-code from the AST and write the source files in the build folder
-        # TODO: all this should run on an AstCollection instead of a single (main file) AST
-        ast: AST = self.ast_collection.asts[-1]
-        c_file: Path = self._generate_code(ast)
+        c_file: Path = self._generate_code(self.ast_collection)
 
         # copy the files in the standard library to the header folder
         self._copy_stdlib()

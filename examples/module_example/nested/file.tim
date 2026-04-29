@@ -5,3 +5,9 @@ module module_example.nested.some_module_name
 // the functions in this module can be used in the main module, e.g. the one below
 void hello_nested_module_world():
     println("Hello world from the included nested module!")
+
+u64 included_nested_value():
+    return 30
+
+u64 nested_value():
+    return 7
