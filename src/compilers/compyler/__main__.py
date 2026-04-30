@@ -41,14 +41,19 @@ class Compyler:
         self.class_types: dict[str, ClassType] = {}
         self.ast_collection: AstCollection = AstCollection()
 
-    def _argument_parser(self) -> Path:
+    def _argument_parser(self) -> None:
         parser = argparse.ArgumentParser()
         parser.add_argument("file")
+        hurry_help: str = "hurry up the compilation process, resulting in less human readable generated code"
+        parser.add_argument("--hurry", action="store_true", help=hurry_help)
         parsed_args = parser.parse_args()
-        return Path(parsed_args.file)
 
-    def _modularize(self, file: Path) -> ModuleMap:
-        module_map: ModuleMap = ModuleMap(file)
+        # stored the parsed arguments in the class
+        self.args_hurry = parsed_args.hurry
+        self.args_file = Path(parsed_args.file)
+
+    def _modularize(self) -> ModuleMap:
+        module_map: ModuleMap = ModuleMap(self.args_file)
 
         # recursively modularize the folder of the provided file
         if module_errors := module_map.modularize():
@@ -189,7 +194,9 @@ class Compyler:
 
     def _run_executable(self, executable: Path) -> None:
         command: list[str] = [str(executable)]
-        self._execute_command(command)
+        returncode: int = self._execute_command(command).returncode
+        if returncode != 0:
+            self.handle_error(f"executable returned error code {returncode}")
 
     def _execute_command(self, command: list[str]) -> CompletedProcess[bytes]:
         """print and execute a command and return its result"""
@@ -224,10 +231,10 @@ class Compyler:
 
     def compile(self) -> Path:
         # get the 'file' argument from the argument parser
-        file: Path = self._argument_parser()
+        self._argument_parser()
 
         # modularize the main and imported files
-        module_map: ModuleMap = self._modularize(file)
+        module_map: ModuleMap = self._modularize()
 
         # process the tree of modules to resolve the types and generate the AstCollection
         self._process_modules(module_map)
@@ -245,7 +252,8 @@ class Compyler:
         self._copy_stdlib()
 
         # format the generated c-code files
-        self._format_files()
+        if not self.args_hurry:
+            self._format_files()
 
         # run the c compiler to compile the file
         executable: Path = self._compile_c(c_file)
