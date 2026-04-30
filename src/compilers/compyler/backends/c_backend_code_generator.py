@@ -148,15 +148,15 @@ class CBackendCodeGenerator:
             "// also include the needed TAPL headers\n",
             "#include <tapl_headers/types.h>\n",
             "\n",
-            "// classes objects\n",
+            "// class objects\n",
         ]
         declaration_lines: list[str] = [
             "\n",
-            "// classe method declarations\n",
+            "// class method declarations\n",
         ]
         definition_lines: list[str] = [
             "\n",
-            "// classe method definitions\n",
+            "// class method definitions\n",
         ]
 
         with open(classes_file, "w") as f:

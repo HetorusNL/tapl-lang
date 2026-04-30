@@ -46,8 +46,8 @@ class TypingPass(PassBase[None]):
         self.class_scopes: dict[str, ScopeWrapper] = {}
         # store a stack of function return types
         self.function_stack: list[Type] = []
-        # store a stack of identifier types when they have inner identifiers
-        self.identifier_stack: list[Type] = []
+        # store the type of the last processed identifier for the inner identifier checks
+        self.previous_identifier_type: Type | None = None
         # add the stdlib functions to the global scope
         self.add_stdlib_functions()
 

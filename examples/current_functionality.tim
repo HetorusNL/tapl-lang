@@ -389,3 +389,8 @@ println("adding list1.get(10) here, results in a panic")
 println("\nthere's also nested string interpolation :)")
 println("start {"-abcdef and {3+1=} also-"=} end {1337}")
 println("something else")
+
+u8 get_value():
+    return 42
+list1.add(get_value())
+println("value in list1: {list1.get(0)}")

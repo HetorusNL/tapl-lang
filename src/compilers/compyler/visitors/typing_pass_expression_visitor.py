@@ -53,9 +53,11 @@ class TypingPassExpressionVisitor(BaseExpressionVisitor[None]):
         # assert that we don't have an inner expression in the identifier expression
         assert expression.expression.inner_expression is None
         identifier_token: IdentifierToken = expression.expression.identifier_token
-        if self._typing_pass.identifier_stack:
-            # if there is a list on the identifier stack, we can call certain functions
-            type_: Type = self._typing_pass.identifier_stack[-1]
+        if self._typing_pass.previous_identifier_type:
+            # if the previous identifier is a list or class, we can call certain functions
+            type_: Type = self._typing_pass.previous_identifier_type
+            # reset the previous identifier type
+            self._typing_pass.previous_identifier_type = None
             if isinstance(type_, ListType):
                 # check the arguments
                 # TODO: add type and number of arguments checking to arguments of list functions
@@ -98,7 +100,7 @@ class TypingPassExpressionVisitor(BaseExpressionVisitor[None]):
             is_class: bool = isinstance(type_, ClassType)
             if is_class:
                 expression.class_type = type_
-            self._typing_pass.identifier_stack.append(type_)
+            self._typing_pass.previous_identifier_type = type_
             if isinstance(type_, ListType):
                 expression.list_type = type_
             try:
@@ -107,7 +109,7 @@ class TypingPassExpressionVisitor(BaseExpressionVisitor[None]):
                     expression.type_ = type_
                     return
             finally:
-                self._typing_pass.identifier_stack.pop()
+                self._typing_pass.previous_identifier_type = None
         expression.type_ = self._typing_pass.get_identifier_type(expression.identifier_token)
 
     def visit_string_equal_expression(self, expression: StringEqualExpression) -> None:
