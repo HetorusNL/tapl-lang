@@ -46,8 +46,11 @@ class TypingPassExpressionVisitor(BaseExpressionVisitor[None]):
         # check the left and right expression of the binary expression
         self._typing_pass.parse_expression(left)
         self._typing_pass.parse_expression(right)
-        # TODO: when binary expression results in a bool, return bool type
+        # first check the types, if they can be used together
         expression.type_ = self._typing_pass.check_expression_types(left, right, expression.source_location)
+        if expression.has_binary_result():
+            # if the binary expression results in a boolean, set the type to bool
+            expression.type_ = self._typing_pass.types["bool"]
 
     def visit_call_expression(self, expression: CallExpression) -> None:
         # assert that we don't have an inner expression in the identifier expression

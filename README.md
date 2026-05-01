@@ -55,7 +55,6 @@ uv run -m src.compilers.compyler /path/to/file.tim
 the following 'features' were found during AoC solving, and should be fixed
 
 - make char and base/u16-related types be used together
-- fix type checking after boolean operators (e.g. "(value1 >= value2) && !flag" should end up as "bool && bool" and eventually "bool")
 - implement a list of class instances
 - same symbols multiple times defined should show the correct error, also with functions and lists
 - add (fancy) enumeration type (that also has something like a to_string() function)

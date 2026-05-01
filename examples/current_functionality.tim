@@ -394,3 +394,10 @@ u8 get_value():
     return 42
 list1.add(get_value())
 println("value in list1: {list1.get(0)}")
+
+bool get_result():
+    u8 some_value = 42
+    // binary operators should return boolean results, so verify this
+    bool result = some_value == some_value
+    return result
+println("result of get_result(): {get_result()}")

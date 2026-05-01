@@ -730,8 +730,7 @@ class AstGenerator:
         """returns a boolean expression, or a higher precedence level expression"""
         expression: Expression = self.comparison()
 
-        and_or_tokens: tuple[TokenType, ...] = (TokenType.AND_AND, TokenType.OR_OR)
-        while token := self.match(*and_or_tokens):
+        while token := self.match(*BinaryExpression.and_or_tokens()):
             # we found a boolean expression token, go up the precedence list to get another expression
             right: Expression = self.comparison()
             expression = BinaryExpression(expression, token, right)
@@ -744,15 +743,7 @@ class AstGenerator:
         # go up the precedence list to get the left hand side expression
         expression: Expression = self.additive()
 
-        boolean_expression_tokens: tuple[TokenType, ...] = (
-            TokenType.EQUAL_EQUAL,
-            TokenType.GREATER,
-            TokenType.GREATER_EQUAL,
-            TokenType.LESS,
-            TokenType.LESS_EQUAL,
-            TokenType.NOT_EQUAL,
-        )
-        while token := self.match(*boolean_expression_tokens):
+        while token := self.match(*BinaryExpression.comparison_tokens()):
             # we found a comparison expression token, go up the precedence list to get another expression
             right: Expression = self.additive()
             expression = BinaryExpression(expression, token, right)
@@ -765,7 +756,7 @@ class AstGenerator:
         # go up the precedence list to get the left hand side expression
         expression: Expression = self.multiplicative()
 
-        while token := self.match(TokenType.PLUS, TokenType.MINUS):
+        while token := self.match(*BinaryExpression.additive_tokens()):
             # we found a plus/minus token, go up the precedence list to get another expression
             right: Expression = self.multiplicative()
             expression = BinaryExpression(expression, token, right)
@@ -778,7 +769,7 @@ class AstGenerator:
         # go up the precedence list to get the left hand side expression
         expression: Expression = self.primary()
 
-        while token := self.match(TokenType.STAR, TokenType.SLASH):
+        while token := self.match(*BinaryExpression.multiplicative_tokens()):
             # we found a star/slash token, go up the precedence list to get another expression
             right: Expression = self.primary()
             expression = BinaryExpression(expression, token, right)
