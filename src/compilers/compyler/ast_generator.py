@@ -248,15 +248,15 @@ class AstGenerator:
         self.expect_newline()
 
         # we're inside a function, allow return statements here
-        self._in_function = True  # TODO: make exception-safe
-
-        # continue with the body of the function
-        statements: list[Statement] = self._statement_block()
-        # add them to the function
-        function_statement.statements = statements
-
-        # we've finished parsing the function statements, don't allow return statements from now on
-        self._in_function = False
+        self._in_function = True
+        try:
+            # continue with the body of the function
+            statements: list[Statement] = self._statement_block()
+            # add them to the function
+            function_statement.statements = statements
+        finally:
+            # we've finished parsing the function statements, don't allow return statements from now on
+            self._in_function = False
 
         # return the finished function statement
         return function_statement
@@ -447,15 +447,15 @@ class AstGenerator:
         self.expect_newline()
 
         # we're inside a lifecycle statement, allow return statements here
-        self._in_function = True  # TODO: make exception-safe
-
-        # continue with the body of the lifecycle statement
-        statements: list[Statement] = self._statement_block()
-        # add them to the lifecycle statement
-        lifecycle_statement.statements = statements
-
-        # we've finished parsing the lifecycle statement statements, don't allow return statements from now on
-        self._in_function = False
+        self._in_function = True
+        try:
+            # continue with the body of the lifecycle statement
+            statements: list[Statement] = self._statement_block()
+            # add them to the lifecycle statement
+            lifecycle_statement.statements = statements
+        finally:
+            # we've finished parsing the lifecycle statement statements, don't allow return statements from now on
+            self._in_function = False
 
         # return the finished lifecycle statement
         return lifecycle_statement
@@ -572,37 +572,8 @@ class AstGenerator:
         # return the module statement
         return ModuleStatement(token, names)
 
-    def class_statement(self) -> ClassStatement | None:
-        # will generate a class statement if a class declaration is found
-        # early return if we don't have a class keyword
-        token: Token | None = self.match(TokenType.CLASS)
-        if not token:
-            return None
-
-        # construct the source location of the whole class
-        source_location: SourceLocation = token.source_location
-
-        # consume the class name (which is a type token)
-        name: Token = self.expect(TokenType.TYPE)
-        assert type(name) == TypeToken
-        class_type: Type = name.type_
-        assert isinstance(class_type, ClassType)
-        source_location += name.source_location
-
-        # followed by a colon and newline
-        self.expect(TokenType.COLON)
-        self.expect_newline()
-
-        # check if we have an indented block
-        if not self._has_indent():
-            # otherwise return an empty class without any statement
-            return ClassStatement(class_type, source_location)
-
-        # we're in a class, so allow parsing class-specific syntax
-        self._class_type = class_type  # TODO: make exception-safe
-
+    def _construct_class(self, class_statement: ClassStatement, name: TypeToken) -> None:
         # construct everything we find in the class until we get to a dedent
-        class_statement: ClassStatement = ClassStatement(class_type, source_location)
         while not self.match(TokenType.DEDENT):
             # check for a var decl or function statement
             if type_statement := self._type_statement(True):
@@ -639,8 +610,41 @@ class AstGenerator:
             message += f" found '{self.current()}'"
             self.ast_error(message)
 
-        # finished processing the class, we no longer allow parsing class-specific syntax
-        self._class_type = None
+    def class_statement(self) -> ClassStatement | None:
+        # will generate a class statement if a class declaration is found
+        # early return if we don't have a class keyword
+        token: Token | None = self.match(TokenType.CLASS)
+        if not token:
+            return None
+
+        # construct the source location of the whole class
+        source_location: SourceLocation = token.source_location
+
+        # consume the class name (which is a type token)
+        name: Token = self.expect(TokenType.TYPE)
+        assert type(name) == TypeToken
+        class_type: Type = name.type_
+        assert isinstance(class_type, ClassType)
+        source_location += name.source_location
+
+        # followed by a colon and newline
+        self.expect(TokenType.COLON)
+        self.expect_newline()
+
+        # check if we have an indented block
+        if not self._has_indent():
+            # otherwise return an empty class without any statement
+            return ClassStatement(class_type, source_location)
+
+        # we're in a class, so allow parsing class-specific syntax
+        self._class_type = class_type
+        try:
+            # construct the class statement
+            class_statement: ClassStatement = ClassStatement(class_type, source_location)
+            self._construct_class(class_statement, name)
+        finally:
+            # finished processing the class, we no longer allow parsing class-specific syntax
+            self._class_type = None
 
         # return the finished class statement
         return class_statement
