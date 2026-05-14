@@ -31,7 +31,7 @@ uv sync
 Run the following command to watch the tokenizer and AST generator using the unittests and the example `.tim` files in the test directory, and see the output of the tokenizing and AST generation step:
 
 ```bash
-uv run ptw
+uv run ptw --now .
 ```
 
 Run the following command to compile and run the example with the currently implemented functionality:

@@ -14,5 +14,5 @@ line-length = 120
 [dependency-groups]
 dev = [
     "pytest>=8.4.0",
-    "pytest-watch>=4.2.0",
+    "pytest-watcher>=0.6.3",
 ]

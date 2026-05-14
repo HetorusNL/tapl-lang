@@ -5,8 +5,8 @@ u16 var = 10;
 printf("%u\n", var);
 u16 test_unary_minus = (-(1));
 printf("%u\n", test_unary_minus);
-printf("%ld\n", (1337 == 1337));
-printf("%ld\n", ((1337 + 1) != 1337));
+printf("%u\n", (1337 == 1337));
+printf("%u\n", ((1337 + 1) != 1337));
 if (1337) {
 printf("%ld\n", 1337);
 } else if (1338) {
