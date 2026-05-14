@@ -28,6 +28,7 @@ from ..statements.statement import Statement
 from ..statements.var_decl_statement import VarDeclStatement
 from ..utils.utils import Utils
 from ..visitors.base_statement_visitor import BaseStatementVisitor
+from ..types.class_type import ClassType
 
 
 class CBackendStatementVisitor(BaseStatementVisitor[str]):
@@ -278,10 +279,18 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
             return f"return;"
 
     def visit_var_decl_statement(self, statement: VarDeclStatement) -> str:
-        # if we have an initial value, also generate code for that
-        if statement.initial_value:
-            initial_value: str = statement.initial_value.accept(self._expression_visitor)
-            return f"{statement.type_token.name} {statement.name} = {initial_value};"
+        code: str = ""
 
-        # otherwise it's a default initialized variable
-        return f"{statement.type_token} {statement.name};"
+        if statement.initial_value:
+            # if we have an initial value, also generate code for that
+            initial_value: str = statement.initial_value.accept(self._expression_visitor)
+            code += f"{statement.type_token.name} {statement.name} = {initial_value};"
+        else:
+            # otherwise it's a default initialized variable
+            code += f"{statement.type_token} {statement.name};"
+
+        # if it is a class variable, also call the constructor for the variable
+        if isinstance(statement.type_token.type_, ClassType):
+            code += f"\n{statement.type_token.name}_constructor(&{statement.name});"
+
+        return code

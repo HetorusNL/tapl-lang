@@ -132,14 +132,14 @@ class ExampleClass:
 
     // then we have functions of the class (and constructor/destructor if present)
 
-    ExampleClass(u32 constructor_value):
+    ExampleClass():
         // initialization happens here, the constructor (if it is present)
         u8 iets = 0
-        this.variable1 = constructor_value
+        this.variable1 = 1
         iets = 1
         iets = 2
         this.variable2 = 10
-        this._is_true = false
+        this._is_true = true
 
     ~ExampleClass():
         // destruction can happen here
@@ -160,9 +160,18 @@ class ExampleClass:
     u32 add(u32 value):
         return this.get_value() + value
 
+class class2:
+    u32 variable3
+
+    u32 get_value():
+        return this.variable3
+
 ExampleClass instance
-println("result(): {instance.result()}")
-println("add(1337): {instance.add(1337)}")
+println("\nExampleClass instance result(): {instance.result()}")
+println("ExampleClass instance add(1337): {instance.add(1337)}")
+
+class2 instance2
+println("class2 instance get_value(): {instance2.get_value()}")
 
 /*
 // single class function
@@ -190,7 +199,7 @@ c2.c1.func()
 -> C1_func(&c2.c1);
 */
 
-println("example usage of 'list' collection")
+println("\nexample usage of 'list' collection")
 
 println("create an instance of a list, which has a size of 0")
 list[u32] some_list
