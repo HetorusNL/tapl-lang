@@ -30,6 +30,10 @@ class FunctionStatement(Statement):
     def accept[T](self, visitor: BaseStatementVisitor[T]) -> T:
         return visitor.visit_function_statement(self)
 
+    def add_arguments(self, arguments: list[tuple[TypeToken, IdentifierToken]]) -> None:
+        for argument_type, argument_name in arguments:
+            self.add_argument(argument_type, argument_name)
+
     def add_argument(self, argument_type: TypeToken, argument_name: IdentifierToken) -> None:
         # add the source lcoation of the argument type and name
         self.source_location += argument_type.source_location + argument_name.source_location

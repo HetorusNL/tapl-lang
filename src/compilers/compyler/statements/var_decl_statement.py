@@ -10,6 +10,7 @@ from ..expressions.expression import Expression
 from .statement import Statement
 from ..tokens.identifier_token import IdentifierToken
 from ..tokens.type_token import TypeToken
+from ..types.class_type import ClassType
 from ..utils.source_location import SourceLocation
 
 if TYPE_CHECKING:
@@ -28,6 +29,7 @@ class VarDeclStatement(Statement):
         self.type_token: TypeToken = type_token
         self.name: IdentifierToken = name
         self.initial_value: Expression | None = initial_value
+        self.class_variable: bool = isinstance(type_token.type_, ClassType)
 
     def accept[T](self, visitor: BaseStatementVisitor[T]) -> T:
         return visitor.visit_var_decl_statement(self)

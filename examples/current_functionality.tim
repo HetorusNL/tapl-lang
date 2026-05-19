@@ -132,10 +132,10 @@ class ExampleClass:
 
     // then we have functions of the class (and constructor/destructor if present)
 
-    ExampleClass():
+    ExampleClass(u32 value):
         // initialization happens here, the constructor (if it is present)
         u8 iets = 0
-        this.variable1 = 1
+        this.variable1 = value
         iets = 1
         iets = 2
         this.variable2 = 10
@@ -145,7 +145,7 @@ class ExampleClass:
         // destruction can happen here
 
     u32 get_value():
-        u32 offset = 5
+        u32 offset = 10
         return this.variable1 + (u32)this.variable2 + offset
 
     bool is_true():
@@ -166,7 +166,7 @@ class class2:
     u32 get_value():
         return this.variable3
 
-ExampleClass instance
+ExampleClass instance = ExampleClass(1337)
 println("\nExampleClass instance result(): {instance.result()}")
 println("ExampleClass instance add(1337): {instance.add(1337)}")
 

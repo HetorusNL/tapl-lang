@@ -627,6 +627,9 @@ class AstGenerator:
         assert isinstance(class_type, ClassType)
         source_location += name.source_location
 
+        # construct the identifier token
+        identifier_token: IdentifierToken = IdentifierToken(name.source_location, name.name)
+
         # followed by a colon and newline
         self.expect(TokenType.COLON)
         self.expect_newline()
@@ -634,13 +637,13 @@ class AstGenerator:
         # check if we have an indented block
         if not self._has_indent():
             # otherwise return an empty class without any statement
-            return ClassStatement(class_type, source_location)
+            return ClassStatement(identifier_token, class_type, source_location)
 
         # we're in a class, so allow parsing class-specific syntax
         self._class_type = class_type
         try:
             # construct the class statement
-            class_statement: ClassStatement = ClassStatement(class_type, source_location)
+            class_statement: ClassStatement = ClassStatement(identifier_token, class_type, source_location)
             self._construct_class(class_statement, name)
         finally:
             # finished processing the class, we no longer allow parsing class-specific syntax
@@ -848,6 +851,19 @@ class AstGenerator:
         if token := self.match(TokenType.IDENTIFIER):
             assert isinstance(token, IdentifierToken)
             return self.identifier_expression(token)
+
+        # match a class type call
+        if token := self.match(TokenType.TYPE):
+            assert isinstance(token, TypeToken)
+            # we only allow class types here, error otherwise
+            if not isinstance(token.type_, ClassType):
+                self.ast_error(f"cannot call {token.type_}, expected a class type!")
+            # consume the opening parenthesis
+            self.expect(TokenType.PAREN_OPEN)
+            # reconstruct the identifier expression for the class type to pass it to the function
+            identifier_token: IdentifierToken = IdentifierToken(token.source_location, token.type_.keyword)
+            identifier_expression: IdentifierExpression = IdentifierExpression(token.source_location, identifier_token)
+            return self.call_expression(identifier_expression)
 
         # match a this-expression
         if this := self.match(TokenType.THIS):

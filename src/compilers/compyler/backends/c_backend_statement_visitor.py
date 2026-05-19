@@ -6,6 +6,7 @@
 
 from .c_backend_state import CBackendState
 from .c_backend_expression_visitor import CBackendExpressionVisitor
+from ..expressions.call_expression import CallExpression
 from ..expressions.expression import Expression
 from ..expressions.string_expression import StringExpression
 from ..statements.assignment_statement import AssignmentStatement
@@ -28,7 +29,6 @@ from ..statements.statement import Statement
 from ..statements.var_decl_statement import VarDeclStatement
 from ..utils.utils import Utils
 from ..visitors.base_statement_visitor import BaseStatementVisitor
-from ..types.class_type import ClassType
 
 
 class CBackendStatementVisitor(BaseStatementVisitor[str]):
@@ -281,8 +281,8 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
     def visit_var_decl_statement(self, statement: VarDeclStatement) -> str:
         code: str = ""
 
-        if statement.initial_value:
-            # if we have an initial value, also generate code for that
+        if statement.initial_value and not statement.class_variable:
+            # if we have an initial value, that is not a constructor call, also generate code for that
             initial_value: str = statement.initial_value.accept(self._expression_visitor)
             code += f"{statement.type_token.name} {statement.name} = {initial_value};"
         else:
@@ -290,7 +290,20 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
             code += f"{statement.type_token} {statement.name};"
 
         # if it is a class variable, also call the constructor for the variable
-        if isinstance(statement.type_token.type_, ClassType):
-            code += f"\n{statement.type_token.name}_constructor(&{statement.name});"
+        if statement.class_variable:
+            # formulate the constructor call, start with the variable name reference
+            arguments: list[str] = [f"&{statement.name}"]
+
+            # if we have an initial value, it must be a constructor call, so check this and add the arguments
+            if statement.initial_value:
+                assert isinstance(statement.initial_value, CallExpression)
+                for argument in statement.initial_value.arguments:
+                    arguments.append(argument.accept(self._expression_visitor))
+
+            # create the comma separated list of arguments for the constructor call
+            arguments_string: str = ", ".join(arguments)
+
+            # add the full constructor statement with the arguments
+            code += f"\n{statement.type_token.name}_constructor({arguments_string});"
 
         return code

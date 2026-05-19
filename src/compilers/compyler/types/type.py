@@ -19,7 +19,7 @@ class Type:
         """function to get a reference to to a default-unknown Type"""
         # check if the unknown type has been created before, otherwise one
         if cls._unknown is None:
-            cls._unknown = Type("unknown")
+            cls._unknown = Type("<unknown>")
         # return the created unknown Type
         return cls._unknown
 

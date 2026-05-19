@@ -11,6 +11,8 @@ from .lifecycle_statement import LifecycleStatement
 from .list_statement import ListStatement
 from .statement import Statement
 from .var_decl_statement import VarDeclStatement
+from ..tokens.identifier_token import IdentifierToken
+from ..tokens.type_token import TypeToken
 from ..types.class_type import ClassType
 from ..utils.source_location import SourceLocation
 
@@ -19,9 +21,11 @@ if TYPE_CHECKING:
 
 
 class ClassStatement(Statement):
-    def __init__(self, class_type: ClassType, source_location: SourceLocation):
+    def __init__(self, name: IdentifierToken, class_type: ClassType, source_location: SourceLocation):
         super().__init__(source_location)
+        self.name: IdentifierToken = name
         self.class_type: ClassType = class_type
+        self.type_token: TypeToken = TypeToken(name.source_location, class_type)
         # store everything that can be in a class statement in the class
         self.variables: list[VarDeclStatement | ListStatement] = []
         self.functions: list[FunctionStatement] = []

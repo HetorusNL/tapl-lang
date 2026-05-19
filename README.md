@@ -61,10 +61,6 @@ the following 'features' were found during AoC solving, and should be fixed
 
 ## TODO
 
-- classes
-  - implement arguments passed to the constructor
-    - VarDeclStatement: support Class instance = Class(...)
-    - add error if invalid number of arguments specified
 - modules - optional:
   - add --debug-imports flag to warn for wrongly formatted modularized files
   - refactor ModuleError to ModuleProblem, and add ModuleError/ModuleWarning

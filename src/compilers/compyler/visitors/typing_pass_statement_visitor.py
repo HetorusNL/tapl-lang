@@ -12,6 +12,7 @@ from ..statements.assignment_statement import AssignmentStatement
 from ..statements.break_statement import BreakStatement
 from ..statements.breakall_statement import BreakallStatement
 from ..statements.class_statement import ClassStatement
+from ..statements.constructor_function_statement import ConstructorFunctionStatement
 from ..statements.continue_statement import ContinueStatement
 from ..statements.expression_statement import ExpressionStatement
 from ..statements.for_loop_statement import ForLoopStatement
@@ -66,6 +67,20 @@ class TypingPassStatementVisitor(BaseStatementVisitor[None]):
             for function in statement.functions:
                 # TODO: fix assert that happens when using undeclared variables in functions
                 self._typing_pass.parse_statement(function)
+
+        # add the constructor to the surrounding scope, so it can be called like a function
+        self._typing_pass.add_identifier(statement.name, statement.class_type)
+
+        # construct the function statement for the class constructor
+        constructor_function: ConstructorFunctionStatement = ConstructorFunctionStatement(
+            return_type=statement.type_token,
+            name=statement.name,
+            class_type=statement.class_type,
+        )
+        if statement.constructor:
+            # add the constructor arguments in case we have a constructor and arguments
+            constructor_function.add_arguments(statement.constructor.arguments)
+        self._typing_pass.scope_wrapper.scope.add_function(constructor_function.name.value, constructor_function)
 
     def visit_continue_statement(self, statement: ContinueStatement) -> None:
         pass  # nothing to check in a ContinueStatement

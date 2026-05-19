@@ -93,6 +93,14 @@ class TypingPassExpressionVisitor(BaseExpressionVisitor[None]):
             expression.type_ = self._typing_pass.get_identifier_type(identifier_token)
             expression.expression.type_ = expression.type_
             return
+        elif isinstance(expression.expression.type_, ClassType):
+            function_name: str = identifier_token.value
+            function = self._typing_pass.scope_wrapper.scope.get_function(function_name)
+            assert function
+            self._typing_pass.check_function(function, expression)
+            # if the expression type is a class, we can call the class name as constructor
+            expression.type_ = expression.expression.type_
+            return
         source_location: SourceLocation = identifier_token.source_location
         self._typing_pass.ast_error(f"identifier '{identifier_token}' is not callable!", source_location)
 
