@@ -22,43 +22,43 @@ class TokenType(Enum):
     TILDE = "~"
 
     # single or double character tokens
+    AND = "&"
+    AND_AND = "&&"
+    DECREMENT = "--"
     EQUAL = "="
     EQUAL_EQUAL = "=="
     GREATER = ">"
     GREATER_EQUAL = ">="
+    INCREMENT = "++"
     LESS = "<"
     LESS_EQUAL = "<="
     MINUS = "-"
     MINUS_EQUAL = "-="
     NOT = "!"
     NOT_EQUAL = "!="
+    OR = "|"
+    OR_OR = "||"
     PLUS = "+"
     PLUS_EQUAL = "+="
     SLASH = "/"
     SLASH_EQUAL = "/="
     STAR = "*"
     STAR_EQUAL = "*="
-    INCREMENT = "++"
-    DECREMENT = "--"
-    AND = "&"
-    AND_AND = "&&"
-    OR = "|"
-    OR_OR = "||"
 
     # literals
-    IDENTIFIER = "<IDENTIFIER>"
-    TYPE = "<TYPE>"
-    CHARACTER = "<CHARACTER>"
-    NUMBER = "<NUMBER>"
-    INLINE_COMMENT = "<INLINE_COMMENT>"
     BLOCK_COMMENT = "<BLOCK_COMMENT>"
+    CHARACTER = "<CHARACTER>"
+    IDENTIFIER = "<IDENTIFIER>"
+    INLINE_COMMENT = "<INLINE_COMMENT>"
+    NUMBER = "<NUMBER>"
+    TYPE = "<TYPE>"
 
     # string-related tokens
-    STRING_START = "<STRING_START>"
     STRING_CHARS = "<STRING_CHARS>"
-    STRING_EXPR_START = "<STRING_EXPR_START>"
+    STRING_END = "<STRING_END>"
     STRING_EXPR_END = "<STRING_EXPR_END>"
-    STRING_END = "<STRING_END"
+    STRING_EXPR_START = "<STRING_EXPR_START>"
+    STRING_START = "<STRING_START>"
 
     # keywords
     BREAK = "break"
@@ -82,9 +82,9 @@ class TokenType(Enum):
     WHILE = "while"
 
     # special tokens
-    INDENT = "<INDENT>"
-    DEDENT = "<DEDENT"
+    DEDENT = "<DEDENT>"
     ERROR = "<ERROR>"
+    INDENT = "<INDENT>"
     NEWLINE = "<NEWLINE>"
 
     # end of file/input token
