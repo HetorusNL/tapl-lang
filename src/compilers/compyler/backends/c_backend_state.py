@@ -17,3 +17,7 @@ class CBackendState:
         self.class_objects: list[str] = []
         self.class_method_declarations: list[str] = []
         self.class_method_definitions: list[str] = []
+
+        # enum specific state for the enum types and their values
+        self.enum_definitions: list[str] = []
+        self.enum_to_string_definitions: list[str] = []

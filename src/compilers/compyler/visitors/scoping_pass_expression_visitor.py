@@ -8,6 +8,7 @@ from ..ast_checks.pass_base import PassBase
 from .base_expression_visitor import BaseExpressionVisitor
 from ..expressions.binary_expression import BinaryExpression
 from ..expressions.call_expression import CallExpression
+from ..expressions.enum_value_expression import EnumValueExpression
 from ..expressions.expression import Expression
 from ..expressions.identifier_expression import IdentifierExpression
 from ..expressions.string_equal_expression import StringEqualExpression
@@ -34,7 +35,14 @@ class ScopingPassExpressionVisitor(BaseExpressionVisitor[None]):
         for argument in expression.arguments:
             self._pass_base.parse_expression(argument)
 
+    def visit_enum_value_expression(self, expression: EnumValueExpression) -> None:
+        # check that the enum name exists in the current or outer scopes
+        expression.identifier_expression.accept(self)
+
     def visit_identifier_expression(self, expression: IdentifierExpression) -> None:
+        # TODO: uncomment below and fix
+        # check that the identifier exists in the current or outer scopes
+        # self._pass_base.get_identifier_type(expression.identifier_token)
         # check the inner expression
         self._pass_base.parse_expression(expression.inner_expression)
 

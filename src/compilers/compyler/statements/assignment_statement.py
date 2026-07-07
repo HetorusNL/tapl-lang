@@ -51,4 +51,4 @@ class AssignmentStatement(Statement):
         identifier: str = self.expression.__repr__()
         value: str = self.value.__repr__()
 
-        return f"<AssignmantStatement: location {self.source_location}, {identifier} = {value}>"
+        return f"<AssignmentStatement: location {self.source_location}, {identifier} = {value}>"

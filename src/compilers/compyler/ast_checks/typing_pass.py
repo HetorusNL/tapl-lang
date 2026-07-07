@@ -44,6 +44,8 @@ class TypingPass(PassBase[None]):
 
         # store a scope per class
         self.class_scopes: dict[str, ScopeWrapper] = {}
+        # store a scope per enum
+        self.enum_scopes: dict[str, ScopeWrapper] = {}
         # store a stack of function return types
         self.function_stack: list[Type] = []
         # store the type of the last processed identifier for the inner identifier checks

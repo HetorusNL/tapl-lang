@@ -11,6 +11,7 @@ from ..statements.break_statement import BreakStatement
 from ..statements.breakall_statement import BreakallStatement
 from ..statements.class_statement import ClassStatement
 from ..statements.continue_statement import ContinueStatement
+from ..statements.enum_statement import EnumStatement
 from ..statements.expression_statement import ExpressionStatement
 from ..statements.for_loop_statement import ForLoopStatement
 from ..statements.function_statement import FunctionStatement
@@ -50,6 +51,12 @@ class VerifyTypesStatementVisitor(BaseStatementVisitor[None]):
 
     def visit_continue_statement(self, statement: ContinueStatement) -> None:
         pass  # nothing to check in a ContinueStatement
+
+    def visit_enum_statement(self, statement: EnumStatement) -> None:
+        # create a new scope for the enum entries
+        for entry in statement.get_entries():
+            entry.string_value.accept(self._expression_visitor)
+            entry.value.accept(self._expression_visitor)
 
     def visit_expression_statement(self, statement: ExpressionStatement) -> None:
         statement.expression.accept(self._expression_visitor)

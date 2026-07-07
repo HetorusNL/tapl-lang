@@ -7,6 +7,7 @@
 from .base_expression_visitor import BaseExpressionVisitor
 from ..expressions.binary_expression import BinaryExpression
 from ..expressions.call_expression import CallExpression
+from ..expressions.enum_value_expression import EnumValueExpression
 from ..expressions.expression import Expression
 from ..expressions.identifier_expression import IdentifierExpression
 from ..expressions.string_equal_expression import StringEqualExpression
@@ -34,6 +35,10 @@ class VerifyTypesExpressionVisitor(BaseExpressionVisitor[None]):
         expression.expression.accept(self)
         for argument in expression.arguments:
             argument.accept(self)
+
+    def visit_enum_value_expression(self, expression: EnumValueExpression) -> None:
+        self.verify(expression)
+        expression.identifier_expression.accept(self)
 
     def visit_identifier_expression(self, expression: IdentifierExpression) -> None:
         self.verify(expression)

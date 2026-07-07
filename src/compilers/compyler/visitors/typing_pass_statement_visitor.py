@@ -14,6 +14,7 @@ from ..statements.breakall_statement import BreakallStatement
 from ..statements.class_statement import ClassStatement
 from ..statements.constructor_function_statement import ConstructorFunctionStatement
 from ..statements.continue_statement import ContinueStatement
+from ..statements.enum_statement import EnumStatement
 from ..statements.expression_statement import ExpressionStatement
 from ..statements.for_loop_statement import ForLoopStatement
 from ..statements.function_statement import FunctionStatement
@@ -84,6 +85,18 @@ class TypingPassStatementVisitor(BaseStatementVisitor[None]):
 
     def visit_continue_statement(self, statement: ContinueStatement) -> None:
         pass  # nothing to check in a ContinueStatement
+
+    def visit_enum_statement(self, statement: EnumStatement) -> None:
+        # add the enum name to the surrounding scope
+        self._typing_pass.add_identifier(statement.name, statement.enum_type)
+        # create a new scope for the enum entries
+        with self._typing_pass.clean_scope() as enum_scope:
+            self._typing_pass.enum_scopes[statement.enum_type.keyword] = enum_scope
+            # loop through all enum entries and add them to the enum scope
+            for entry in statement.get_entries():
+                self._typing_pass.add_identifier(entry.name, statement.enum_type)
+                self._typing_pass.parse_expression(entry.string_value)
+                self._typing_pass.parse_expression(entry.value)
 
     def visit_expression_statement(self, statement: ExpressionStatement) -> None:
         # check the expression

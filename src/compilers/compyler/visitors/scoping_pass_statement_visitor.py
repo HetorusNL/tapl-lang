@@ -11,6 +11,7 @@ from ..statements.break_statement import BreakStatement
 from ..statements.breakall_statement import BreakallStatement
 from ..statements.class_statement import ClassStatement
 from ..statements.continue_statement import ContinueStatement
+from ..statements.enum_statement import EnumStatement
 from ..statements.expression_statement import ExpressionStatement
 from ..statements.for_loop_statement import ForLoopStatement
 from ..statements.function_statement import FunctionStatement
@@ -46,6 +47,15 @@ class ScopingPassStatementVisitor(BaseStatementVisitor[None]):
 
     def visit_continue_statement(self, statement: ContinueStatement) -> None:
         pass  # nothing to check in a ContinueStatement
+
+    def visit_enum_statement(self, statement: EnumStatement) -> None:
+        # add the enum name to the surrounding scope
+        self._pass_base.add_identifier(statement.name, statement.enum_type)
+        # create a new scope for the enum entries
+        with self._pass_base.new_scope():
+            # loop through all enum entries and add them to the scope
+            for entry in statement.get_entries():
+                self._pass_base.add_identifier(entry.name, statement.enum_type)
 
     def visit_expression_statement(self, statement: ExpressionStatement) -> None:
         self._pass_base.parse_expression(statement.expression)

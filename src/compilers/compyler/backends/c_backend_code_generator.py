@@ -49,6 +49,9 @@ class CBackendCodeGenerator:
         # write the classes to the classes c file
         self._write_classes()
 
+        # write the enum types to the enums c file
+        self._write_enums()
+
         # write the functions to the functions c file
         self._write_functions()
 
@@ -167,6 +170,31 @@ class CBackendCodeGenerator:
             f.writelines(definition_lines)
             f.writelines(self._state.class_method_definitions)
 
+    def _write_enums(self) -> None:
+        enums_file: Path = self._header_folder / "enums.h"
+
+        initial_lines: list[str] = [
+            "#pragma once\n",
+            "\n",
+            "// include the needed system headers\n",
+            "#include <stdio.h>\n",
+            "\n",
+            "// also include the needed TAPL headers\n",
+            "#include <tapl_headers/types.h>\n",
+            "\n",
+            "// enum type definitions\n",
+        ]
+        enum_to_string_lines: list[str] = [
+            "\n",
+            "// enum to string function definitions\n",
+        ]
+
+        with open(enums_file, "w") as f:
+            f.writelines(initial_lines)
+            f.writelines(self._state.enum_definitions)
+            f.writelines(enum_to_string_lines)
+            f.writelines(self._state.enum_to_string_definitions)
+
     def _write_functions(self) -> None:
         functions_file: Path = self._header_folder / "functions.h"
 
@@ -198,6 +226,7 @@ class CBackendCodeGenerator:
             "#include <stdio.h>\n",
             "\n",
             "// also include the needed TAPL headers\n",
+            "#include <tapl_headers/enums.h>\n",
             "#include <tapl_headers/classes.h>\n",
             "#include <tapl_headers/file.h>\n",
             "#include <tapl_headers/functions.h>\n",
