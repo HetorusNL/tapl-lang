@@ -9,6 +9,7 @@ from ..statements.break_statement import BreakStatement
 from ..statements.breakall_statement import BreakallStatement
 from ..statements.class_statement import ClassStatement
 from ..statements.continue_statement import ContinueStatement
+from ..statements.enum_statement import EnumStatement
 from ..statements.expression_statement import ExpressionStatement
 from ..statements.for_loop_statement import ForLoopStatement
 from ..statements.function_statement import FunctionStatement
@@ -37,6 +38,9 @@ class BaseStatementVisitor[T]:
         raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
 
     def visit_continue_statement(self, statement: ContinueStatement) -> T:
+        raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
+
+    def visit_enum_statement(self, statement: EnumStatement) -> T:
         raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
 
     def visit_expression_statement(self, statement: ExpressionStatement) -> T:

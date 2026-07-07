@@ -29,6 +29,10 @@ class TypeResolver:
                     class_name: Token = self._tokens.iter_next()
                     if isinstance(class_name, IdentifierToken):
                         types.add_class_type(class_name.value)
+                elif token.token_type == TokenType.ENUM:
+                    enum_name: Token = self._tokens.iter_next()
+                    if isinstance(enum_name, IdentifierToken):
+                        types.add_enum_type(enum_name.value)
         except StreamError:
             # iterating past the end of the stream, invalid code: don't care
             pass

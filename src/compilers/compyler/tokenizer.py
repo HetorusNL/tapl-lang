@@ -418,6 +418,8 @@ class Tokenizer:
                 self._add_token_of_length(TokenType.CONTINUE)
             case TokenType.ELSE.value:
                 self._add_token_of_length(TokenType.ELSE)
+            case TokenType.ENUM.value:
+                self._add_token_of_length(TokenType.ENUM)
             case TokenType.FALSE.value:
                 self._add_token_of_length(TokenType.FALSE)
             case TokenType.FOR.value:

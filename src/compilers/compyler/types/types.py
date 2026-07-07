@@ -8,6 +8,7 @@ from copy import deepcopy
 
 from .character_type import CharacterType
 from .class_type import ClassType
+from .enum_type import EnumType
 from .list_type import ListType
 from .numeric_type import NumericType
 from .numeric_type_type import NumericTypeType
@@ -19,6 +20,7 @@ class Types:
         self.simple_types: dict[str, Type] = self._builtin_types()
         self.list_types: dict[str, ListType] = {}
         self.class_types: dict[str, ClassType] = {}
+        self.enum_types: dict[str, EnumType] = {}
 
         # make sure also the list[char] exists for the file stdlib functions
         self.add_list_type(self["char"])
@@ -110,6 +112,22 @@ class Types:
         assert isinstance(class_type, ClassType)
         return class_type
 
+    def add_enum_type(self, keyword: str) -> EnumType:
+        """add a new enum type to the Types collection,
+        does nothing when the enum type is already present in the collection,
+        returns the existing or newly added enum type
+        """
+        # check if the type is already in the collection
+        if keyword not in self.enum_types:
+            # create the Type, and add the keyword:Type to the collection
+            type_ = EnumType(keyword)
+            self.enum_types[keyword] = type_
+
+        # return the existing or newly created enum type
+        enum_type: Type = self[keyword]
+        assert isinstance(enum_type, EnumType)
+        return enum_type
+
     def add_list_type(self, inner_type: Type) -> ListType:
         """add a new list type to the Types collection,
         does nothing when the list type is already present in the collection,
@@ -138,6 +156,9 @@ class Types:
 
         if class_type := self.class_types.get(keyword):
             return class_type
+
+        if enum_type := self.enum_types.get(keyword):
+            return enum_type
 
         return None
 

@@ -18,6 +18,7 @@ from .backends.c_backend_code_generator import CBackendCodeGenerator
 from .errors.typing_error import TypingError
 from .tokens.token import Token
 from .types.class_type import ClassType
+from .types.enum_type import EnumType
 from .types.type_applier import TypeApplier
 from .types.type_resolver import TypeResolver
 from .types.types import Types
@@ -39,6 +40,7 @@ class Compyler:
     def __init__(self) -> None:
         self.typing_errors: list[TypingError] = []
         self.class_types: dict[str, ClassType] = {}
+        self.enum_types: dict[str, EnumType] = {}
         self.ast_collection: AstCollection = AstCollection()
 
     def _argument_parser(self) -> None:
@@ -128,9 +130,21 @@ class Compyler:
                 # otherwise add the class type to the map
                 self.class_types[class_type.keyword] = class_type
 
-        # construct a full types object for the type applier pass, with all resolved classes
+            # add the resolved enum types in the map to use in the type applier pass
+            for enum_type in types.enum_types.values():
+                # check if an enum with the same name is already defined
+                if enum_type.keyword in self.enum_types:
+                    message: str = f"enum '{enum_type.keyword}' is already defined!"
+                    self.typing_errors.append(TypingError(message, module_file.filename))
+                    continue
+
+                # otherwise add the enum type to the map
+                self.enum_types[enum_type.keyword] = enum_type
+
+        # construct a full types object for the type applier pass, with all resolved classes and enums
         module.types = Types()
         module.types.class_types.update(self.class_types)
+        module.types.enum_types.update(self.enum_types)
 
         # then apply the resolved types to the token stream (in place)
         for module_file in module.module_files:

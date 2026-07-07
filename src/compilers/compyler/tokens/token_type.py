@@ -66,6 +66,7 @@ class TokenType(Enum):
     CLASS = "class"
     CONTINUE = "continue"
     ELSE = "else"
+    ENUM = "enum"
     FALSE = "false"
     FOR = "for"
     IF = "if"

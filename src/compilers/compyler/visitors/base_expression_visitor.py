@@ -6,6 +6,7 @@
 
 from ..expressions.binary_expression import BinaryExpression
 from ..expressions.call_expression import CallExpression
+from ..expressions.enum_value_expression import EnumValueExpression
 from ..expressions.expression import Expression
 from ..expressions.identifier_expression import IdentifierExpression
 from ..expressions.string_equal_expression import StringEqualExpression
@@ -21,6 +22,9 @@ class BaseExpressionVisitor[T]:
         raise NotImplementedError(f"ExpressionVisitor not implemented for {type(expression)}")
 
     def visit_call_expression(self, expression: CallExpression) -> T:
+        raise NotImplementedError(f"ExpressionVisitor not implemented for {type(expression)}")
+
+    def visit_enum_value_expression(self, expression: EnumValueExpression) -> T:
         raise NotImplementedError(f"ExpressionVisitor not implemented for {type(expression)}")
 
     def visit_expression(self, expression: Expression) -> T:

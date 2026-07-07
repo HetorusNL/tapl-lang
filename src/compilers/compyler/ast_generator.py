@@ -11,6 +11,7 @@ from .errors.tapl_error import TaplError
 from .errors.ast_error import AstError
 from .expressions.binary_expression import BinaryExpression
 from .expressions.call_expression import CallExpression
+from .expressions.enum_value_expression import EnumValueExpression
 from .expressions.expression import Expression
 from .expressions.identifier_expression import IdentifierExpression
 from .expressions.string_equal_expression import StringEqualExpression
@@ -25,6 +26,7 @@ from .statements.break_statement import BreakStatement
 from .statements.breakall_statement import BreakallStatement
 from .statements.class_statement import ClassStatement
 from .statements.continue_statement import ContinueStatement
+from .statements.enum_statement import EnumStatement
 from .statements.expression_statement import ExpressionStatement
 from .statements.for_loop_statement import ForLoopStatement
 from .statements.function_statement import FunctionStatement
@@ -43,6 +45,7 @@ from .tokens.token import Token
 from .tokens.type_token import TypeToken
 from .tokens.token_type import TokenType
 from .types.class_type import ClassType
+from .types.enum_type import EnumType
 from .types.list_type import ListType
 from .types.type import Type
 from .types.types import Types
@@ -652,6 +655,66 @@ class AstGenerator:
         # return the finished class statement
         return class_statement
 
+    def enum_statement(self) -> EnumStatement | None:
+        # early return if we don't have an enum keyword
+        token: Token | None = self.match(TokenType.ENUM)
+        if not token:
+            return None
+
+        # construct the source location of the whole enum
+        source_location: SourceLocation = token.source_location
+
+        # consume the enum name (which is a type token)
+        name: Token = self.expect(TokenType.TYPE)
+        assert type(name) == TypeToken
+        enum_type: Type = name.type_
+        assert isinstance(enum_type, EnumType)
+        source_location += name.source_location
+
+        # construct the identifier token
+        identifier_token: IdentifierToken = IdentifierToken(name.source_location, name.name)
+
+        # followed by a colon and newline
+        self.expect(TokenType.COLON)
+        self.expect_newline()
+
+        enum_statement: EnumStatement = EnumStatement(identifier_token, enum_type, source_location)
+
+        # check if we have an indented block
+        if not self._has_indent():
+            # otherwise return an empty enum without any values
+            return enum_statement
+
+        # construct the enum statement
+        while not self.match(TokenType.DEDENT):
+            # consume the enum entry name (identifier)
+            entry_name: Token = self.expect(TokenType.IDENTIFIER)
+            assert type(entry_name) == IdentifierToken
+
+            # check for an optional colon and string value
+            if self.match(TokenType.COLON):
+                string_start_token: Token = self.expect(TokenType.STRING_START)
+                string_value: StringExpression = self.string_expression(string_start_token)
+            else:
+                # fall back to the default string value, which is the entry name
+                string_value: StringExpression = StringExpression(entry_name)
+
+            # check for an optional equal sign and value
+            if self.match(TokenType.EQUAL):
+                value: Expression | None = self.expression()
+            else:
+                # fall back to None and let the enum statement handle it
+                value: Expression | None = None
+
+            # add the enum entry to the enum statement
+            enum_statement.add_entry(entry_name, string_value, value)
+
+            # statements should end with a newline
+            self.expect_newline(f"enum entry '{entry_name}'")
+
+        # return the finished enum statement
+        return enum_statement
+
     def loop_control_statement(self) -> Statement | None:
         # early return if we're not inside a loop
         if self._loop_count == 0:
@@ -711,6 +774,10 @@ class AstGenerator:
 
         # check for a class 'statement'
         if statement := self.class_statement():
+            return statement
+
+        # check for an enum statement
+        if statement := self.enum_statement():
             return statement
 
         # if we're inside a loop, check for break, breakall, continue statements
@@ -852,18 +919,33 @@ class AstGenerator:
             assert isinstance(token, IdentifierToken)
             return self.identifier_expression(token)
 
-        # match a class type call
+        # match a certain type calls or dot operators
         if token := self.match(TokenType.TYPE):
             assert isinstance(token, TypeToken)
-            # we only allow class types here, error otherwise
-            if not isinstance(token.type_, ClassType):
-                self.ast_error(f"cannot call {token.type_}, expected a class type!")
-            # consume the opening parenthesis
-            self.expect(TokenType.PAREN_OPEN)
-            # reconstruct the identifier expression for the class type to pass it to the function
-            identifier_token: IdentifierToken = IdentifierToken(token.source_location, token.type_.keyword)
-            identifier_expression: IdentifierExpression = IdentifierExpression(token.source_location, identifier_token)
-            return self.call_expression(identifier_expression)
+            # check for a class type here
+            if isinstance(token.type_, ClassType):
+                # consume the opening parenthesis
+                self.expect(TokenType.PAREN_OPEN)
+                # reconstruct the identifier expression for the class type to pass it to the function
+                identifier_token: IdentifierToken = IdentifierToken(token.source_location, token.type_.keyword)
+                identifier_expression: IdentifierExpression = IdentifierExpression(
+                    token.source_location, identifier_token
+                )
+                return self.call_expression(identifier_expression)
+
+            # check for an enum type here
+            if isinstance(token.type_, EnumType):
+                # we expect a dot after the enum type
+                self.expect(TokenType.DOT)
+                # expect a nested identifier
+                identifier: Token = self.expect(TokenType.IDENTIFIER)
+                assert isinstance(identifier, IdentifierToken)
+                expression: Expression = self.identifier_expression(identifier)
+                assert isinstance(expression, IdentifierExpression)
+                return EnumValueExpression(token, expression)
+
+            # otherwise we have something we cannot call, so error
+            self.ast_error(f"cannot call {token.type_}, expected a callable type!")
 
         # match a this-expression
         if this := self.match(TokenType.THIS):
