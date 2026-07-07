@@ -176,12 +176,6 @@ class CBackendCodeGenerator:
         initial_lines: list[str] = [
             "#pragma once\n",
             "\n",
-            "// include the needed system headers\n",
-            "#include <stdio.h>\n",
-            "\n",
-            "// also include the needed TAPL headers\n",
-            "#include <tapl_headers/types.h>\n",
-            "\n",
             "// enum type definitions\n",
         ]
         enum_to_string_lines: list[str] = [

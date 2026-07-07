@@ -33,7 +33,10 @@ class CallExpression(Expression):
     def accept[T](self, visitor: BaseExpressionVisitor[T]) -> T:
         return visitor.visit_call_expression(self)
 
-    def consume(self) -> IdentifierToken:
+    def consume(self) -> IdentifierToken | None:
+        if self.call_consumed:
+            return None
+
         # consume the call, as it will be generated at the outermost identifier expression
         self.call_consumed = True
         return self.expression.identifier_token

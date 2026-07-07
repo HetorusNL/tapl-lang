@@ -410,3 +410,26 @@ bool get_result():
     bool result = some_value == some_value
     return result
 println("result of get_result(): {get_result()}")
+
+println("\nwe can also use 'enum' to define fancy enumerations")
+enum FancyEnum:
+    VALUE0  // just a value, will be assigned 0
+    VALUE1 = 10  // equallity operator, will be assigned 10
+    VALUE2  // just a value, will be assigned 11 (the next value after VALUE1)
+    VALUE3 : "text here"  // a value with a string, will be assigned 12, has to_string() value returning "text here"
+    VALUE4  // not having a string has to_string() value returning "VALUE4", will be assigned 13
+    VALUE5 : "another text" = 20  // a value with a string, will be assigned 20, to_string() returns "another text"
+    VALUE6  // will be assigned 21, to_string() returns "VALUE6"
+println("FancyEnum.VALUE0: {FancyEnum.VALUE0=}, to_string(): {FancyEnum.VALUE0.to_string()=}")
+println("FancyEnum.VALUE1: {FancyEnum.VALUE1=}, to_string(): {FancyEnum.VALUE1.to_string()=}")
+println("FancyEnum.VALUE2: {FancyEnum.VALUE2=}, to_string(): {FancyEnum.VALUE2.to_string()=}")
+println("FancyEnum.VALUE3: {FancyEnum.VALUE3=}, to_string(): {FancyEnum.VALUE3.to_string()=}")
+println("FancyEnum.VALUE4: {FancyEnum.VALUE4=}, to_string(): {FancyEnum.VALUE4.to_string()=}")
+println("FancyEnum.VALUE5: {FancyEnum.VALUE5=}, to_string(): {FancyEnum.VALUE5.to_string()=}")
+println("FancyEnum.VALUE6: {FancyEnum.VALUE6=}, to_string(): {FancyEnum.VALUE6.to_string()=}")
+
+println("\nand we can also create instances of the enum and use them")
+FancyEnum enum_instance = FancyEnum.VALUE3
+println("enum_instance (VALUE3): {enum_instance=}, to_string(): {enum_instance.to_string()=}")
+enum_instance = FancyEnum.VALUE5
+println("enum_instance (VALUE5): {enum_instance=}, to_string(): {enum_instance.to_string()=}")

@@ -7,6 +7,7 @@
 from .c_backend_state import CBackendState
 from ..expressions.binary_expression import BinaryExpression
 from ..expressions.call_expression import CallExpression
+from ..expressions.enum_value_expression import EnumValueExpression
 from ..expressions.expression import Expression
 from ..expressions.expression_type import ExpressionType
 from ..expressions.identifier_expression import IdentifierExpression
@@ -22,6 +23,7 @@ from ..tokens.number_token import NumberToken
 from ..tokens.string_chars_token import StringCharsToken
 from ..tokens.token import Token
 from ..tokens.token_type import TokenType
+from ..types.enum_type import EnumType
 from ..utils.utils import Utils
 from ..visitors.base_expression_visitor import BaseExpressionVisitor
 
@@ -61,6 +63,13 @@ class CBackendExpressionVisitor(BaseExpressionVisitor[str]):
         # construct and return the whole function call
         return f"{function_name}({arguments_string})"
 
+    def visit_enum_value_expression(self, expression: EnumValueExpression) -> str:
+        if name := expression.identifier_expression.inner_function_call():
+            # we need to create a function call of the outermost enum value
+            full_name: str = f"{expression.type_token.name}_enum_{name}"
+            return f"{full_name}({expression.identifier_expression.accept(self)})"
+        return expression.identifier_expression.accept(self)
+
     def visit_identifier_expression(self, expression: IdentifierExpression) -> str:
         # utility functions used in this IdentifierExpression
         def _join() -> str:
@@ -91,6 +100,13 @@ class CBackendExpressionVisitor(BaseExpressionVisitor[str]):
             if name := expression.inner_function_call():
                 # we need to create a function call of the outermost function
                 full_name: str = f"{expression.class_type}_{name}"
+                return f"{full_name}({_get_arguments_str()})"
+
+        # if this is an enum, check if there is a call expression inside
+        if isinstance(expression.type_, EnumType):
+            if name := expression.inner_function_call():
+                # we need to create a function call of the outermost enum value
+                full_name: str = f"{expression.type_.name}_enum_{name}"
                 return f"{full_name}({_get_arguments_str()})"
 
         # if this is a list, check if there is a call expression inside
@@ -150,6 +166,9 @@ class CBackendExpressionVisitor(BaseExpressionVisitor[str]):
                 if token.token_type == TokenType.STRING_CHARS:
                     assert isinstance(token, StringCharsToken)
                     format_string += token.value
+                elif token.token_type == TokenType.IDENTIFIER:
+                    assert isinstance(token, IdentifierToken)
+                    format_string += f"{token}"
                 # we don't care about the other string-related tokens
 
             return format_string

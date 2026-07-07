@@ -57,10 +57,10 @@ the following 'features' were found during AoC solving, and should be fixed
 - make char and base/u16-related types be used together
 - implement a list of class instances
 - same symbols multiple times defined should show the correct error, also with functions and lists
-- add (fancy) enumeration type (that also has something like a to_string() function)
 
 ## TODO
 
+- enum entries with equal values result in gcc error
 - modules - optional:
   - add --debug-imports flag to warn for wrongly formatted modularized files
   - refactor ModuleError to ModuleProblem, and add ModuleError/ModuleWarning

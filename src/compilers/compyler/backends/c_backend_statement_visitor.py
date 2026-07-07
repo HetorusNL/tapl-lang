@@ -14,6 +14,7 @@ from ..statements.break_statement import BreakStatement
 from ..statements.breakall_statement import BreakallStatement
 from ..statements.class_statement import ClassStatement
 from ..statements.continue_statement import ContinueStatement
+from ..statements.enum_statement import EnumStatement
 from ..statements.expression_statement import ExpressionStatement
 from ..statements.for_loop_statement import ForLoopStatement
 from ..statements.function_statement import FunctionStatement
@@ -92,6 +93,49 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
 
     def visit_continue_statement(self, statement: ContinueStatement) -> str:
         return "continue;"
+
+    def visit_enum_statement(self, statement: EnumStatement) -> str:
+        # start with the typedef
+        code: str = f"typedef enum {statement.enum_type}_enum {statement.enum_type};\n"
+
+        # add the enum name
+        code += f"enum {statement.enum_type}_enum {{\n"
+
+        # add all enum entries
+        for entry in statement.get_entries():
+            code += f"{entry.name} = {entry.value.accept(self._expression_visitor)},\n"
+
+        # end with the closing bracket
+        code += f"}};\n"
+
+        # add the code to the state to be written to the enums header file
+        self._state.enum_definitions.append(code)
+
+        # start with a new code block and add the enum to string function definition
+        code = f"const char* {statement.enum_type}_enum_to_string({statement.enum_type} value) {{\n"
+
+        # add the switch statement for the enum to string function
+        code += f"switch (value) {{\n"
+
+        # add all enum entries to the switch statement
+        for entry in statement.get_entries():
+            code += f"case {entry.name}:\n"
+            code += f"return {entry.string_value.accept(self._expression_visitor)};\n"
+
+        # end the switch statement
+        code += f"}}\n"
+
+        # add the default case for the switch statement
+        code += f'return "Unknown {statement.enum_type} value";\n'
+
+        # end the enum to string function definition
+        code += f"}}\n"
+
+        # add the code to the state to be written to the enums header file
+        self._state.enum_to_string_definitions.append(code)
+
+        # nothing to add to the main c file for the enum definition
+        return ""
 
     def visit_expression_statement(self, statement: ExpressionStatement) -> str:
         expression_code: str = statement.expression.accept(self._expression_visitor)

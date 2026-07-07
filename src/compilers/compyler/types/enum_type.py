@@ -11,6 +11,7 @@ class EnumType(Type):
     def __init__(self, keyword: str):
         # create a simple super class for this enum type
         super().__init__(keyword)
+        self.is_reference = True
 
     def callable_functions(self) -> dict[str, str]:
         """a dictionary of callable functions returning pairs of: <name - return value keyword>"""

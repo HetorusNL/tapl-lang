@@ -7,10 +7,12 @@
 from pathlib import Path
 
 from .colors import Colors
+from ..expressions.enum_value_expression import EnumValueExpression
 from ..expressions.expression import Expression
 from ..expressions.identifier_expression import IdentifierExpression
 from .source_location import SourceLocation
 from ..types.character_type import CharacterType
+from ..types.enum_type import EnumType
 from ..types.numeric_type import NumericType
 from ..types.numeric_type_type import NumericTypeType
 from ..types.type import Type
@@ -78,6 +80,8 @@ class Utils:
         if isinstance(expression, IdentifierExpression):
             if expression.inner_expression:
                 return cls.get_expression_type(expression.inner_expression)
+        if isinstance(expression, EnumValueExpression):
+            return cls.get_expression_type(expression.identifier_expression)
         # otherwise return the type of the expression
         return expression.type_
 
@@ -97,6 +101,8 @@ class Utils:
                         return f"%{long}u"
                     case NumericTypeType.FLOATING_POINT:
                         return f"%{long}f"
+            case EnumType():
+                return f"%d"
             case Type():
                 if type_.name == "string":
                     return f"%s"
