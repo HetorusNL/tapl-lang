@@ -1,0 +1,38 @@
+name: Publish VS Code Extension
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: tools/vscode/tapl-lang
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: tools/vscode/tapl-lang/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Package extension
+        run: npx @vscode/vsce package
+
+      - name: Upload VSIX
+        uses: actions/upload-artifact@v4
+        with:
+          name: vscode-extension
+          path: tools/vscode/tapl-lang/*.vsix
+
+      - name: Publish extension
+        run: npx @vscode/vsce publish -p ${{ secrets.VS_MARKETPLACE_TOKEN }}

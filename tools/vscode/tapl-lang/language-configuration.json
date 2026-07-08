@@ -31,7 +31,7 @@
   ],
   "onEnterRules": [
     {
-      "beforeText": "^\\s*(?:class|else|for|if|while).*?:\\s*$",
+      "beforeText": "^\\s*(?:class|else|enum|for|if|while).*?:\\s*$",
       "action": { "indent": "indent" }
     },
     {
