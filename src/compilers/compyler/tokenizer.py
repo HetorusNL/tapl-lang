@@ -12,6 +12,7 @@ from .tokens.comment_token import CommentToken
 from .tokens.identifier_token import IdentifierToken
 from .tokens.number_token import NumberToken
 from .tokens.string_chars_token import StringCharsToken
+from .tokens.this_token import ThisToken
 from .tokens.token import Token
 from .utils.source_location import SourceLocation
 from .utils.stream import Stream
@@ -225,6 +226,13 @@ class Tokenizer:
         source_location: SourceLocation = SourceLocation(start, length)
         identifier_token: IdentifierToken = IdentifierToken(source_location, value)
         self._tokens.add(identifier_token)
+
+    def _add_this_token(self, value: str) -> None:
+        length: int = len(value)
+        start: int = self._current_index - length
+        source_location: SourceLocation = SourceLocation(start, length)
+        this_token: IdentifierToken = ThisToken(source_location, value)
+        self._tokens.add(this_token)
 
     def _add_number_token(self, value: int, start: int, length: int) -> None:
         source_location: SourceLocation = SourceLocation(start, length)
@@ -443,7 +451,7 @@ class Tokenizer:
             case TokenType.SUPER.value:
                 self._add_token_of_length(TokenType.SUPER)
             case TokenType.THIS.value:
-                self._add_token_of_length(TokenType.THIS)
+                self._add_this_token(identifier)
             case TokenType.TRUE.value:
                 self._add_token_of_length(TokenType.TRUE)
             case TokenType.WHILE.value:

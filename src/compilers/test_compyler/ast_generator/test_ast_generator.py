@@ -8,19 +8,23 @@ from pathlib import Path
 import unittest
 
 from compyler.ast_generator import AstGenerator
+from compyler.ast_checks.ast_check import AstCheck
+from compyler.backends.c_backend_expression_visitor import CBackendExpressionVisitor
+from compyler.backends.c_backend_state import CBackendState
+from compyler.backends.c_backend_statement_visitor import CBackendStatementVisitor
+from compyler.expressions.call_expression import CallExpression
+from compyler.expressions.identifier_expression import IdentifierExpression
 from compyler.statements.statement import Statement
 from compyler.tokenizer import Tokenizer
+from compyler.tokens.identifier_token import IdentifierToken
 from compyler.tokens.token import Token
 from compyler.types.type_applier import TypeApplier
 from compyler.types.type_resolver import TypeResolver
 from compyler.types.types import Types
 from compyler.utils.ast import AST
 from compyler.utils.ast_collection import AstCollection
+from compyler.utils.source_location import SourceLocation
 from compyler.utils.stream import Stream
-from compyler.ast_checks.ast_check import AstCheck
-from compyler.backends.c_backend_expression_visitor import CBackendExpressionVisitor
-from compyler.backends.c_backend_state import CBackendState
-from compyler.backends.c_backend_statement_visitor import CBackendStatementVisitor
 
 
 class TestAstGenerator(unittest.TestCase):
@@ -38,6 +42,23 @@ class TestAstGenerator(unittest.TestCase):
 
     def test_ast_generator_functions(self):
         self._run_compilation_test("functions.tim", "result_functions.txt")
+
+    def test_list_identifier_is_emitted_as_pointer_for_function_calls(self):
+        state = CBackendState()
+        expression_visitor = CBackendExpressionVisitor(state)
+        source_location = SourceLocation(0, 0)
+
+        list_type = Types().add_list_type(Types()["char"])
+        identifier_token = IdentifierToken(source_location, "buffer")
+        argument_expression = IdentifierExpression(source_location, identifier_token)
+        argument_expression.type_ = list_type
+        argument_expression.list_type = list_type
+
+        function_identifier = IdentifierExpression(source_location, IdentifierToken(source_location, "read_file"))
+        expression = CallExpression(source_location, function_identifier, None, [argument_expression])
+        expression.type_ = Types()["bool"]
+
+        self.assertEqual(expression.accept(expression_visitor), "read_file(&buffer)")
 
     def _run_compilation_test(self, tim_file: str, result_statements_file: str):
         # make sure to pass a resolved path to the tokenizer and ast generator

@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 
 from ..expressions.expression import Expression
 from ..expressions.identifier_expression import IdentifierExpression
-from ..tokens.identifier_token import IdentifierToken
 from ..types.class_type import ClassType
 from ..utils.source_location import SourceLocation
 
@@ -16,33 +15,27 @@ if TYPE_CHECKING:
     from ..visitors.base_expression_visitor import BaseExpressionVisitor
 
 
-class CallExpression(Expression):
+class CallExpression(IdentifierExpression):
     def __init__(
         self,
         source_location: SourceLocation,
-        expression: IdentifierExpression,
+        identifier_expression: IdentifierExpression,
         class_type: ClassType | None,
         arguments: list[Expression] = [],
     ):
-        super().__init__(source_location)
-        self.expression: IdentifierExpression = expression
+        super().__init__(source_location, identifier_expression.identifier_token)
+        self.base_expression: IdentifierExpression | None = identifier_expression.base_expression
         self.class_type: ClassType | None = class_type
         self.arguments: list[Expression] = arguments
-        self.call_consumed: bool = False
 
     def accept[T](self, visitor: BaseExpressionVisitor[T]) -> T:
         return visitor.visit_call_expression(self)
 
-    def consume(self) -> IdentifierToken | None:
-        if self.call_consumed:
-            return None
-
-        # consume the call, as it will be generated at the outermost identifier expression
-        self.call_consumed = True
-        return self.expression.identifier_token
-
     def __str__(self) -> str:
-        return f'{self.expression.__str__()}({", ".join([argument.__str__() for argument in self.arguments])})'
+        func: str = f"{self.identifier_token.__str__()}"
+        args: str = f'({", ".join([argument.__str__() for argument in self.arguments])})'
+        return f"{self._base_str()}{func}{args}"
 
     def __repr__(self) -> str:
-        return f"<CallExpression: location {self.source_location}, {self.expression.__repr__()}>"
+        base_repr: str = self._base_repr()
+        return f"<CallExpression: location {self.source_location}, {self.identifier_token.__repr__()}{base_repr}>"

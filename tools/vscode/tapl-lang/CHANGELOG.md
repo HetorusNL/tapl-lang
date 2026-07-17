@@ -5,6 +5,12 @@ All notable changes to the "tapl-lang" extension will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.4] - 2026-07-08
+
+### Added
+
+- syntax highlighting and indent on enter for enum keyword
+
 ## [0.1.3] - 2026-04-16
 
 ### Added

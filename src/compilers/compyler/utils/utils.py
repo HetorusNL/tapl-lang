@@ -7,9 +7,7 @@
 from pathlib import Path
 
 from .colors import Colors
-from ..expressions.enum_value_expression import EnumValueExpression
 from ..expressions.expression import Expression
-from ..expressions.identifier_expression import IdentifierExpression
 from .source_location import SourceLocation
 from ..types.character_type import CharacterType
 from ..types.enum_type import EnumType
@@ -75,19 +73,8 @@ class Utils:
         return content[location_start:source_location_end]
 
     @classmethod
-    def get_expression_type(cls, expression: Expression) -> Type:
-        # checks if the type has an inner type, then return the inner type
-        if isinstance(expression, IdentifierExpression):
-            if expression.inner_expression:
-                return cls.get_expression_type(expression.inner_expression)
-        if isinstance(expression, EnumValueExpression):
-            return cls.get_expression_type(expression.identifier_expression)
-        # otherwise return the type of the expression
-        return expression.type_
-
-    @classmethod
     def get_type_format_string(cls, expression: Expression) -> str:
-        type_: Type = cls.get_expression_type(expression)
+        type_: Type = expression.type_
         match type_:
             case CharacterType():
                 return f"%c"
@@ -106,7 +93,7 @@ class Utils:
             case Type():
                 if type_.name == "string":
                     return f"%s"
-                assert False, f"internal compiler error, type with name {type_.name} not handled!"
+                assert False, f"internal compiler error, type with name {type_} not handled!"
             case _:
                 assert False, f"internal compiler error, {type(type_)} not handled!"
 

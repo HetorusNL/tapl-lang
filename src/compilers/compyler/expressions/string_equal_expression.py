@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 class StringEqualExpression(Expression):
     def __init__(self, inner: Expression, token: Token, filename: Path):
-        source_location: SourceLocation = inner.source_location + token.source_location
+        source_location: SourceLocation = inner.full_expression_source_location + token.source_location
         super().__init__(source_location)
         self.inner: Expression = inner
         self.token: Token = token

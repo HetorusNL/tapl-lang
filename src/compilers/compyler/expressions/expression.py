@@ -31,6 +31,10 @@ class Expression:
         # always store a copy of the type
         self._internal_type_ref_ = deepcopy(type_)
 
+    @property
+    def full_expression_source_location(self) -> SourceLocation:
+        return self.source_location
+
     def __str__(self) -> str:
         return f""
 

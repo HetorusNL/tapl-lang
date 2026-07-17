@@ -19,7 +19,6 @@ from ..types.type import Type
 from ..types.types import Types
 from ..utils.ast_collection import AstCollection
 from ..utils.source_location import SourceLocation
-from ..utils.utils import Utils
 from .scope_wrapper import ScopeWrapper
 from ..visitors.base_expression_visitor import BaseExpressionVisitor
 from ..visitors.base_statement_visitor import BaseStatementVisitor
@@ -48,8 +47,6 @@ class TypingPass(PassBase[None]):
         self.enum_scopes: dict[str, ScopeWrapper] = {}
         # store a stack of function return types
         self.function_stack: list[Type] = []
-        # store the type of the last processed identifier for the inner identifier checks
-        self.previous_identifier_type: Type | None = None
         # add the stdlib functions to the global scope
         self.add_stdlib_functions()
 
@@ -90,7 +87,7 @@ class TypingPass(PassBase[None]):
         self.scope_wrapper.scope.add_function(write_file_function.name.value, write_file_function)
 
     def check_function(self, function: FunctionStatement, expression: CallExpression) -> None:
-        identifier_token: IdentifierToken = expression.expression.identifier_token
+        identifier_token: IdentifierToken = expression.identifier_token
         # check that the amount of arguments are correct
         required_arguments: int = len(function.arguments)
         passed_arguments: int = len(expression.arguments)
@@ -110,7 +107,7 @@ class TypingPass(PassBase[None]):
             # check that the types are correct
             try:
                 # perform the type check, and catch an exception if it occurs
-                passed_argument_type: Type = Utils.get_expression_type(passed_argument)
+                passed_argument_type: Type = passed_argument.type_
                 self.check_types(required_argument_type, passed_argument_type, source_location)
             except TaplError:
                 # the type check failed, formulate a nice error for the user
@@ -144,9 +141,7 @@ class TypingPass(PassBase[None]):
         self.ast_error(message, source_location)
 
     def check_expression_types(self, left: Expression, right: Expression, source_location: SourceLocation) -> Type:
-        left_type = Utils.get_expression_type(left)
-        right_type = Utils.get_expression_type(right)
-        return self.check_types(left_type, right_type, source_location)
+        return self.check_types(left.type_, right.type_, source_location)
 
     def _check_number_token(self, requested_type: Type, expression: TokenExpression) -> Type:
         # TODO: add num bits to the token itself, instead of calculating it here

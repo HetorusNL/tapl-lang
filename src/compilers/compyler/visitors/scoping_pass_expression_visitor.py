@@ -30,21 +30,22 @@ class ScopingPassExpressionVisitor(BaseExpressionVisitor[None]):
 
     def visit_call_expression(self, expression: CallExpression) -> None:
         # check that the function name (possibly nested expressions) exists
-        self._pass_base.parse_expression(expression.expression)
+        self._pass_base.parse_expression(expression.base_expression)
         # check all argument expressions
         for argument in expression.arguments:
             self._pass_base.parse_expression(argument)
 
     def visit_enum_value_expression(self, expression: EnumValueExpression) -> None:
         # check that the enum name exists in the current or outer scopes
-        expression.identifier_expression.accept(self)
+        assert expression.base_expression
+        expression.base_expression.accept(self)
 
     def visit_identifier_expression(self, expression: IdentifierExpression) -> None:
         # TODO: uncomment below and fix
         # check that the identifier exists in the current or outer scopes
         # self._pass_base.get_identifier_type(expression.identifier_token)
         # check the inner expression
-        self._pass_base.parse_expression(expression.inner_expression)
+        self._pass_base.parse_expression(expression.base_expression)
 
     def visit_string_equal_expression(self, expression: StringEqualExpression) -> None:
         # check the inner expression of the string equal expression

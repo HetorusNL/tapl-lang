@@ -6,23 +6,26 @@
 
 from typing import TYPE_CHECKING
 
-from .expression import Expression
+from .identifier_expression import IdentifierExpression
+from ..tokens.identifier_token import IdentifierToken
+from ..types.class_type import ClassType
+from ..types.type import Type
 from ..utils.source_location import SourceLocation
 
 if TYPE_CHECKING:
     from ..visitors.base_expression_visitor import BaseExpressionVisitor
 
 
-class ThisExpression(Expression):
-    def __init__(self, source_location: SourceLocation, inner_expression: Expression):
-        super().__init__(source_location)
-        self.inner_expression: Expression = inner_expression
+class ThisExpression(IdentifierExpression):
+    def __init__(self, source_location: SourceLocation, identifier_token: IdentifierToken, type_: ClassType):
+        super().__init__(source_location, identifier_token)
+        self.type_: Type = type_
 
     def accept[T](self, visitor: BaseExpressionVisitor[T]) -> T:
         return visitor.visit_this_expression(self)
 
     def __str__(self) -> str:
-        return f"this.{self.inner_expression}"
+        return f"{self.identifier_token}"
 
     def __repr__(self) -> str:
-        return f"<ThisExpression: location {self.source_location}, this.{self.inner_expression}>"
+        return f"<ThisExpression: location {self.source_location}, {self.identifier_token}>"

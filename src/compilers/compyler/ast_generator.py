@@ -41,6 +41,7 @@ from .statements.return_statement import ReturnStatement
 from .statements.statement import Statement
 from .statements.var_decl_statement import VarDeclStatement
 from .tokens.identifier_token import IdentifierToken
+from .tokens.this_token import ThisToken
 from .tokens.token import Token
 from .tokens.type_token import TypeToken
 from .tokens.token_type import TokenType
@@ -169,8 +170,8 @@ class AstGenerator:
         return statements
 
     def assignment_statement(self, expression: Expression, must_end_with_newline: bool) -> AssignmentStatement | None:
-        # check that we have a ThisExpression or an identifier expression (return otherwise)
-        if not isinstance(expression, (ThisExpression, IdentifierExpression)):
+        # check that we have an identifier expression (return otherwise)
+        if not isinstance(expression, IdentifierExpression):
             return
         # check if there is a form of assignment, return if not
         if not AssignmentStatement.is_assignment_form_token(self.current()):
@@ -630,9 +631,6 @@ class AstGenerator:
         assert isinstance(class_type, ClassType)
         source_location += name.source_location
 
-        # construct the identifier token
-        identifier_token: IdentifierToken = IdentifierToken(name.source_location, name.name)
-
         # followed by a colon and newline
         self.expect(TokenType.COLON)
         self.expect_newline()
@@ -640,13 +638,13 @@ class AstGenerator:
         # check if we have an indented block
         if not self._has_indent():
             # otherwise return an empty class without any statement
-            return ClassStatement(identifier_token, class_type, source_location)
+            return ClassStatement(name, source_location)
 
         # we're in a class, so allow parsing class-specific syntax
         self._class_type = class_type
         try:
             # construct the class statement
-            class_statement: ClassStatement = ClassStatement(identifier_token, class_type, source_location)
+            class_statement: ClassStatement = ClassStatement(name, source_location)
             self._construct_class(class_statement, name)
         finally:
             # finished processing the class, we no longer allow parsing class-specific syntax
@@ -917,7 +915,7 @@ class AstGenerator:
         # match an identifier
         if token := self.match(TokenType.IDENTIFIER):
             assert isinstance(token, IdentifierToken)
-            return self.identifier_expression(token)
+            return self.identifier_expression(IdentifierExpression(token.source_location, token))
 
         # match a certain type calls or dot operators
         if token := self.match(TokenType.TYPE):
@@ -935,33 +933,21 @@ class AstGenerator:
 
             # check for an enum type here
             if isinstance(token.type_, EnumType):
-                # we expect a dot after the enum type
-                self.expect(TokenType.DOT)
-                # expect a nested identifier
-                identifier: Token = self.expect(TokenType.IDENTIFIER)
-                assert isinstance(identifier, IdentifierToken)
-                expression: Expression = self.identifier_expression(identifier)
-                assert isinstance(expression, IdentifierExpression)
-                return EnumValueExpression(token, expression)
+                return self.identifier_expression(IdentifierExpression(token.source_location, token))
 
             # otherwise we have something we cannot call, so error
             self.ast_error(f"cannot call {token.type_}, expected a callable type!")
 
         # match a this-expression
-        if this := self.match(TokenType.THIS):
-            source_location: SourceLocation = this.source_location
+        if token := self.match(TokenType.THIS):
+            assert isinstance(token, ThisToken)
+            source_location: SourceLocation = token.source_location
             # check that we're allowed to use this here
             if self._class_type is None:
                 self.ast_error(f"found 'this' while not in a class!")
-            # we expect a dot after this
-            self.expect(TokenType.DOT)
-            # expect a nested identifier
-            identifier: Token = self.expect(TokenType.IDENTIFIER)
-            assert isinstance(identifier, IdentifierToken)
-            expression: Expression = self.identifier_expression(identifier)
-            source_location += expression.source_location
-            # construct and return the this-expression
-            return ThisExpression(source_location, expression)
+            # construct the this expression, and set its type to the class type
+            this_expression: ThisExpression = ThisExpression(token.source_location, token, self._class_type)
+            return self.identifier_expression(this_expression)
 
         # otherwise we have an error, there must be an expression here
         self.ast_error(f"expected an expression, found '{self.current()}'!")
@@ -989,42 +975,62 @@ class AstGenerator:
     def string_interpolation_expression(self, string_expression: StringExpression) -> None:
         # when it is a start of an expression, parse it
         expression: Expression = self.expression()
-        # check for the end of the expression and expression modifiers
+
+        if token := self.match(TokenType.STRING_EXPR_END):
+            # found an expression end, add the expression and end to the string expression and return
+            string_expression.add_token(expression)
+            string_expression.add_token(token)
+            return
+
+        if equal_token := self.match(TokenType.EQUAL):
+            # found a string equal expression, add it to the string expression and continue
+            string_expression.add_token(StringEqualExpression(expression, equal_token, self._filename))
+            string_expression.add_token(self.expect(TokenType.STRING_EXPR_END))
+            return
+
+        # later expression format modifiers can be added here as well
+        self.ast_error(f"expected '}}' or '=', but found {self.current()}!")
+
+    def identifier_expression(self, expression: IdentifierExpression) -> Expression:
+        # continuously parse the expressions for function calls and dot operators
         while True:
-            if token := self.match(TokenType.STRING_EXPR_END):
-                # found an expression end, add the expression and end to the string expression and return
-                string_expression.add_token(expression)
-                string_expression.add_token(token)
-                return
-            elif equal_token := self.match(TokenType.EQUAL):
-                # found a string equal expression, add it to the string expression and continue
-                string_expression.add_token(StringEqualExpression(expression, equal_token, self._filename))
-                string_expression.add_token(self.expect(TokenType.STRING_EXPR_END))
-                return
+            # check for increment and decrement, return when found (as they can't have a dot or call)
+            if increment_token := self.match(TokenType.INCREMENT):
+                source_location: SourceLocation = expression.source_location + increment_token.source_location
+                return UnaryExpression(source_location, ExpressionType.POST_INCREMENT, expression)
+            elif decrement_token := self.match(TokenType.DECREMENT):
+                source_location: SourceLocation = expression.source_location + decrement_token.source_location
+                return UnaryExpression(source_location, ExpressionType.POST_DECREMENT, expression)
+
+            # check for a function call
+            elif self.match(TokenType.PAREN_OPEN):
+                # transform the identifier expression to a call expression
+                expression = self.call_expression(expression)
+
+            # check for a dot
+            elif self.match(TokenType.DOT):
+                # extract the token and identifier expression for the next identifier
+                token: Token = self.expect(TokenType.IDENTIFIER)
+                assert isinstance(token, IdentifierToken)
+
+                # check for an enum type to create an EnumValueExpression
+                if isinstance(expression.identifier_token, TypeToken):
+                    # check for an enum type here
+                    if isinstance(expression.identifier_token.type_, EnumType):
+                        next_expression: IdentifierExpression = EnumValueExpression(token.source_location, token)
+                    else:
+                        assert False
+                else:
+                    next_expression: IdentifierExpression = IdentifierExpression(token.source_location, token)
+
+                # set the base expression of the next identifier to the current expression
+                next_expression.base_expression = expression
+                # set the next expression as expression for the next iteration of the loop
+                expression = next_expression
+
+            # if we don't have a function call or dot, then we're done
             else:
-                # later expression format modifiers can be added here as well
-                self.ast_error(f"expected '}}' or '=', but found {self.current()}!")
-
-    def identifier_expression(self, token: IdentifierToken) -> Expression:
-        expression: IdentifierExpression = IdentifierExpression(token.source_location, token)
-
-        # check for increment and decrement
-        if increment_token := self.match(TokenType.INCREMENT):
-            source_location: SourceLocation = expression.source_location + increment_token.source_location
-            return UnaryExpression(source_location, ExpressionType.POST_INCREMENT, expression)
-        if decrement_token := self.match(TokenType.DECREMENT):
-            source_location: SourceLocation = expression.source_location + decrement_token.source_location
-            return UnaryExpression(source_location, ExpressionType.POST_DECREMENT, expression)
-
-        # check for a function call
-        if self.match(TokenType.PAREN_OPEN):
-            return self.call_expression(expression)
-
-        # check for a dot
-        if self.match(TokenType.DOT):
-            inner_token: Token = self.expect(TokenType.IDENTIFIER)
-            assert isinstance(inner_token, IdentifierToken)
-            expression.inner_expression = self.identifier_expression(inner_token)
+                break
 
         # otherwise return the bare token expression
         return expression

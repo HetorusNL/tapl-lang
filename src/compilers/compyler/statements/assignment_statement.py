@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 
 from ..expressions.expression import Expression
 from ..expressions.identifier_expression import IdentifierExpression
-from ..expressions.this_expression import ThisExpression
 from .statement import Statement
 from ..tokens.token import Token
 from ..tokens.token_type import TokenType
@@ -29,10 +28,10 @@ class AssignmentStatement(Statement):
             TokenType.STAR_EQUAL,
         }
 
-    def __init__(self, expression: ThisExpression | IdentifierExpression, assignment_token: Token, value: Expression):
+    def __init__(self, expression: IdentifierExpression, assignment_token: Token, value: Expression):
         source_location: SourceLocation = expression.source_location + value.source_location
         super().__init__(source_location)
-        self.expression: ThisExpression | IdentifierExpression = expression
+        self.expression: IdentifierExpression = expression
         message: str = f"internal compiler error, expected assignment form token, got {assignment_token.token_type}"
         assert AssignmentStatement.is_assignment_form_token(assignment_token), message
         self.assignment_token: Token = assignment_token

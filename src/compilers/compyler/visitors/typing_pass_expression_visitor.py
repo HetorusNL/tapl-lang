@@ -33,7 +33,6 @@ from ..types.list_type import ListType
 from ..types.numeric_type import NumericType
 from ..types.type import Type
 from ..utils.source_location import SourceLocation
-from ..utils.utils import Utils
 
 if TYPE_CHECKING:
     from ..ast_checks.typing_pass import TypingPass
@@ -56,66 +55,68 @@ class TypingPassExpressionVisitor(BaseExpressionVisitor[None]):
             expression.type_ = self._typing_pass.types["bool"]
 
     def visit_call_expression(self, expression: CallExpression) -> None:
-        # assert that we don't have an inner expression in the identifier expression
-        assert expression.expression.inner_expression is None
-        identifier_token: IdentifierToken = expression.expression.identifier_token
-        if self._typing_pass.previous_identifier_type:
+        # first parse the base expression (if it exists)
+        self._typing_pass.parse_expression(expression.base_expression)
+
+        identifier_token: IdentifierToken = expression.identifier_token
+        base_expression_type: Type | None = expression.base_expression.type_ if expression.base_expression else None
+        if base_expression_type:
             # if the previous identifier is a list or class, we can call certain functions
-            type_: Type = self._typing_pass.previous_identifier_type
-            # reset the previous identifier type
-            self._typing_pass.previous_identifier_type = None
-            if isinstance(type_, ListType):
+            if isinstance(base_expression_type, ListType):
                 # check the arguments
                 # TODO: add type and number of arguments checking to arguments of list functions
                 for argument in expression.arguments:
                     self._typing_pass.parse_expression(argument)
-                if identifier_token.value in type_.callable_functions():
-                    return_value_keyword = type_.callable_functions()[identifier_token.value]
+                if identifier_token.value in base_expression_type.callable_functions():
+                    return_value_keyword = base_expression_type.callable_functions()[identifier_token.value]
                     return_value_type: Type = self._typing_pass.types[return_value_keyword]
                     expression.type_ = return_value_type
-                    expression.expression.type_ = return_value_type
                     return
-            if isinstance(type_, ClassType):
-                class_keyword: str = type_.keyword
+
+            if isinstance(base_expression_type, ClassType):
+                class_keyword: str = base_expression_type.keyword
                 function_name: str = identifier_token.value
                 # add the identifier stack class type to the expression
-                expression.class_type = type_
+                expression.class_type = base_expression_type
                 if function := self._typing_pass.class_scopes[class_keyword].scope.get_function(function_name):
                     self._typing_pass.check_function(function, expression)
                     expression.type_ = function.return_type.type_
-                    expression.expression.type_ = expression.type_
                     return
-            if isinstance(type_, EnumType):
+
+            if isinstance(base_expression_type, EnumType):
                 # check that the function can be called on an enum
-                if identifier_token.value in type_.callable_functions():
-                    return_value_keyword = type_.callable_functions()[identifier_token.value]
+                if identifier_token.value in base_expression_type.callable_functions():
+                    return_value_keyword = base_expression_type.callable_functions()[identifier_token.value]
                     return_value_type: Type = self._typing_pass.types[return_value_keyword]
                     expression.type_ = return_value_type
-                    expression.expression.type_ = return_value_type
                     return
+
             # otherwise it's not callable, add the error
             source_location: SourceLocation = identifier_token.source_location
-            self._typing_pass.ast_error(
-                f"identifier '{identifier_token}' of a '{type_}' is not callable!", source_location
-            )
+            message: str = f"identifier '{identifier_token}' of a '{base_expression_type}' is not callable!"
+            self._typing_pass.ast_error(message, source_location)
+
         elif function := self._typing_pass.scope_wrapper.scope.get_function(identifier_token.value):
             self._typing_pass.check_function(function, expression)
             # set the return type of the function as expression type
             expression.type_ = self._typing_pass.get_identifier_type(identifier_token)
-            expression.expression.type_ = expression.type_
             return
-        elif isinstance(expression.expression.type_, ClassType):
+
+        elif isinstance(expression.type_, ClassType):
             function_name: str = identifier_token.value
             function = self._typing_pass.scope_wrapper.scope.get_function(function_name)
             assert function
             self._typing_pass.check_function(function, expression)
             # if the expression type is a class, we can call the class name as constructor
-            expression.type_ = expression.expression.type_
             return
+
         source_location: SourceLocation = identifier_token.source_location
         self._typing_pass.ast_error(f"identifier '{identifier_token}' is not callable!", source_location)
 
     def visit_enum_value_expression(self, expression: EnumValueExpression) -> None:
+        # check the base expression if it exists
+        self._typing_pass.parse_expression(expression.base_expression)
+
         # check that the enum itself exists
         type_: Type = expression.type_token.type_
         if type_.keyword not in self._typing_pass.enum_scopes:
@@ -125,44 +126,29 @@ class TypingPassExpressionVisitor(BaseExpressionVisitor[None]):
 
         # check that the enum value exists in the enum scope
         enum_scope: ScopeWrapper = self._typing_pass.enum_scopes[type_.keyword]
-        if not enum_scope.scope.get_identifier(expression.identifier_expression.identifier_token.value):
-            value: str = f"{expression.identifier_expression.identifier_token}"
+        if not enum_scope.scope.get_identifier(expression.identifier_token.value):
+            value: str = f"{expression.identifier_token}"
             message: str = f"enum value '{value}' is not defined in enum '{type_.keyword}'!"
             self._typing_pass.ast_error(message, expression.source_location)
             return
 
-        # set the type of the enum value to the expression and inner identifier expression
+        # set the type of the enum value to the expression
         expression.type_ = type_
-        expression.identifier_expression.type_ = type_
-
-        # visit the inner identifier expression
-        expression.identifier_expression.accept(self)
 
     def visit_identifier_expression(self, expression: IdentifierExpression) -> None:
-        # TODO: implement
-        with self._typing_pass.new_scope():
-            # check if the expression already has a type, then use that
-            type_: Type = expression.type_
-            has_type: bool = type_ != Type.unknown()
-            if not has_type:
-                # otherwise get the type from the identifier token
-                type_ = self._typing_pass.get_identifier_type(expression.identifier_token)
+        # first parse the base expression (if it exists)
+        self._typing_pass.parse_expression(expression.base_expression)
 
-            is_class: bool = isinstance(type_, ClassType)
-            if is_class:
-                expression.class_type = type_
-            self._typing_pass.previous_identifier_type = type_
-            if isinstance(type_, ListType):
-                expression.list_type = type_
-            try:
-                if expression.inner_expression:
-                    self._typing_pass.parse_expression(expression.inner_expression)
-                    if not has_type:
-                        expression.type_ = type_
-            finally:
-                self._typing_pass.previous_identifier_type = None
-        if not has_type:
+        # then process the identifier itself
+        with self._typing_pass.new_scope():
+            # check if the expression does not have a type already
+            has_type: bool = expression.type_ != Type.unknown()
+            assert not has_type
+
             expression.type_ = self._typing_pass.get_identifier_type(expression.identifier_token)
+            if isinstance(expression.type_, ListType):
+                expression.list_type = expression.type_
+            assert expression.type_
 
     def visit_string_equal_expression(self, expression: StringEqualExpression) -> None:
         # check the inner expression of the string equal expression
@@ -177,9 +163,8 @@ class TypingPassExpressionVisitor(BaseExpressionVisitor[None]):
         expression.type_ = self._typing_pass.types["string"]
 
     def visit_this_expression(self, expression: ThisExpression) -> None:
-        self._typing_pass.parse_expression(expression.inner_expression)
-        # TODO: should be class type, as it is an instance?
-        expression.type_ = expression.inner_expression.type_
+        self._typing_pass.parse_expression(expression.base_expression)
+        expression.type_.is_reference = True
 
     def visit_token_expression(self, expression: TokenExpression) -> None:
         match expression.token:
@@ -213,7 +198,7 @@ class TypingPassExpressionVisitor(BaseExpressionVisitor[None]):
     def visit_type_cast_expression(self, expression: TypeCastExpression) -> None:
         # get the type of the inner expression
         self._typing_pass.parse_expression(expression.expression)
-        inner_type: Type = Utils.get_expression_type(expression.expression)
+        inner_type: Type = expression.expression.type_
         cast_to_type: Type = expression.cast_to.type_
         # check that both are castable
         inner_type_castable: bool = isinstance(inner_type, (CharacterType, NumericType))
@@ -228,7 +213,7 @@ class TypingPassExpressionVisitor(BaseExpressionVisitor[None]):
     def visit_unary_expression(self, expression: UnaryExpression) -> None:
         # first parse the inner expression, and get its type
         self._typing_pass.parse_expression(expression.expression)
-        inner_type: Type = Utils.get_expression_type(expression.expression)
+        inner_type: Type = expression.expression.type_
         if expression.expression_type == ExpressionType.GROUPING:
             # if it's a grouping, anything goes, our type is the inner type
             expression.type_ = inner_type

@@ -433,3 +433,8 @@ FancyEnum enum_instance = FancyEnum.VALUE3
 println("enum_instance (VALUE3): {enum_instance=}, to_string(): {enum_instance.to_string()=}")
 enum_instance = FancyEnum.VALUE5
 println("enum_instance (VALUE5): {enum_instance=}, to_string(): {enum_instance.to_string()=}")
+
+println("\nand we can also create a list of enums and use them")
+list[FancyEnum] enum_list
+enum_list.add(FancyEnum.VALUE0)
+println("enum_list[0]: {enum_list.get(0)=}, to_string(): {enum_list.get(0).to_string()=}")

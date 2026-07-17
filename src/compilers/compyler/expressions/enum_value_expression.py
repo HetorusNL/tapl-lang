@@ -6,8 +6,8 @@
 
 from typing import TYPE_CHECKING
 
-from .expression import Expression
 from .identifier_expression import IdentifierExpression
+from ..tokens.identifier_token import IdentifierToken
 from ..tokens.type_token import TypeToken
 from ..utils.source_location import SourceLocation
 
@@ -15,18 +15,21 @@ if TYPE_CHECKING:
     from ..visitors.base_expression_visitor import BaseExpressionVisitor
 
 
-class EnumValueExpression(Expression):
-    def __init__(self, type_token: TypeToken, identifier_expression: IdentifierExpression):
-        source_location: SourceLocation = type_token.source_location + identifier_expression.source_location
-        super().__init__(source_location)
-        self.type_token: TypeToken = type_token
-        self.identifier_expression: IdentifierExpression = identifier_expression
+class EnumValueExpression(IdentifierExpression):
+    def __init__(self, source_location: SourceLocation, identifier_token: IdentifierToken):
+        super().__init__(source_location, identifier_token)
+
+    @property
+    def type_token(self) -> TypeToken:
+        assert self.base_expression
+        assert isinstance(self.base_expression.identifier_token, TypeToken)
+        return self.base_expression.identifier_token
 
     def accept[T](self, visitor: BaseExpressionVisitor[T]) -> T:
         return visitor.visit_enum_value_expression(self)
 
     def __str__(self) -> str:
-        return f"{self.type_token.type_}.{self.identifier_expression}"
+        return f"{self._base_str()}{self.identifier_token}"
 
     def __repr__(self) -> str:
-        return f"<EnumValueExpression, enum {self.type_token.type_}, value {self.identifier_expression}>"
+        return f"<EnumValueExpression: location {self.source_location}, {self.identifier_token}{self._base_repr()}>"

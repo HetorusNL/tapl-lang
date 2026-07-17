@@ -31,19 +31,21 @@ class VerifyTypesExpressionVisitor(BaseExpressionVisitor[None]):
         expression.right.accept(self)
 
     def visit_call_expression(self, expression: CallExpression) -> None:
-        self.verify(expression)
-        expression.expression.accept(self)
+        # process the internal IdentifierExpression
+        self.visit_identifier_expression(expression)
+        # process the CallExpression specifics
         for argument in expression.arguments:
             argument.accept(self)
 
     def visit_enum_value_expression(self, expression: EnumValueExpression) -> None:
-        self.verify(expression)
-        expression.identifier_expression.accept(self)
+        # process the internal IdentifierExpression
+        self.visit_identifier_expression(expression)
+        # nothing specific to do for the EnumValueExpression
 
     def visit_identifier_expression(self, expression: IdentifierExpression) -> None:
+        if expression.base_expression:
+            expression.base_expression.accept(self)
         self.verify(expression)
-        if expression.inner_expression:
-            expression.inner_expression.accept(self)
 
     def visit_string_equal_expression(self, expression: StringEqualExpression) -> None:
         self.verify(expression)
@@ -56,8 +58,9 @@ class VerifyTypesExpressionVisitor(BaseExpressionVisitor[None]):
                 element.accept(self)
 
     def visit_this_expression(self, expression: ThisExpression) -> None:
-        self.verify(expression)
-        expression.inner_expression.accept(self)
+        # process the internal IdentifierExpression
+        self.visit_identifier_expression(expression)
+        # nothing specific to do for the ThisExpression
 
     def visit_token_expression(self, expression: TokenExpression) -> None:
         self.verify(expression)

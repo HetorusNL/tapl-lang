@@ -28,6 +28,7 @@ from ..statements.print_statement import PrintStatement
 from ..statements.return_statement import ReturnStatement
 from ..statements.statement import Statement
 from ..statements.var_decl_statement import VarDeclStatement
+from ..utils.enum_entry import EnumEntry
 from ..utils.utils import Utils
 from ..visitors.base_statement_visitor import BaseStatementVisitor
 
@@ -95,6 +96,10 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
         return "continue;"
 
     def visit_enum_statement(self, statement: EnumStatement) -> str:
+        # utility functions used in this EnumStatement
+        def _value(entry: EnumEntry) -> str:
+            return f"{statement.enum_type}_enum_{entry.name}"
+
         # start with the typedef
         code: str = f"typedef enum {statement.enum_type}_enum {statement.enum_type};\n"
 
@@ -103,7 +108,7 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
 
         # add all enum entries
         for entry in statement.get_entries():
-            code += f"{entry.name} = {entry.value.accept(self._expression_visitor)},\n"
+            code += f"{_value(entry)} = {entry.value.accept(self._expression_visitor)},\n"
 
         # end with the closing bracket
         code += f"}};\n"
@@ -119,7 +124,7 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
 
         # add all enum entries to the switch statement
         for entry in statement.get_entries():
-            code += f"case {entry.name}:\n"
+            code += f"case {_value(entry)}:\n"
             code += f"return {entry.string_value.accept(self._expression_visitor)};\n"
 
         # end the switch statement
@@ -263,14 +268,14 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
             # add the declaration
             match statement.statement_type:
                 case LifecycleStatementType.CONSTRUCTOR:
-                    code += f"void {statement.type_.name}_constructor("
+                    code += f"void {statement.type_}_constructor("
                 case LifecycleStatementType.DESTRUCTOR:
-                    code += f"void {statement.type_.name}_destructor("
+                    code += f"void {statement.type_}_destructor("
 
             # create a list of argument type-name pairs, start with the pointer to the instance
-            arguments: list[str] = [f"{statement.type_.name}* this"]
+            arguments: list[str] = [f"{statement.type_}* this"]
             for argument_type, argument_name in statement.arguments:
-                arguments.append(f"{argument_type.type_.name} {argument_name}")
+                arguments.append(f"{argument_type.type_} {argument_name}")
             # add the arguments
             code += ", ".join(arguments)
             code += f")"

@@ -47,9 +47,7 @@ class TestTypeApplier(unittest.TestCase):
         self.assertIn("OtherClass", type_token_keywords)
 
         # extract the identifier tokens and their names
-        identifier_tokens: list[IdentifierToken] = [
-            token for token in tokens.objects if isinstance(token, IdentifierToken)
-        ]
+        identifier_tokens: list[IdentifierToken] = [token for token in tokens.objects if type(token) is IdentifierToken]
         identifier_values: list[str] = [token.value for token in identifier_tokens]
 
         # check that the type identifiers no longer exist in the token stream

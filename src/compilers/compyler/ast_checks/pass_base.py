@@ -88,6 +88,7 @@ class PassBase[T]:
 
     def add_identifier(self, identifier_token: IdentifierToken, type_: Type):
         """first checks if the identifier already exists in innermost scope, otherwise adds identifier"""
+        assert type_ != Type.unknown()
         identifier: str = identifier_token.value
         # check in the innermost scope if the identifier already exists
         if identifier in self.scope_wrapper.scope.identifiers:

@@ -28,7 +28,6 @@ from ..statements.return_statement import ReturnStatement
 from ..statements.var_decl_statement import VarDeclStatement
 from ..types.type import Type
 from ..utils.source_location import SourceLocation
-from ..utils.utils import Utils
 
 if TYPE_CHECKING:
     from ..ast_checks.typing_pass import TypingPass
@@ -54,7 +53,7 @@ class TypingPassStatementVisitor(BaseStatementVisitor[None]):
 
     def visit_class_statement(self, statement: ClassStatement) -> None:
         with self._typing_pass.clean_scope() as class_scope:
-            self._typing_pass.class_scopes[statement.class_type.keyword] = class_scope
+            self._typing_pass.class_scopes[statement.class_name] = class_scope
             # add the stdlib functions to the class scope
             self._typing_pass.add_stdlib_functions()
             # parse the variables in the class
@@ -74,7 +73,7 @@ class TypingPassStatementVisitor(BaseStatementVisitor[None]):
 
         # construct the function statement for the class constructor
         constructor_function: ConstructorFunctionStatement = ConstructorFunctionStatement(
-            return_type=statement.type_token,
+            return_type=statement.name,
             name=statement.name,
             class_type=statement.class_type,
         )
@@ -202,7 +201,7 @@ class TypingPassStatementVisitor(BaseStatementVisitor[None]):
             self._typing_pass.ast_error(message, source_location)
         if statement.value:
             self._typing_pass.parse_expression(statement.value)
-            return_value_type: Type = Utils.get_expression_type(statement.value)
+            return_value_type: Type = statement.value.type_
             source_location: SourceLocation = statement.value.source_location
             try:
                 # perform type checking on the requested return type and provided return value,
@@ -224,5 +223,4 @@ class TypingPassStatementVisitor(BaseStatementVisitor[None]):
             # check that the expression is of this type
             self._typing_pass.parse_expression(initial_value)
             # check that returned type and requested are valid
-            initial_value_type: Type = Utils.get_expression_type(initial_value)
-            self._typing_pass.check_types(requested_type, initial_value_type, initial_value.source_location)
+            self._typing_pass.check_types(requested_type, initial_value.type_, initial_value.source_location)

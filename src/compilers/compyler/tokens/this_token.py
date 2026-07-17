@@ -5,15 +5,14 @@
 # This file is part of compyler, a TAPL compiler.
 
 from .token_type import TokenType
-from .token import Token
+from .identifier_token import IdentifierToken
 from ..utils.source_location import SourceLocation
 
 
-class IdentifierToken(Token):
-    def __init__(self, source_location: SourceLocation, value: str, token_type: TokenType = TokenType.IDENTIFIER):
-        super().__init__(token_type, source_location)
-        # store the additional properties in the class
-        self.value: str = value
+class ThisToken(IdentifierToken):
+    def __init__(self, source_location: SourceLocation, value: str):
+        super().__init__(source_location, value)
+        self.token_type = TokenType.THIS
 
     def __str__(self) -> str:
         return f"{self.value}"

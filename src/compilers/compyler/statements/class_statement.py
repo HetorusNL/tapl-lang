@@ -11,7 +11,6 @@ from .lifecycle_statement import LifecycleStatement
 from .list_statement import ListStatement
 from .statement import Statement
 from .var_decl_statement import VarDeclStatement
-from ..tokens.identifier_token import IdentifierToken
 from ..tokens.type_token import TypeToken
 from ..types.class_type import ClassType
 from ..utils.source_location import SourceLocation
@@ -21,11 +20,10 @@ if TYPE_CHECKING:
 
 
 class ClassStatement(Statement):
-    def __init__(self, name: IdentifierToken, class_type: ClassType, source_location: SourceLocation):
+    def __init__(self, name: TypeToken, source_location: SourceLocation):
         super().__init__(source_location)
-        self.name: IdentifierToken = name
-        self.class_type: ClassType = class_type
-        self.type_token: TypeToken = TypeToken(name.source_location, class_type)
+        assert isinstance(name.type_, ClassType)
+        self.name: TypeToken = name
         # store everything that can be in a class statement in the class
         self.variables: list[VarDeclStatement | ListStatement] = []
         self.functions: list[FunctionStatement] = []
@@ -36,8 +34,19 @@ class ClassStatement(Statement):
     def accept[T](self, visitor: BaseStatementVisitor[T]) -> T:
         return visitor.visit_class_statement(self)
 
+    @property
+    def class_name(self) -> str:
+        """syntactic sugar for the keyword of the type of the type token"""
+        return f"{self.name}"
+
+    @property
+    def class_type(self) -> ClassType:
+        """syntactic sugar for the class type inside the type token"""
+        assert isinstance(self.name.type_, ClassType)
+        return self.name.type_
+
     def __str__(self) -> str:
-        return f"class {self.class_type}: ..."
+        return f"class {self.class_name}: ..."
 
     def __repr__(self) -> str:
-        return f"<ClassStatement, location {self.source_location}, class {self.class_type}>"
+        return f"<ClassStatement, location {self.source_location}, class {self.class_name}>"

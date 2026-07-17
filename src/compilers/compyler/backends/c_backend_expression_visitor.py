@@ -24,6 +24,7 @@ from ..tokens.string_chars_token import StringCharsToken
 from ..tokens.token import Token
 from ..tokens.token_type import TokenType
 from ..types.enum_type import EnumType
+from ..types.list_type import ListType
 from ..utils.utils import Utils
 from ..visitors.base_expression_visitor import BaseExpressionVisitor
 
@@ -39,87 +40,76 @@ class CBackendExpressionVisitor(BaseExpressionVisitor[str]):
         return f"({left_code} {token_code} {right_code})"
 
     def visit_call_expression(self, expression: CallExpression) -> str:
+        # utility functions used in this CallExpression
+        def _dereference() -> str:
+            assert expression.base_expression
+            return f"" if expression.base_expression.type_.is_reference else f"&"
+
+        def _get_argument_code(argument: Expression) -> str:
+            if isinstance(argument, IdentifierExpression):
+                if isinstance(argument.type_, ListType) and not argument.type_.is_reference:
+                    return f"&{argument.identifier_token}"
+            return argument.accept(self)
+
+        def _get_receiver_code(base_expression: IdentifierExpression) -> str:
+            base_expression_code: str = base_expression.accept(self)
+            if isinstance(base_expression.type_, ListType) and not base_expression.type_.is_reference:
+                return f"&{base_expression_code}"
+            return base_expression_code
+
+        def _get_passed_arguments() -> list[str]:
+            # get the code of the arguments in the expression
+            arguments_code: list[str] = []
+            for argument in expression.arguments:
+                arguments_code.append(_get_argument_code(argument))
+            return arguments_code
+
+        def _formulate_call(first_argument: str | None, full_name: str) -> str:
+            arguments_code: list[str] = [first_argument] if first_argument else []
+            arguments_code.extend(_get_passed_arguments())
+            arguments_str: str = ", ".join(arguments_code)
+            return f"{full_name}({arguments_str})"
+
         # construct the function name
-        function_name: str = f"{expression.expression.identifier_token}"
+        function_name: str = f"{expression.identifier_token}"
 
-        # if the call has been consumed, return an empty string
-        if expression.call_consumed:
-            return f""
+        if expression.base_expression:
+            if expression.class_type:
+                full_name: str = f"{expression.class_type}_{function_name}"
+                # formulate the instance (pointer) and get the code of the arguments in the expression
+                instance: str = f"{_dereference()}{_get_receiver_code(expression.base_expression)}"
+                return _formulate_call(instance, full_name)
 
-        # otherwise this should generate a function call
-        # build the argument list
-        arguments: list[str] = []
-        # if it's a class method call, prepend the 'this' argument
-        if expression.class_type:
-            arguments.append("this")
-        for argument in expression.arguments:
-            arguments.append(argument.accept(self))
-        arguments_string: str = ", ".join(arguments)
+            if expression.base_expression.list_type:
+                full_name: str = f"list_{expression.base_expression.list_type.inner_type}_{function_name}"
+                # formulate the instance pointer and get the code of the arguments in the expression
+                instance_pointer: str = _get_receiver_code(expression.base_expression)
+                return _formulate_call(instance_pointer, full_name)
 
-        # if it's a class method call, prepend the class name
-        if expression.class_type:
-            function_name = f"{expression.class_type}_{function_name}"
+            if isinstance(expression.base_expression.type_, EnumType):
+                full_name: str = f"{expression.base_expression.type_}_enum_{function_name}"
+                # formulate the value from base expression and get the code of the arguments in the expression
+                value: str = _get_receiver_code(expression.base_expression)
+                return _formulate_call(value, full_name)
 
-        # construct and return the whole function call
-        return f"{function_name}({arguments_string})"
+        # this should generate a function call
+        return _formulate_call(None, function_name)
 
     def visit_enum_value_expression(self, expression: EnumValueExpression) -> str:
-        if name := expression.identifier_expression.inner_function_call():
-            # we need to create a function call of the outermost enum value
-            full_name: str = f"{expression.type_token.name}_enum_{name}"
-            return f"{full_name}({expression.identifier_expression.accept(self)})"
-        return expression.identifier_expression.accept(self)
+        full_name: str = f"{expression.type_token.name}_enum_{expression.identifier_token}"
+        return full_name
 
     def visit_identifier_expression(self, expression: IdentifierExpression) -> str:
         # utility functions used in this IdentifierExpression
         def _join() -> str:
+            if expression.base_expression and expression.base_expression.identifier_token.token_type == TokenType.THIS:
+                return "->"
             return "->" if expression.type_.is_reference else "."
 
-        def _get_arguments_str() -> str:
-            # get the code of the arguments in the expression
-            arguments_code: list[str] = []
-            for argument in expression.get_arguments():
-                arguments_code.append(argument.accept(self))
+        if expression.base_expression:
+            return f"{expression.base_expression.accept(self)}{_join()}{expression.identifier_token}"
 
-            # formulate and return the comma-separated argument string
-            arguments: list[str] = [f"{expression.dereference()}{_inner_code()}", *arguments_code]
-            arguments_str: str = ", ".join(arguments)
-            return arguments_str
-
-        def _inner_code() -> str:
-            # only if we have an inner expression that has not been consumed, return it
-            if expression.inner_expression:
-                inner_code: str = expression.inner_expression.accept(self)
-                if inner_code:
-                    return f"{expression.identifier_token}{_join()}{expression.inner_expression.accept(self)}"
-
-            return f"{expression.identifier_token}"
-
-        # if this is a class, check if there is a call expression inside
-        if expression.class_type:
-            if name := expression.inner_function_call():
-                # we need to create a function call of the outermost function
-                full_name: str = f"{expression.class_type}_{name}"
-                return f"{full_name}({_get_arguments_str()})"
-
-        # if this is an enum, check if there is a call expression inside
-        if isinstance(expression.type_, EnumType):
-            if name := expression.inner_function_call():
-                # we need to create a function call of the outermost enum value
-                full_name: str = f"{expression.type_.name}_enum_{name}"
-                return f"{full_name}({_get_arguments_str()})"
-
-        # if this is a list, check if there is a call expression inside
-        if expression.list_type:
-            if name := expression.inner_function_call():
-                # we need to create a function call of the outermost list
-                full_name: str = f"list_{expression.list_type.inner_type}_{name}"
-                return f"{full_name}({_get_arguments_str()})"
-            # pass the address of the list type, not by value
-            return f"{expression.dereference()}{_inner_code()}"
-
-        # otherwise simply return the identifier with potential inner expressions
-        return _inner_code()
+        return f"{expression.identifier_token}"
 
     def visit_string_equal_expression(self, expression: StringEqualExpression) -> str:
         inner_code: str = expression.inner.accept(self)
@@ -184,11 +174,7 @@ class CBackendExpressionVisitor(BaseExpressionVisitor[str]):
         return print_string
 
     def visit_this_expression(self, expression: ThisExpression) -> str:
-        # if the inner expression is a CallExpression, transform it into a function call
-        if isinstance(expression.inner_expression, CallExpression):
-            return f"{expression.inner_expression.accept(self)}"
-        # otherwise return a 'this' variable access on the class instance pointer
-        return f"this->{expression.inner_expression.accept(self)}"
+        return f"{expression}"
 
     def visit_token_expression(self, expression: TokenExpression) -> str:
         match expression.token.token_type:
