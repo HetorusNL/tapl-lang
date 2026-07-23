@@ -4,6 +4,7 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
+from ..errors.visitor_error import VisitorError
 from ..expressions.binary_expression import BinaryExpression
 from ..expressions.call_expression import CallExpression
 from ..expressions.enum_value_expression import EnumValueExpression
@@ -19,34 +20,34 @@ from ..expressions.unary_expression import UnaryExpression
 
 class BaseExpressionVisitor[T]:
     def visit_binary_expression(self, expression: BinaryExpression) -> T:
-        raise NotImplementedError(f"ExpressionVisitor not implemented for {type(expression)}")
+        raise VisitorError(self, expression)
 
     def visit_call_expression(self, expression: CallExpression) -> T:
-        raise NotImplementedError(f"ExpressionVisitor not implemented for {type(expression)}")
+        raise VisitorError(self, expression)
 
     def visit_enum_value_expression(self, expression: EnumValueExpression) -> T:
-        raise NotImplementedError(f"ExpressionVisitor not implemented for {type(expression)}")
+        raise VisitorError(self, expression)
 
     def visit_expression(self, expression: Expression) -> T:
-        raise NotImplementedError(f"ExpressionVisitor not implemented for {type(expression)}")
+        raise VisitorError(self, expression)
 
     def visit_identifier_expression(self, expression: IdentifierExpression) -> T:
-        raise NotImplementedError(f"ExpressionVisitor not implemented for {type(expression)}")
+        raise VisitorError(self, expression)
 
     def visit_string_equal_expression(self, expression: StringEqualExpression) -> T:
-        raise NotImplementedError(f"ExpressionVisitor not implemented for {type(expression)}")
+        raise VisitorError(self, expression)
 
     def visit_string_expression(self, expression: StringExpression) -> T:
-        raise NotImplementedError(f"ExpressionVisitor not implemented for {type(expression)}")
+        raise VisitorError(self, expression)
 
     def visit_this_expression(self, expression: ThisExpression) -> T:
-        raise NotImplementedError(f"ExpressionVisitor not implemented for {type(expression)}")
+        raise VisitorError(self, expression)
 
     def visit_token_expression(self, expression: TokenExpression) -> T:
-        raise NotImplementedError(f"ExpressionVisitor not implemented for {type(expression)}")
+        raise VisitorError(self, expression)
 
     def visit_type_cast_expression(self, expression: TypeCastExpression) -> T:
-        raise NotImplementedError(f"ExpressionVisitor not implemented for {type(expression)}")
+        raise VisitorError(self, expression)
 
     def visit_unary_expression(self, expression: UnaryExpression) -> T:
-        raise NotImplementedError(f"ExpressionVisitor not implemented for {type(expression)}")
+        raise VisitorError(self, expression)

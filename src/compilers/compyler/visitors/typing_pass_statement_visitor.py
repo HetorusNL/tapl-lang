@@ -7,7 +7,6 @@
 from typing import TYPE_CHECKING
 
 from .base_statement_visitor import BaseStatementVisitor
-from ..errors.tapl_error import TaplError
 from ..statements.assignment_statement import AssignmentStatement
 from ..statements.break_statement import BreakStatement
 from ..statements.breakall_statement import BreakallStatement
@@ -24,6 +23,7 @@ from ..statements.lifecycle_statement import LifecycleStatement
 from ..statements.list_statement import ListStatement
 from ..statements.module_statement import ModuleStatement
 from ..statements.print_statement import PrintStatement
+from ..statements.return_if_statement import ReturnIfStatement
 from ..statements.return_statement import ReturnStatement
 from ..statements.var_decl_statement import VarDeclStatement
 from ..types.type import Type
@@ -187,31 +187,37 @@ class TypingPassStatementVisitor(BaseStatementVisitor[None]):
         # check the expression
         self._typing_pass.parse_expression(statement.value)
 
+    def visit_return_if_statement(self, statement: ReturnIfStatement) -> None:
+        # we need to type check the return_if statement and its expressions
+        function_return_type: Type = self._typing_pass.function_stack[-1]
+        non_void: bool = function_return_type.non_void()
+
+        # if the function is a void, we can't use a return_if statement
+        if not non_void:
+            message: str = f"return_if statement cannot be used in a void function!"
+            self._typing_pass.ast_error(message, statement.source_location)
+
+        # check the type of all expressions inside
+        for expression in statement.expressions:
+            self._typing_pass.check_return_type(expression, function_return_type)
+
     def visit_return_statement(self, statement: ReturnStatement) -> None:
         # we only need to type check the return statement, the rest is already done at this point
         function_return_type: Type = self._typing_pass.function_stack[-1]
         non_void: bool = function_return_type.non_void()
+
+        # if non_void, we need a return value
         if non_void and not statement.value:
-            # if non_void, we need a return value
             self._typing_pass.ast_error(f"non-void function expects a return value!", statement.source_location)
+
+        # if void, we don't want a return value
         if not non_void and statement.value:
-            # if void, we don't want a return value
             message: str = f"void function expects no return value, found '{statement.value}'!"
             source_location: SourceLocation = statement.value.source_location
             self._typing_pass.ast_error(message, source_location)
+
         if statement.value:
-            self._typing_pass.parse_expression(statement.value)
-            return_value_type: Type = statement.value.type_
-            source_location: SourceLocation = statement.value.source_location
-            try:
-                # perform type checking on the requested return type and provided return value,
-                # and catch an exception if it occurs
-                self._typing_pass.check_types(function_return_type, return_value_type, source_location)
-            except TaplError:
-                # the type check failed, formulate a nice error for the user
-                message: str = f"expected return value of type '{function_return_type.keyword}', "
-                message += f"but found '{return_value_type.keyword}'!"
-                self._typing_pass.ast_error(message, source_location)
+            self._typing_pass.check_return_type(statement.value, function_return_type)
 
     def visit_var_decl_statement(self, statement: VarDeclStatement) -> None:
         # add the variable declaration to the scope (we may need it already when testing the initial value)

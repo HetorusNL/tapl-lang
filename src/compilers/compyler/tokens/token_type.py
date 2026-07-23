@@ -77,6 +77,7 @@ class TokenType(Enum):
     PRINT = "print"
     PRINTLN = "println"
     RETURN = "return"
+    RETURN_IF = "return_if"
     SUPER = "super"
     THIS = "this"
     TRUE = "true"

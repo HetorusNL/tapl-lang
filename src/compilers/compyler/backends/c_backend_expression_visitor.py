@@ -192,8 +192,7 @@ class CBackendExpressionVisitor(BaseExpressionVisitor[str]):
                 assert isinstance(expression.token, IdentifierToken)
                 return f"{expression.token}"
             case TokenType.NULL:
-                # TODO: refactor to NULL when we support pointers
-                return f"0"
+                return Utils.null_value()
             # fall back to the string representation of the token type
             case _:
                 return expression.token.token_type.value

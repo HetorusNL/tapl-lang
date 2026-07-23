@@ -12,6 +12,9 @@ class CBackendState:
         self.function_declarations: list[str] = []
         self.function_definitions: list[str] = []
 
+        # function specific state
+        self.function_return_type: str = ""
+
         # class specific state for the class objects and method declarations and definitions
         self.in_class: bool = False
         self.class_objects: list[str] = []

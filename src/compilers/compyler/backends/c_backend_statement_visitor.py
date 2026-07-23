@@ -25,6 +25,7 @@ from ..statements.lifecycle_statement_type import LifecycleStatementType
 from ..statements.list_statement import ListStatement
 from ..statements.module_statement import ModuleStatement
 from ..statements.print_statement import PrintStatement
+from ..statements.return_if_statement import ReturnIfStatement
 from ..statements.return_statement import ReturnStatement
 from ..statements.statement import Statement
 from ..statements.var_decl_statement import VarDeclStatement
@@ -198,9 +199,13 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
 
         code: str = f"{_c_declaration_base()} {{\n"
 
-        # add the statements if they exist
-        for inner_statement in statement.statements:
-            code += f"{inner_statement.accept(self)}\n"
+        self._state.function_return_type = statement.return_type.name
+        try:
+            # add the statements if they exist
+            for inner_statement in statement.statements:
+                code += f"{inner_statement.accept(self)}\n"
+        finally:
+            self._state.function_return_type = ""
 
         # end with the closing bracket
         code += f"}}"
@@ -320,6 +325,20 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
         type_format_string: str = Utils.get_type_format_string(statement.value)
         value = statement.value.accept(self._expression_visitor)
         return f'printf("{type_format_string}{statement.line_end}", {value});'
+
+    def visit_return_if_statement(self, statement: ReturnIfStatement) -> str:
+        # make sure we have a function return type
+        return_type: str = self._state.function_return_type
+        assert return_type
+
+        # generate the if and return statements for all expressions
+        code: str = ""
+        for expression in statement.expressions:
+            code += f"{{\n"
+            code += f"{return_type} retval = {expression.accept(self._expression_visitor)};\n"
+            code += f"if (retval != {Utils.null_value()}) return retval;\n"
+            code += f"}}\n"
+        return code
 
     def visit_return_statement(self, statement: ReturnStatement) -> str:
         if statement.value:

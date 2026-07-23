@@ -438,3 +438,22 @@ println("\nand we can also create a list of enums and use them")
 list[FancyEnum] enum_list
 enum_list.add(FancyEnum.VALUE0)
 println("enum_list[0]: {enum_list.get(0)=}, to_string(): {enum_list.get(0).to_string()=}")
+
+u32 zero_function():
+    return 0
+
+u32 return_value(u32 value):
+    return value
+
+u32 test_return_if():
+    return_if:
+        0
+        zero_function()
+        return_value(0)
+        return_value(1337)
+
+    // should not be reached, as 1337 should be returned
+    return 42
+
+println("\ntesting return_if statement behavior")
+println("test_return_if() returned: {test_return_if()}")

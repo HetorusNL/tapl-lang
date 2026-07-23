@@ -101,3 +101,8 @@ class Utils:
     def escape_string(cls, string: str) -> str:
         string = string.replace('"', '\\"')
         return string
+
+    @classmethod
+    def null_value(cls) -> str:
+        # TODO: refactor to NULL when we support pointers
+        return f"0"

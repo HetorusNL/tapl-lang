@@ -174,6 +174,20 @@ class TypingPass(PassBase[None]):
         # all checks passed, return the requested type
         return requested_type
 
+    def check_return_type(self, expression: Expression, function_return_type: Type) -> None:
+        self.parse_expression(expression)
+        return_value_type: Type = expression.type_
+        source_location: SourceLocation = expression.source_location
+        try:
+            # perform type checking on the requested return type and provided return value,
+            # and catch an exception if it occurs
+            self.check_types(function_return_type, return_value_type, source_location)
+        except TaplError:
+            # the type check failed, formulate a nice error for the user
+            message: str = f"expected return value of type '{function_return_type.keyword}', "
+            message += f"but found '{return_value_type.keyword}'!"
+            self.ast_error(message, source_location)
+
     def verify_types(self) -> None:
         # create the visitors of the VerifyTypes pass
         expression_visitor: BaseExpressionVisitor[None] = VerifyTypesExpressionVisitor()

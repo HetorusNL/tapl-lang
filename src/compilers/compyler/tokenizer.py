@@ -448,6 +448,8 @@ class Tokenizer:
                 self._add_token_of_length(TokenType.PRINTLN)
             case TokenType.RETURN.value:
                 self._add_token_of_length(TokenType.RETURN)
+            case TokenType.RETURN_IF.value:
+                self._add_token_of_length(TokenType.RETURN_IF)
             case TokenType.SUPER.value:
                 self._add_token_of_length(TokenType.SUPER)
             case TokenType.THIS.value:

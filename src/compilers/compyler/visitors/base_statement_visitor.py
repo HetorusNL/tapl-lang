@@ -4,6 +4,7 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
+from ..errors.visitor_error import VisitorError
 from ..statements.assignment_statement import AssignmentStatement
 from ..statements.break_statement import BreakStatement
 from ..statements.breakall_statement import BreakallStatement
@@ -19,6 +20,7 @@ from ..statements.lifecycle_statement import LifecycleStatement
 from ..statements.list_statement import ListStatement
 from ..statements.module_statement import ModuleStatement
 from ..statements.print_statement import PrintStatement
+from ..statements.return_if_statement import ReturnIfStatement
 from ..statements.return_statement import ReturnStatement
 from ..statements.statement import Statement
 from ..statements.var_decl_statement import VarDeclStatement
@@ -26,55 +28,58 @@ from ..statements.var_decl_statement import VarDeclStatement
 
 class BaseStatementVisitor[T]:
     def visit_assignment_statement(self, statement: AssignmentStatement) -> T:
-        raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
+        raise VisitorError(self, statement)
 
     def visit_break_statement(self, statement: BreakStatement) -> T:
-        raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
+        raise VisitorError(self, statement)
 
     def visit_breakall_statement(self, statement: BreakallStatement) -> T:
-        raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
+        raise VisitorError(self, statement)
 
     def visit_class_statement(self, statement: ClassStatement) -> T:
-        raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
+        raise VisitorError(self, statement)
 
     def visit_continue_statement(self, statement: ContinueStatement) -> T:
-        raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
+        raise VisitorError(self, statement)
 
     def visit_enum_statement(self, statement: EnumStatement) -> T:
-        raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
+        raise VisitorError(self, statement)
 
     def visit_expression_statement(self, statement: ExpressionStatement) -> T:
-        raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
+        raise VisitorError(self, statement)
 
     def visit_for_loop_statement(self, statement: ForLoopStatement) -> T:
-        raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
+        raise VisitorError(self, statement)
 
     def visit_function_statement(self, statement: FunctionStatement) -> T:
-        raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
+        raise VisitorError(self, statement)
 
     def visit_if_statement(self, statement: IfStatement) -> T:
-        raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
+        raise VisitorError(self, statement)
 
     def visit_import_statement(self, statement: ImportStatement) -> T:
-        raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
+        raise VisitorError(self, statement)
 
     def visit_lifecycle_statement(self, statement: LifecycleStatement) -> T:
-        raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
+        raise VisitorError(self, statement)
 
     def visit_list_statement(self, statement: ListStatement) -> T:
-        raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
+        raise VisitorError(self, statement)
 
     def visit_module_statement(self, statement: ModuleStatement) -> T:
-        raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
+        raise VisitorError(self, statement)
 
     def visit_print_statement(self, statement: PrintStatement) -> T:
-        raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
+        raise VisitorError(self, statement)
+
+    def visit_return_if_statement(self, statement: ReturnIfStatement) -> T:
+        raise VisitorError(self, statement)
 
     def visit_return_statement(self, statement: ReturnStatement) -> T:
-        raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
+        raise VisitorError(self, statement)
 
     def visit_var_decl_statement(self, statement: VarDeclStatement) -> T:
-        raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
+        raise VisitorError(self, statement)
 
     def visit_statement(self, statement: Statement) -> T:
-        raise NotImplementedError(f"StatementVisitor not implemented for {type(statement)}")
+        raise VisitorError(self, statement)

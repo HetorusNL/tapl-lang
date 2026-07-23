@@ -37,6 +37,7 @@ from .statements.lifecycle_statement_type import LifecycleStatementType
 from .statements.list_statement import ListStatement
 from .statements.module_statement import ModuleStatement
 from .statements.print_statement import PrintStatement
+from .statements.return_if_statement import ReturnIfStatement
 from .statements.return_statement import ReturnStatement
 from .statements.statement import Statement
 from .statements.var_decl_statement import VarDeclStatement
@@ -397,6 +398,30 @@ class AstGenerator:
 
         return ReturnStatement(token, expression)
 
+    def return_if_statement(self) -> ReturnIfStatement | None:
+        # early return if we don't have a return_if statement
+        token: Token | None = self.match(TokenType.RETURN_IF)
+        if not token:
+            return
+
+        # check if we're allowed to return, error otherwise
+        if not self._in_function:
+            self.ast_error(f"return_if statement is not allowed here!")
+
+        # we should have a colon and newline, and potentially a intented block of expressions
+        self.expect(TokenType.COLON)
+        self.expect_newline()
+
+        return_if_statement: ReturnIfStatement = ReturnIfStatement(token)
+        if self.match(TokenType.INDENT):
+            while not self.match(TokenType.DEDENT):
+                # match a list of expressions with their newlines
+                expression: Expression = self.expression()
+                self.expect(TokenType.NEWLINE)
+                return_if_statement.expressions.append(expression)
+
+        return return_if_statement
+
     def var_decl_statement(self, must_end_with_newline: bool) -> ListStatement | VarDeclStatement:
         # the _type_statement function already checked the tokens for us
         # so we can start consuming here
@@ -739,6 +764,10 @@ class AstGenerator:
         """returns a statement of some kind"""
         # check for a statement starting with a type
         if statement := self._type_statement(must_end_with_newline):
+            return statement
+
+        # check for a return_if statement
+        if statement := self.return_if_statement():
             return statement
 
         # check for a return statement

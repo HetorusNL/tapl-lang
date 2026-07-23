@@ -31,10 +31,17 @@
   ],
   "onEnterRules": [
     {
-      "beforeText": "^\\s*(?:class|else|enum|for|if|while).*?:\\s*$",
+      // indent on specific keywords
+      "beforeText": "^\\s*(?:class|else|enum|for|if|return_if|while).*?:\\s*$",
       "action": { "indent": "indent" }
     },
     {
+      // indent on function definitions or other like-formatted statements
+      "beforeText": "^.*\\([^)]*\\)\\s*:\\s*$",
+      "action": { "indent": "indent" }
+    },
+    {
+      // outdent on break/continue/return
       "beforeText": "^\\s*(?:break|breakall|continue|return).*?\\s*$",
       "action": { "indent": "outdent" }
     }

@@ -58,7 +58,7 @@
       "patterns": [
         {
           "name": "keyword.control.tapl",
-          "match": "\\b(?:break|breakall|class|continue|else|enum|false|for|if|null|return|super|this|true|while)\\b"
+          "match": "\\b(?:break|breakall|class|continue|else|enum|false|for|if|null|return|return_if|super|this|true|while)\\b"
         },
         {
           "name": "keyword.operator.tapl",
