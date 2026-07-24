@@ -20,7 +20,7 @@ from ..statements.import_statement import ImportStatement
 from ..statements.list_statement import ListStatement
 from ..statements.module_statement import ModuleStatement
 from ..statements.print_statement import PrintStatement
-from ..statements.return_if_statement import ReturnIfStatement
+from ..statements.return_if_value_statement import ReturnIfValueStatement
 from ..statements.return_statement import ReturnStatement
 from ..statements.var_decl_statement import VarDeclStatement
 
@@ -119,8 +119,9 @@ class ScopingPassStatementVisitor(BaseStatementVisitor[None]):
         # check the expression also for identifiers
         self._pass_base.parse_expression(statement.value)
 
-    def visit_return_if_statement(self, statement: ReturnIfStatement) -> None:
-        # check the inner expressions also for identifiers
+    def visit_return_if_value_statement(self, statement: ReturnIfValueStatement) -> None:
+        # check the value and inner expressions also for identifiers
+        self._pass_base.parse_expression(statement.value)
         for expression in statement.expressions:
             self._pass_base.parse_expression(expression)
 

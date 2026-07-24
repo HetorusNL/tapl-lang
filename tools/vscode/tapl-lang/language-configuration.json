@@ -32,7 +32,7 @@
   "onEnterRules": [
     {
       // indent on specific keywords
-      "beforeText": "^\\s*(?:class|else|enum|for|if|return_if|while).*?:\\s*$",
+      "beforeText": "^\\s*(?:class|else|enum|for|if|return_if_value|while).*?:\\s*$",
       "action": { "indent": "indent" }
     },
     {

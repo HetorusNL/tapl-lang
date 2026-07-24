@@ -23,7 +23,7 @@ from ..statements.lifecycle_statement import LifecycleStatement
 from ..statements.list_statement import ListStatement
 from ..statements.module_statement import ModuleStatement
 from ..statements.print_statement import PrintStatement
-from ..statements.return_if_statement import ReturnIfStatement
+from ..statements.return_if_value_statement import ReturnIfValueStatement
 from ..statements.return_statement import ReturnStatement
 from ..statements.var_decl_statement import VarDeclStatement
 from ..types.type import Type
@@ -187,17 +187,19 @@ class TypingPassStatementVisitor(BaseStatementVisitor[None]):
         # check the expression
         self._typing_pass.parse_expression(statement.value)
 
-    def visit_return_if_statement(self, statement: ReturnIfStatement) -> None:
-        # we need to type check the return_if statement and its expressions
+    def visit_return_if_value_statement(self, statement: ReturnIfValueStatement) -> None:
+        # we need to type check the return_if_value statement and its expressions
         function_return_type: Type = self._typing_pass.function_stack[-1]
         non_void: bool = function_return_type.non_void()
 
-        # if the function is a void, we can't use a return_if statement
+        # if the function is a void, we can't use a return_if_value statement
         if not non_void:
-            message: str = f"return_if statement cannot be used in a void function!"
+            message: str = f"return_if_value statement cannot be used in a void function!"
             self._typing_pass.ast_error(message, statement.source_location)
 
-        # check the type of all expressions inside
+        # check the type of the value and all expressions inside
+        if statement.value:
+            self._typing_pass.check_return_type(statement.value, function_return_type)
         for expression in statement.expressions:
             self._typing_pass.check_return_type(expression, function_return_type)
 

@@ -445,8 +445,8 @@ u32 zero_function():
 u32 return_value(u32 value):
     return value
 
-u32 test_return_if():
-    return_if:
+u32 test_return_if_value():
+    return_if_value:
         0
         zero_function()
         return_value(0)
@@ -455,5 +455,5 @@ u32 test_return_if():
     // should not be reached, as 1337 should be returned
     return 42
 
-println("\ntesting return_if statement behavior")
-println("test_return_if() returned: {test_return_if()}")
+println("\ntesting return_if_value statement behavior")
+println("test_return_if_value() returned: {test_return_if_value()}")

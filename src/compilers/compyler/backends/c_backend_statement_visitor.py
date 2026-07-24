@@ -25,7 +25,7 @@ from ..statements.lifecycle_statement_type import LifecycleStatementType
 from ..statements.list_statement import ListStatement
 from ..statements.module_statement import ModuleStatement
 from ..statements.print_statement import PrintStatement
-from ..statements.return_if_statement import ReturnIfStatement
+from ..statements.return_if_value_statement import ReturnIfValueStatement
 from ..statements.return_statement import ReturnStatement
 from ..statements.statement import Statement
 from ..statements.var_decl_statement import VarDeclStatement
@@ -326,17 +326,25 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
         value = statement.value.accept(self._expression_visitor)
         return f'printf("{type_format_string}{statement.line_end}", {value});'
 
-    def visit_return_if_statement(self, statement: ReturnIfStatement) -> str:
+    def visit_return_if_value_statement(self, statement: ReturnIfValueStatement) -> str:
         # make sure we have a function return type
         return_type: str = self._state.function_return_type
         assert return_type
+
+        # check the value in the statement, otherwise it's the null value
+        if statement.value:
+            # when a value is provided, check for equality with that value
+            check: str = f"retval == {statement.value.accept(self._expression_visitor)}"
+        else:
+            # when no value is provided, check for non-null
+            check: str = f"retval != {Utils.null_value()}"
 
         # generate the if and return statements for all expressions
         code: str = ""
         for expression in statement.expressions:
             code += f"{{\n"
             code += f"{return_type} retval = {expression.accept(self._expression_visitor)};\n"
-            code += f"if (retval != {Utils.null_value()}) return retval;\n"
+            code += f"if ({check}) return retval;\n"
             code += f"}}\n"
         return code
 

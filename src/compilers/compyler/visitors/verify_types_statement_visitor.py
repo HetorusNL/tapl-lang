@@ -21,7 +21,7 @@ from ..statements.lifecycle_statement import LifecycleStatement
 from ..statements.list_statement import ListStatement
 from ..statements.module_statement import ModuleStatement
 from ..statements.print_statement import PrintStatement
-from ..statements.return_if_statement import ReturnIfStatement
+from ..statements.return_if_value_statement import ReturnIfValueStatement
 from ..statements.return_statement import ReturnStatement
 from ..statements.var_decl_statement import VarDeclStatement
 
@@ -104,7 +104,9 @@ class VerifyTypesStatementVisitor(BaseStatementVisitor[None]):
     def visit_print_statement(self, statement: PrintStatement) -> None:
         statement.value.accept(self._expression_visitor)
 
-    def visit_return_if_statement(self, statement: ReturnIfStatement) -> None:
+    def visit_return_if_value_statement(self, statement: ReturnIfValueStatement) -> None:
+        if statement.value:
+            statement.value.accept(self._expression_visitor)
         for expression in statement.expressions:
             expression.accept(self._expression_visitor)
 

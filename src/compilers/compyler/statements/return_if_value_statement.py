@@ -14,19 +14,20 @@ if TYPE_CHECKING:
     from ..visitors.base_statement_visitor import BaseStatementVisitor
 
 
-class ReturnIfStatement(Statement):
-    def __init__(self, token: Token):
+class ReturnIfValueStatement(Statement):
+    def __init__(self, token: Token, value: Expression | None):
         super().__init__(token.source_location)
 
         # store the rest of the variables in the class
+        self.value: Expression | None = value
         self.expressions: list[Expression] = []
 
     def accept[T](self, visitor: BaseStatementVisitor[T]) -> T:
-        return visitor.visit_return_if_statement(self)
+        return visitor.visit_return_if_value_statement(self)
 
     def __str__(self) -> str:
-        return f"return_if({', '.join(str(expr) for expr in self.expressions)})"
+        return f"return_if_value({', '.join(str(expr) for expr in self.expressions)})"
 
     def __repr__(self) -> str:
         expressions: str = ", ".join(repr(expr) for expr in self.expressions)
-        return f"<ReturnIfStatement: location {self.source_location}, expressions ({expressions})>"
+        return f"<ReturnIfValueStatement: location {self.source_location}, expressions ({expressions})>"
