@@ -2,11 +2,20 @@
 name = "tapl"
 version = "0.1.0"
 description = "Tim's Awesome Programming Language - Including the Compilers"
-authors = ["Tim Klein Nijenhuis <tim@hetorus.nl>"]
+authors = [{"name" = "Tim Klein Nijenhuis", "email" = "tim@hetorus.nl"}]
 license = "MIT"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = []
+
+[project.scripts]
+tapl-compyler = "compilers.compyler.__main__:main"
+
+[tool.setuptools.package-data]
+compilers = ["compyler/templates/*", "compyler/stdlib/*"]
+
+[tool.uv]
+package = true
 
 [tool.black]
 line-length = 120

@@ -31,10 +31,10 @@ from .utils.stream import Stream
 
 class Compyler:
     # construct several path constants for the files and folders used in the Compyler
-    repo_root: Path = Path(__file__).parents[3].resolve()
-    stdlib_folder: Path = repo_root / "src" / "stdlib"
-    templates_folder: Path = repo_root / "src" / "templates"
-    build_folder: Path = repo_root / "build" / "compyler"
+    compyler_folder: Path = Path(__file__).parent
+    stdlib_folder: Path = compyler_folder / "stdlib"
+    templates_folder: Path = compyler_folder / "templates"
+    build_folder: Path = Path.cwd() / "build" / "compyler"
     header_folder: Path = build_folder / "tapl_headers"
 
     def __init__(self) -> None:
@@ -280,7 +280,11 @@ class Compyler:
         self._run_executable(executable)
 
 
-if __name__ == "__main__":
+def main() -> None:
     compyler: Compyler = Compyler()
     executable: Path = compyler.compile()
     compyler.run(executable)
+
+
+if __name__ == "__main__":
+    main()

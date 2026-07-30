@@ -37,13 +37,13 @@ uv run ptw --now .
 Run the following command to compile and run the example with the currently implemented functionality:
 
 ```bash
-uv run -m src.compilers.compyler examples/current_functionality.tim
+uv run tapl-compyler examples/current_functionality.tim
 ```
 
 Run the following command to compile and execute any tim file:
 
 ```bash
-uv run -m src.compilers.compyler /path/to/file.tim
+uv run tapl-compyler /path/to/file.tim
 ```
 
 ## Needed before AoC
