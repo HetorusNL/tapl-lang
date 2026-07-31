@@ -5,6 +5,7 @@
 # This file is part of compyler, a TAPL compiler.
 
 import argparse
+import os
 from pathlib import Path
 from subprocess import CalledProcessError
 from subprocess import CompletedProcess
@@ -184,6 +185,11 @@ class Compyler:
             header.copy_into(self.header_folder)
 
     def _format_files(self) -> None:
+        # check if we should skip formatting (e.g. in the -small docker container)
+        if os.getenv("TAPL_C_SKIP_FORMAT", "").lower() == "true":
+            print(f"skipping running clang-format...")
+            return
+
         # recursively find all .c and .h files in the build folder and format all found files
         for file_path in self.build_folder.rglob("*.[ch]"):
             if file_path.is_file():
@@ -199,11 +205,16 @@ class Compyler:
         command: list[str] = ["rm", "-f", str(executable)]
         self._execute_command(command)
 
-        # directly call the gcc compiler, passing the build folder as additional include path
-        command: list[str] = ["gcc", "-O0", "-g3", f"-I{self.build_folder}", "-o", str(executable), str(c_file)]
+        # construct the command to call the compiler with the flags and options
+        tapl_c_compiler: str = os.getenv("TAPL_CC", "clang")  # we use clang, unless a different compiler is passed
+        tapl_c_flags: list[str] = os.getenv("TAPL_CFLAGS", "").split()
+        tapl_c_options: list[str] = ["-O0", "-g3", f"-I{self.build_folder}", "-o", str(executable)]
+        command: list[str] = [tapl_c_compiler, *tapl_c_flags, *tapl_c_options, str(c_file)]
+
+        # compile the executable
         returncode: int = self._execute_command(command).returncode
         if returncode != 0:
-            self.handle_error(f"gcc returned error code {returncode}")
+            self.handle_error(f"{tapl_c_compiler} returned error code {returncode}")
         return executable
 
     def _run_executable(self, executable: Path) -> None:

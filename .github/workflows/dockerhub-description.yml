@@ -1,0 +1,31 @@
+name: Update Dockerhub Description
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - README.md
+      - .github/workflows/dockerhub-description.yml
+  workflow_dispatch:
+
+jobs:
+  update-docker-hub-description:
+    runs-on: ubuntu-latest
+
+    steps:
+      # checkout the repo to $GITHUB_WORKSPACE
+      - uses: actions/checkout@v4
+
+      # set the repo name in the environment
+      - name: Set repository name
+        run: echo "REPO_NAME=${GITHUB_REPOSITORY#*/}" >> "$GITHUB_ENV"
+
+      # update the docker hub description and overview
+      - name: Dockerhub description and overview update
+        uses: peter-evans/dockerhub-description@v5
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          repository: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.REPO_NAME }}
+          short-description: ${{ github.event.repository.description }}
