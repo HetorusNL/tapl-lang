@@ -17,8 +17,40 @@ Homepage: https://tapl-lang.com
 ## Dependencies
 
 - uv
-- gcc
-- clang-format
+- c toolchain (see below)
+
+Example C toolchains are:
+
+- gcc:
+  - gcc
+  - clang-format (optional, or set TAPL_C_SKIP_FORMAT="true")
+- clang:
+  - clang
+  - clang-format (optional, or set TAPL_C_SKIP_FORMAT="true")
+
+## Environment variables
+
+| Name               | Description                                   | Default |
+| ------------------ | --------------------------------------------- | ------- |
+| TAPL_CC            | The C compiler to use                         | "clang" |
+| TAPL_CFLAGS        | The flags to pass to the C compiler           | ""      |
+| TAPL_C_SKIP_FORMAT | Skips running clang-format when set to "true" | ""      |
+
+## Docker images
+
+The following docker images, for compyler written in python, are available:
+
+| Feature      | `tapl-compyler` (full) | `tapl-compyler-small` |
+| ------------ | :--------------------: | :-------------------: |
+| clang        |           ✅           |          ❌           |
+| gcc          |           ❌           |          ✅           |
+| clang-format |           ✅           |          ❌           |
+| uv (python)  |           ✅           |          ✅           |
+
+The compyler is provided as a docker image, which can be used to compile and run TAPL code.
+The compyler is a shell script in /bin/tapl-compyler, which runs the python TAPL compiler.
+
+> Note: a absolute path should be specified to the compyler, or it can misbehave. As the compyler runs in the folder of the uv project, it looks for files there.
 
 ## Usage
 

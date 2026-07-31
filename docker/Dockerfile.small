@@ -1,0 +1,27 @@
+FROM python:3.14-alpine
+
+# install the needed c compiler (197MB)
+RUN apk add --no-cache gcc musl-dev;
+
+# install the tapl-compyler itself using mounted uv executable
+RUN \
+    # mount uv as it doesn't need to be baked into the image
+    --mount=from=ghcr.io/astral-sh/uv,source=/uv,target=/bin/uv \
+    # mount the source code, they also don't need to be in the image
+    --mount=type=bind,source=src/,target=src/,rw \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    \
+    # make the script crash on errors and such
+    set -eou; \
+    \
+    # use the system python, as we don't need a venv in the image
+    export UV_PROJECT_ENVIRONMENT=/usr/local; \
+    export UV_NO_EDITABLE=1; \
+    # install the dependencies and build/install the tapl-compyler itself
+    uv sync --no-dev;
+
+# setup the env for compilation
+ENV TAPL_CC="gcc"\
+    TAPL_C_SKIP_FORMAT="true"
+
+ENTRYPOINT ["tapl-compyler"]
