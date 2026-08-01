@@ -2,6 +2,7 @@
 
 [![Build and publish container](https://github.com/HetorusNL/tapl-lang/actions/workflows/build-publish-container.yml/badge.svg)](https://github.com/HetorusNL/tapl-lang/actions/workflows/build-publish-container.yml)
 [![Publish VS Code Extension](https://github.com/HetorusNL/tapl-lang/actions/workflows/publish-vscode-extension.yml/badge.svg)](https://github.com/HetorusNL/tapl-lang/actions/workflows/publish-vscode-extension.yml)
+[![Update Dockerhub Description](https://github.com/HetorusNL/tapl-lang/actions/workflows/update-dockerhub-description.yml/badge.svg)](https://github.com/HetorusNL/tapl-lang/actions/workflows/update-dockerhub-description.yml)
 
 Repository with the compiler/examples/documentation of TAPL (Tim's Awesome Programming Language).
 The VSCode extension can be found [here](tools/vscode/tapl-lang/README.md) and language server [TODO]().
