@@ -44,17 +44,35 @@ Example C toolchains are:
 
 The following docker images, for compyler written in python, are available:
 
-| Feature      | `tapl-compyler` (full) | `tapl-compyler-small` |
-| ------------ | :--------------------: | :-------------------: |
-| clang        |           ✅           |          ❌           |
-| gcc          |           ❌           |          ✅           |
-| clang-format |           ✅           |          ❌           |
-| uv (python)  |           ✅           |          ✅           |
+| Feature                     | `tapl-compyler` | `tapl-compyler-small` |
+| --------------------------- | :-------------: | :-------------------: |
+| clang                       |       ✅        |          ❌           |
+| gcc                         |       ❌        |          ✅           |
+| clang-format                |       ✅        |          ❌           |
+| python (with tapl-compyler) |       ✅        |          ✅           |
+
+Where `tapl-compyler` is the same as `tapl-compyler-full`.
 
 The compyler is provided as a docker image, which can be used to compile and run TAPL code.
-The compyler is a shell script in /bin/tapl-compyler, which runs the python TAPL compiler.
+The compyler is an installed python package and added to the path.
+The entrypoint of the docker image is the compyler, so it can be used as a drop-in replacement for running the compyler locally.
+The default working directory in the container is `/code`, where the user's code should be mounted to.
 
-> Note: a absolute path should be specified to the compyler, or it can misbehave. As the compyler runs in the folder of the uv project, it looks for files there.
+### Example usage
+
+> Note that 'tapl-compyler' (which is 'tapl-compyler-full') can be substituted with 'tapl-compyler-small'.
+
+```bash
+# run the current_functionality.tim script from the repository root
+podman run --rm -it -v $(pwd):/code hetorusnl/tapl-compyler examples/current_functionality.tim
+
+# run some example_script.tim that exists in the current working directory
+podman run --rm -it -v $(pwd):/code hetorusnl/tapl-compyler example_script.tim
+
+# get a shell in the tapl-compyler container, and run a script
+podman run --rm --entrypoint "" -it -v $(pwd):/code hetorusnl/tapl-compyler sh
+tapl-compyler examples/current_functionality.tim
+```
 
 ## Usage
 

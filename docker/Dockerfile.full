@@ -24,4 +24,7 @@ RUN \
 ENV TAPL_CFLAGS="-fuse-ld=lld -rtlib=compiler-rt"\
     TAPL_CC="clang"
 
+# set the working directory to /code where the user's code will be mounted
+WORKDIR /code
+
 ENTRYPOINT ["tapl-compyler"]
