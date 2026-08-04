@@ -2,7 +2,7 @@
   "name": "tapl-lang",
   "displayName": "TAPL Lang",
   "description": "Tim's Awesome Programming Language - TAPL Language Support",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "publisher": "tapl-lang",
   "author": {
     "email": "tim@tapl-lang.com",
@@ -48,7 +48,11 @@
         "extensions": [
           ".tim"
         ],
-        "configuration": "./language-configuration.json"
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "dark": "./tapl-lang.svg",
+          "light": "./tapl-lang.svg"
+        }
       }
     ],
     "grammars": [
