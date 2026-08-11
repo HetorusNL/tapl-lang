@@ -9,10 +9,13 @@ from .base_statement_visitor import BaseStatementVisitor
 from ..statements.assignment_statement import AssignmentStatement
 from ..statements.break_statement import BreakStatement
 from ..statements.breakall_statement import BreakallStatement
+from ..statements.case_statement import CaseStatement
 from ..statements.class_statement import ClassStatement
 from ..statements.continue_statement import ContinueStatement
+from ..statements.default_statement import DefaultStatement
 from ..statements.enum_statement import EnumStatement
 from ..statements.expression_statement import ExpressionStatement
+from ..statements.fallthrough_statement import FallthroughStatement
 from ..statements.for_loop_statement import ForLoopStatement
 from ..statements.function_statement import FunctionStatement
 from ..statements.if_statement import IfStatement
@@ -23,6 +26,7 @@ from ..statements.module_statement import ModuleStatement
 from ..statements.print_statement import PrintStatement
 from ..statements.return_if_value_statement import ReturnIfValueStatement
 from ..statements.return_statement import ReturnStatement
+from ..statements.switch_statement import SwitchStatement
 from ..statements.var_decl_statement import VarDeclStatement
 
 
@@ -40,6 +44,11 @@ class VerifyTypesStatementVisitor(BaseStatementVisitor[None]):
     def visit_breakall_statement(self, statement: BreakallStatement) -> None:
         pass  # nothing to check in a BreakallStatement
 
+    def visit_case_statement(self, statement: CaseStatement) -> None:
+        statement.expression.accept(self._expression_visitor)
+        for stm in statement.statements:
+            stm.accept(self)
+
     def visit_class_statement(self, statement: ClassStatement) -> None:
         if statement.constructor:
             statement.constructor.accept(self)
@@ -53,6 +62,10 @@ class VerifyTypesStatementVisitor(BaseStatementVisitor[None]):
     def visit_continue_statement(self, statement: ContinueStatement) -> None:
         pass  # nothing to check in a ContinueStatement
 
+    def visit_default_statement(self, statement: DefaultStatement) -> None:
+        for stm in statement.statements:
+            stm.accept(self)
+
     def visit_enum_statement(self, statement: EnumStatement) -> None:
         # create a new scope for the enum entries
         for entry in statement.get_entries():
@@ -61,6 +74,9 @@ class VerifyTypesStatementVisitor(BaseStatementVisitor[None]):
 
     def visit_expression_statement(self, statement: ExpressionStatement) -> None:
         statement.expression.accept(self._expression_visitor)
+
+    def visit_fallthrough_statement(self, statement: FallthroughStatement) -> None:
+        pass  # nothing to check in a FallthroughStatement
 
     def visit_for_loop_statement(self, statement: ForLoopStatement) -> None:
         if statement.check:
@@ -113,6 +129,11 @@ class VerifyTypesStatementVisitor(BaseStatementVisitor[None]):
     def visit_return_statement(self, statement: ReturnStatement) -> None:
         if statement.value:
             statement.value.accept(self._expression_visitor)
+
+    def visit_switch_statement(self, statement: SwitchStatement) -> None:
+        statement.expression.accept(self._expression_visitor)
+        for case_statement in statement.case_statements:
+            case_statement.accept(self)
 
     def visit_var_decl_statement(self, statement: VarDeclStatement) -> None:
         if statement.initial_value:

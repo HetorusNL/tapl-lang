@@ -32,7 +32,7 @@
   "onEnterRules": [
     {
       // indent on specific keywords
-      "beforeText": "^\\s*(?:class|else|enum|for|if|return_if_value|while).*?:\\s*$",
+      "beforeText": "^\\s*(?:case|class|default|else|enum|for|if|return_if_value|switch|while).*?:\\s*$",
       "action": { "indent": "indent" }
     },
     {
@@ -42,7 +42,7 @@
     },
     {
       // outdent on break/continue/return
-      "beforeText": "^\\s*(?:break|breakall|continue|return).*?\\s*$",
+      "beforeText": "^\\s*(?:break|breakall|continue|fallthrough|return).*?\\s*$",
       "action": { "indent": "outdent" }
     }
   ]

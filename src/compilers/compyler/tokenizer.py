@@ -420,14 +420,20 @@ class Tokenizer:
                 self._add_token_of_length(TokenType.BREAK)
             case TokenType.BREAKALL.value:
                 self._add_token_of_length(TokenType.BREAKALL)
+            case TokenType.CASE.value:
+                self._add_token_of_length(TokenType.CASE)
             case TokenType.CLASS.value:
                 self._add_token_of_length(TokenType.CLASS)
             case TokenType.CONTINUE.value:
                 self._add_token_of_length(TokenType.CONTINUE)
+            case TokenType.DEFAULT.value:
+                self._add_token_of_length(TokenType.DEFAULT)
             case TokenType.ELSE.value:
                 self._add_token_of_length(TokenType.ELSE)
             case TokenType.ENUM.value:
                 self._add_token_of_length(TokenType.ENUM)
+            case TokenType.FALLTHROUGH.value:
+                self._add_token_of_length(TokenType.FALLTHROUGH)
             case TokenType.FALSE.value:
                 self._add_token_of_length(TokenType.FALSE)
             case TokenType.FOR.value:
@@ -452,6 +458,8 @@ class Tokenizer:
                 self._add_token_of_length(TokenType.RETURN_IF_VALUE)
             case TokenType.SUPER.value:
                 self._add_token_of_length(TokenType.SUPER)
+            case TokenType.SWITCH.value:
+                self._add_token_of_length(TokenType.SWITCH)
             case TokenType.THIS.value:
                 self._add_this_token(identifier)
             case TokenType.TRUE.value:

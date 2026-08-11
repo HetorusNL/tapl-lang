@@ -12,10 +12,13 @@ from ..expressions.string_expression import StringExpression
 from ..statements.assignment_statement import AssignmentStatement
 from ..statements.break_statement import BreakStatement
 from ..statements.breakall_statement import BreakallStatement
+from ..statements.case_statement import CaseStatement
 from ..statements.class_statement import ClassStatement
 from ..statements.continue_statement import ContinueStatement
+from ..statements.default_statement import DefaultStatement
 from ..statements.enum_statement import EnumStatement
 from ..statements.expression_statement import ExpressionStatement
+from ..statements.fallthrough_statement import FallthroughStatement
 from ..statements.for_loop_statement import ForLoopStatement
 from ..statements.function_statement import FunctionStatement
 from ..statements.if_statement import IfStatement
@@ -28,6 +31,7 @@ from ..statements.print_statement import PrintStatement
 from ..statements.return_if_value_statement import ReturnIfValueStatement
 from ..statements.return_statement import ReturnStatement
 from ..statements.statement import Statement
+from ..statements.switch_statement import SwitchStatement
 from ..statements.var_decl_statement import VarDeclStatement
 from ..utils.enum_entry import EnumEntry
 from ..utils.utils import Utils
@@ -51,6 +55,13 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
 
     def visit_breakall_statement(self, statement: BreakallStatement) -> str:
         return f"goto {statement.breakall_label};"
+
+    def visit_case_statement(self, statement: CaseStatement) -> str:
+        # return the code of the statements within the case statement
+        code: str = f""
+        for stm in statement.statements:
+            code += f"{stm.accept(self)}\n"
+        return code
 
     def visit_class_statement(self, statement: ClassStatement) -> str:
         """returns the full class as a struct"""
@@ -95,6 +106,13 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
 
     def visit_continue_statement(self, statement: ContinueStatement) -> str:
         return "continue;"
+
+    def visit_default_statement(self, statement: DefaultStatement) -> str:
+        # return the code of the statements within the default statement
+        code: str = f""
+        for stm in statement.statements:
+            code += f"{stm.accept(self)}\n"
+        return code
 
     def visit_enum_statement(self, statement: EnumStatement) -> str:
         # utility functions used in this EnumStatement
@@ -147,6 +165,10 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
         expression_code: str = statement.expression.accept(self._expression_visitor)
 
         return f"{expression_code};"
+
+    def visit_fallthrough_statement(self, statement: FallthroughStatement) -> str:
+        # use a block comment, as a missing newline after this statement can result in weird bugs
+        return "/* fallthrough */"
 
     def visit_for_loop_statement(self, statement: ForLoopStatement) -> str:
         # construct the for-loop statement
@@ -353,6 +375,48 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
             return f"return {statement.value.accept(self._expression_visitor)};"
         else:
             return f"return;"
+
+    def visit_switch_statement(self, statement: SwitchStatement) -> str:
+        # add the case when we have no case statements
+        if not statement.case_statements:
+            return 'panic("switch statement has no case statements");'
+
+        # generate the code for all case and default statements
+        case_statements_code: list[str] = []
+        for case_statement in statement.case_statements:
+            case_statements_code.append(case_statement.accept(self))
+
+        # in reverse order, add the case statement code to the one before, if the one before has a fallthrough statement
+        for i in range(len(case_statements_code) - 1, 0, -1):
+            if statement.case_statements[i - 1].has_fallthrough:
+                case_statements_code[i - 1] += case_statements_code[i]
+
+        # generate the switch statement code as an if-else chain
+        switch_expression_code: str = statement.expression.accept(self._expression_visitor)
+
+        code: str = f""
+        for i in range(len(case_statements_code)):
+            case_statement: CaseStatement | DefaultStatement = statement.case_statements[i]
+            if isinstance(case_statement, DefaultStatement):
+                continue  # skip the default statement, it will be added at the end
+
+            case_expression_code: str = case_statement.expression.accept(self._expression_visitor)
+            if i == 0:
+                code += f"if ({switch_expression_code} == {case_expression_code}) {{\n"
+            else:
+                code += f"else if ({switch_expression_code} == {case_expression_code}) {{\n"
+            code += case_statements_code[i]
+            code += f"}}\n"
+
+        # add the default statement code if it exists, otherwise add a panic statement
+        code += f"else {{\n"
+        if isinstance(statement.case_statements[-1], DefaultStatement):
+            code += case_statements_code[-1]
+        else:
+            code += f'panic("switch statement has no default statement, but no case is hit");\n'
+        code += f"}}\n"
+
+        return code
 
     def visit_var_decl_statement(self, statement: VarDeclStatement) -> str:
         code: str = ""

@@ -47,6 +47,8 @@ class TypingPass(PassBase[None]):
         self.enum_scopes: dict[str, ScopeWrapper] = {}
         # store a stack of function return types
         self.function_stack: list[Type] = []
+        # store a stack of switch statement types
+        self.switch_stack: list[Type] = []
         # add the stdlib functions to the global scope
         self.add_stdlib_functions()
 

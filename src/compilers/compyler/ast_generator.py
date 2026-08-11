@@ -24,10 +24,13 @@ from .expressions.expression_type import ExpressionType
 from .statements.assignment_statement import AssignmentStatement
 from .statements.break_statement import BreakStatement
 from .statements.breakall_statement import BreakallStatement
+from .statements.case_statement import CaseStatement
 from .statements.class_statement import ClassStatement
 from .statements.continue_statement import ContinueStatement
+from .statements.default_statement import DefaultStatement
 from .statements.enum_statement import EnumStatement
 from .statements.expression_statement import ExpressionStatement
+from .statements.fallthrough_statement import FallthroughStatement
 from .statements.for_loop_statement import ForLoopStatement
 from .statements.function_statement import FunctionStatement
 from .statements.if_statement import IfStatement
@@ -40,6 +43,7 @@ from .statements.print_statement import PrintStatement
 from .statements.return_if_value_statement import ReturnIfValueStatement
 from .statements.return_statement import ReturnStatement
 from .statements.statement import Statement
+from .statements.switch_statement import SwitchStatement
 from .statements.var_decl_statement import VarDeclStatement
 from .tokens.identifier_token import IdentifierToken
 from .tokens.this_token import ThisToken
@@ -67,6 +71,7 @@ class AstGenerator:
         # some variables to store the state of the ast generator
         self._current_index: int = 0
         self._in_function: bool = False
+        self._in_switch: bool = False
         self._loop_count: int = 0
         self._breakall_label: str = "breakall"
         self._class_type: ClassType | None = None
@@ -427,6 +432,58 @@ class AstGenerator:
 
         return return_if_value_statement
 
+    def _parse_switch_case_statement(self, switch_statement: SwitchStatement) -> None:
+        if self.match(TokenType.INDENT):
+            while not self.match(TokenType.DEDENT):
+                case_statement: DefaultStatement | CaseStatement | None = None
+
+                # check for a case or default statement
+                if default_token := self.match(TokenType.DEFAULT):
+                    case_statement = DefaultStatement(default_token)
+                elif case_token := self.match(TokenType.CASE):
+                    value_case: Expression = self.expression()
+                    case_statement = CaseStatement(case_token, value_case)
+                else:
+                    self.ast_error(f"expected a case or default statement, got {self.current().token_type}")
+
+                self.expect(TokenType.COLON)
+                self.expect_newline("'case' or 'default' statement")
+
+                if self.match(TokenType.INDENT):
+                    while not self.match(TokenType.DEDENT):
+                        # match a list of statements with their newlines
+                        statement: Statement = self.statement()
+                        case_statement.statements.append(statement)
+
+                switch_statement.case_statements.append(case_statement)
+
+    def switch_statement(self) -> SwitchStatement | None:
+        # early return if we don't have a switch statement
+        token: Token | None = self.match(TokenType.SWITCH)
+        if not token:
+            return
+
+        # set the breakall label if this is the outer 'loop' (as we can also break from switch statements)
+        self._set_breakall_label(token)
+
+        # parse the expression of the switch statement
+        value_switch = self.expression()
+
+        # we should have a colon and newline, and potentially intented case blocks with optional expressions
+        self.expect(TokenType.COLON)
+        self.expect_newline()
+
+        switch_statement: SwitchStatement = SwitchStatement(token, value_switch)
+        self._in_switch = True
+        self._loop_count += 1
+        try:
+            self._parse_switch_case_statement(switch_statement)
+        finally:
+            self._loop_count -= 1
+            self._in_switch = False
+
+        return switch_statement
+
     def var_decl_statement(self, must_end_with_newline: bool) -> ListStatement | VarDeclStatement:
         # the _type_statement function already checked the tokens for us
         # so we can start consuming here
@@ -743,11 +800,7 @@ class AstGenerator:
         # return the finished enum statement
         return enum_statement
 
-    def loop_control_statement(self) -> Statement | None:
-        # early return if we're not inside a loop
-        if self._loop_count == 0:
-            return None
-
+    def _break_like_statements(self) -> BreakStatement | BreakallStatement | None:
         # check for a break statement
         if token := self.match(TokenType.BREAK):
             self.expect_newline("break")
@@ -757,6 +810,33 @@ class AstGenerator:
         if token := self.match(TokenType.BREAKALL):
             self.expect_newline("breakall")
             return BreakallStatement(token.source_location, self._breakall_label)
+
+        return None
+
+    def switch_control_statement(self) -> Statement | None:
+        # early return if we're not inside a switch statement
+        if not self._in_switch:
+            return None
+
+        # check for a break-like statement
+        if statement := self._break_like_statements():
+            return statement
+
+        # check for a fallthrough statement
+        if token := self.match(TokenType.FALLTHROUGH):
+            self.expect_newline("fallthrough")
+            return FallthroughStatement(token.source_location)
+
+        return None
+
+    def loop_control_statement(self) -> Statement | None:
+        # early return if we're not inside a loop or are in a switch
+        if self._loop_count == 0 or self._in_switch:
+            return None
+
+        # check for a break-like statement
+        if statement := self._break_like_statements():
+            return statement
 
         # check for a continue statement
         if token := self.match(TokenType.CONTINUE):
@@ -792,6 +872,10 @@ class AstGenerator:
         if statement := self.for_loop_statement():
             return statement
 
+        # check for a switch statement
+        if statement := self.switch_statement():
+            return statement
+
         # check for a while-loop statement
         if statement := self.while_loop_statement():
             return statement
@@ -812,7 +896,11 @@ class AstGenerator:
         if statement := self.enum_statement():
             return statement
 
-        # if we're inside a loop, check for break, breakall, continue statements
+        # if we're inside a switch-case statement, check for break-like and fallthrough statements
+        if statement := self.switch_control_statement():
+            return statement
+
+        # if we're inside a loop, check for break-like and continue statements
         if statement := self.loop_control_statement():
             return statement
 
@@ -917,7 +1005,7 @@ class AstGenerator:
             # otherwise it's a grouping expression
             expression: Expression = self.expression()
             message = f"expected closing parenthesis, but found '{self.current()}'!"
-            paren_close: Token = self.expect(TokenType.PAREN_CLOSE, message)
+            paren_close: Token = self.expect(TokenType.PAREN_CLOSE, message=message)
             # the SourceLocation is from paren_open till paren_close and everything in between
             source_location: SourceLocation = paren_open.source_location + paren_close.source_location
             return UnaryExpression(source_location, ExpressionType.GROUPING, expression)

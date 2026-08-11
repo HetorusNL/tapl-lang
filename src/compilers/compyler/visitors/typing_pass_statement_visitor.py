@@ -7,14 +7,18 @@
 from typing import TYPE_CHECKING
 
 from .base_statement_visitor import BaseStatementVisitor
+from ..errors.tapl_error import TaplError
 from ..statements.assignment_statement import AssignmentStatement
 from ..statements.break_statement import BreakStatement
 from ..statements.breakall_statement import BreakallStatement
+from ..statements.case_statement import CaseStatement
 from ..statements.class_statement import ClassStatement
 from ..statements.constructor_function_statement import ConstructorFunctionStatement
 from ..statements.continue_statement import ContinueStatement
+from ..statements.default_statement import DefaultStatement
 from ..statements.enum_statement import EnumStatement
 from ..statements.expression_statement import ExpressionStatement
+from ..statements.fallthrough_statement import FallthroughStatement
 from ..statements.for_loop_statement import ForLoopStatement
 from ..statements.function_statement import FunctionStatement
 from ..statements.if_statement import IfStatement
@@ -25,6 +29,7 @@ from ..statements.module_statement import ModuleStatement
 from ..statements.print_statement import PrintStatement
 from ..statements.return_if_value_statement import ReturnIfValueStatement
 from ..statements.return_statement import ReturnStatement
+from ..statements.switch_statement import SwitchStatement
 from ..statements.var_decl_statement import VarDeclStatement
 from ..types.type import Type
 from ..utils.source_location import SourceLocation
@@ -50,6 +55,36 @@ class TypingPassStatementVisitor(BaseStatementVisitor[None]):
 
     def visit_breakall_statement(self, statement: BreakallStatement) -> None:
         pass  # nothing to check in a BreakallStatement
+
+    def visit_case_statement(self, statement: CaseStatement) -> None:
+        # check that the fallthrough statement, if existing, is the last statement in the case statement body
+        if statement.statements:
+            fallthrough_statement: FallthroughStatement | None = statement.has_fallthrough
+            if fallthrough_statement and fallthrough_statement != statement.statements[-1]:
+                message: str = "fallthrough statement must be the last statement in the case statement body!"
+                self._typing_pass.ast_error(message, fallthrough_statement.source_location)
+
+        # create a new scope for the case statement body
+        with self._typing_pass.new_scope():
+            # check the case expression
+            self._typing_pass.parse_expression(statement.expression)
+            # check the case body
+            for body_statement in statement.statements:
+                self._typing_pass.parse_statement(body_statement)
+
+        # check the case expression type matches the switch expression type
+        switch_type: Type = self._typing_pass.switch_stack[-1]
+        case_expression_type: Type = statement.expression.type_
+        case_expression_source_location: SourceLocation = statement.expression.source_location
+        try:
+            # perform type checking on the switch expression type and case expression type,
+            # and catch an exception if it occurs
+            self._typing_pass.check_types(switch_type, case_expression_type, case_expression_source_location)
+        except TaplError:
+            # the type check failed, formulate a nice error for the user
+            message: str = f"expected case expression of type '{switch_type.keyword}', "
+            message += f"but found '{case_expression_type.keyword}'!"
+            self._typing_pass.ast_error(message, case_expression_source_location)
 
     def visit_class_statement(self, statement: ClassStatement) -> None:
         with self._typing_pass.clean_scope() as class_scope:
@@ -85,6 +120,20 @@ class TypingPassStatementVisitor(BaseStatementVisitor[None]):
     def visit_continue_statement(self, statement: ContinueStatement) -> None:
         pass  # nothing to check in a ContinueStatement
 
+    def visit_default_statement(self, statement: DefaultStatement) -> None:
+        # check that the fallthrough statement, if existing, is the last statement in the default statement body
+        if statement.statements:
+            fallthrough_statement: FallthroughStatement | None = statement.has_fallthrough
+            if fallthrough_statement and fallthrough_statement != statement.statements[-1]:
+                message: str = "fallthrough statement must be the last statement in the default statement body!"
+                self._typing_pass.ast_error(message, fallthrough_statement.source_location)
+
+        # create a new scope for the default statement body
+        with self._typing_pass.new_scope():
+            # check the default body
+            for body_statement in statement.statements:
+                self._typing_pass.parse_statement(body_statement)
+
     def visit_enum_statement(self, statement: EnumStatement) -> None:
         # add the enum name to the surrounding scope
         self._typing_pass.add_identifier(statement.name, statement.enum_type)
@@ -100,6 +149,9 @@ class TypingPassStatementVisitor(BaseStatementVisitor[None]):
     def visit_expression_statement(self, statement: ExpressionStatement) -> None:
         # check the expression
         self._typing_pass.parse_expression(statement.expression)
+
+    def visit_fallthrough_statement(self, statement: FallthroughStatement) -> None:
+        pass  # nothing to check in a FallthroughStatement
 
     def visit_for_loop_statement(self, statement: ForLoopStatement) -> None:
         # create a new scope for the for loop definition and body statements
@@ -220,6 +272,36 @@ class TypingPassStatementVisitor(BaseStatementVisitor[None]):
 
         if statement.value:
             self._typing_pass.check_return_type(statement.value, function_return_type)
+
+    def visit_switch_statement(self, statement: SwitchStatement) -> None:
+        # check that there is no fallthrough statement in the last case or default statement
+        if statement.case_statements:
+            last_case_statement: CaseStatement | DefaultStatement = statement.case_statements[-1]
+            if fallthrough_statement := last_case_statement.has_fallthrough:
+                message: str = "fallthrough statement not allowed in last case or default statement!"
+                self._typing_pass.ast_error(message, fallthrough_statement.source_location)
+
+        # check that there is no case statement after the default statement
+        default_statement_found: bool = False
+        for case_statement in statement.case_statements:
+            if isinstance(case_statement, DefaultStatement):
+                default_statement_found = True
+            elif default_statement_found:
+                message: str = "default statement must be the last case statement in a switch statement!"
+                self._typing_pass.ast_error(message, case_statement.source_location)
+
+        # create a new scope for the switch statement body
+        with self._typing_pass.new_scope():
+            # check the switch expression
+            self._typing_pass.parse_expression(statement.expression)
+            # add the expression type to the switch stack
+            self._typing_pass.switch_stack.append(statement.expression.type_)
+            try:
+                # check all case and default statements
+                for case_statement in statement.case_statements:
+                    self._typing_pass.parse_statement(case_statement)
+            finally:
+                self._typing_pass.switch_stack.pop()
 
     def visit_var_decl_statement(self, statement: VarDeclStatement) -> None:
         # add the variable declaration to the scope (we may need it already when testing the initial value)

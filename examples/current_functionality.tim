@@ -457,3 +457,35 @@ u32 test_return_if_value():
 
 println("\ntesting return_if_value statement behavior")
 println("test_return_if_value() returned: {test_return_if_value()}")
+
+println("\ntesting the switch-case statements in TAPL")
+void test_switch_case(u8 value):
+    switch value:
+        case 0:
+            println("0")
+        case 1:
+            println("1")
+            fallthrough
+        case 2:
+            println("2")
+            fallthrough
+        case 3:
+            println("3")
+        case 4:
+            println("4")
+            fallthrough
+        default:
+            println("default")
+
+println("calling test_switch_case(0) returns: ")
+test_switch_case(0)  // prints 0
+println("calling test_switch_case(1) returns: ")
+test_switch_case(1)  // prints 1 and 2 and 3
+println("calling test_switch_case(2) returns: ")
+test_switch_case(2)  // prints 2 and 3
+println("calling test_switch_case(3) returns: ")
+test_switch_case(3)  // prints 3
+println("calling test_switch_case(4) returns: ")
+test_switch_case(4)  // prints 4 and default
+println("calling test_switch_case(5) returns: ")
+test_switch_case(5)  // prints default
