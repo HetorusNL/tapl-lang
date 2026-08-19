@@ -6,7 +6,7 @@
 
 from pathlib import Path
 
-from ..utils.source_location import SourceLocation
+from compyler.utils.source_location import SourceLocation
 
 
 class RawImport:

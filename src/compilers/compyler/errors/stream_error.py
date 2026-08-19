@@ -4,8 +4,8 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
-from ..utils.colors import Colors
-from ..errors.tapl_error import TaplError
+from compyler.errors.tapl_error import TaplError
+from compyler.utils.colors import Colors
 
 
 class StreamError(TaplError):

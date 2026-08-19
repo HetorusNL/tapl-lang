@@ -4,7 +4,7 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
-from .type import Type
+from compyler.types.type import Type
 
 
 class ListType(Type):

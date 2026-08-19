@@ -6,14 +6,14 @@
 
 from pathlib import Path
 
-from .colors import Colors
-from ..expressions.expression import Expression
-from .source_location import SourceLocation
-from ..types.character_type import CharacterType
-from ..types.enum_type import EnumType
-from ..types.numeric_type import NumericType
-from ..types.numeric_type_type import NumericTypeType
-from ..types.type import Type
+from compyler.expressions.expression import Expression
+from compyler.utils.colors import Colors
+from compyler.utils.source_location import SourceLocation
+from compyler.types.character_type import CharacterType
+from compyler.types.enum_type import EnumType
+from compyler.types.numeric_type import NumericType
+from compyler.types.numeric_type_type import NumericTypeType
+from compyler.types.type import Type
 
 
 class Utils:

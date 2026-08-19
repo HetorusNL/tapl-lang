@@ -4,10 +4,10 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
-from .pass_base import PassBase
-from ..utils.ast_collection import AstCollection
-from ..visitors.scoping_pass_expression_visitor import ScopingPassExpressionVisitor
-from ..visitors.scoping_pass_statement_visitor import ScopingPassStatementVisitor
+from compyler.ast_checks.pass_base import PassBase
+from compyler.utils.ast_collection import AstCollection
+from compyler.visitors.scoping_pass_expression_visitor import ScopingPassExpressionVisitor
+from compyler.visitors.scoping_pass_statement_visitor import ScopingPassStatementVisitor
 
 
 class ScopingPass(PassBase[None]):

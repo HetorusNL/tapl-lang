@@ -6,9 +6,9 @@
 
 from collections.abc import Iterator
 
-from .module_file import ModuleFile
-from .raw_import import RawImport
-from ..types.types import Types
+from compyler.module.module_file import ModuleFile
+from compyler.module.raw_import import RawImport
+from compyler.types.types import Types
 
 
 class Module:

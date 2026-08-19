@@ -4,7 +4,7 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
-from .scope import Scope
+from compyler.ast_checks.scope import Scope
 
 
 class ScopeWrapper:

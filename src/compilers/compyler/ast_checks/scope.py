@@ -5,8 +5,8 @@
 # This file is part of compyler, a TAPL compiler.
 
 
-from ..types.type import Type
-from ..statements.function_statement import FunctionStatement
+from compyler.types.type import Type
+from compyler.statements.function_statement import FunctionStatement
 
 
 class Scope:

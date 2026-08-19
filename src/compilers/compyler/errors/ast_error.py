@@ -6,10 +6,10 @@
 
 from pathlib import Path
 
-from .tapl_error import TaplError
-from ..utils.colors import Colors
-from ..utils.source_location import SourceLocation
-from ..utils.utils import Utils
+from compyler.errors.tapl_error import TaplError
+from compyler.utils.colors import Colors
+from compyler.utils.source_location import SourceLocation
+from compyler.utils.utils import Utils
 
 
 class AstError(TaplError):

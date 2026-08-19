@@ -6,9 +6,9 @@
 
 from pathlib import Path
 
-from ..statements.statement import Statement
-from .stream import Stream
-from ..types.types import Types
+from compyler.statements.statement import Statement
+from compyler.types.types import Types
+from compyler.utils.stream import Stream
 
 
 class AST:

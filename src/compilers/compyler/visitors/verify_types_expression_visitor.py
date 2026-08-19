@@ -4,19 +4,19 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
-from .base_expression_visitor import BaseExpressionVisitor
-from ..expressions.binary_expression import BinaryExpression
-from ..expressions.call_expression import CallExpression
-from ..expressions.enum_value_expression import EnumValueExpression
-from ..expressions.expression import Expression
-from ..expressions.identifier_expression import IdentifierExpression
-from ..expressions.string_equal_expression import StringEqualExpression
-from ..expressions.string_expression import StringExpression
-from ..expressions.this_expression import ThisExpression
-from ..expressions.token_expression import TokenExpression
-from ..expressions.type_cast_expression import TypeCastExpression
-from ..expressions.unary_expression import UnaryExpression
-from ..types.type import Type
+from compyler.expressions.binary_expression import BinaryExpression
+from compyler.expressions.call_expression import CallExpression
+from compyler.expressions.enum_value_expression import EnumValueExpression
+from compyler.expressions.expression import Expression
+from compyler.expressions.identifier_expression import IdentifierExpression
+from compyler.expressions.string_equal_expression import StringEqualExpression
+from compyler.expressions.string_expression import StringExpression
+from compyler.expressions.this_expression import ThisExpression
+from compyler.expressions.token_expression import TokenExpression
+from compyler.expressions.type_cast_expression import TypeCastExpression
+from compyler.expressions.unary_expression import UnaryExpression
+from compyler.types.type import Type
+from compyler.visitors.base_expression_visitor import BaseExpressionVisitor
 
 
 class VerifyTypesExpressionVisitor(BaseExpressionVisitor[None]):

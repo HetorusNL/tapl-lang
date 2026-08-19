@@ -4,9 +4,9 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
-from ..utils.ast_collection import AstCollection
-from .scoping_pass import ScopingPass
-from .typing_pass import TypingPass
+from compyler.ast_checks.scoping_pass import ScopingPass
+from compyler.ast_checks.typing_pass import TypingPass
+from compyler.utils.ast_collection import AstCollection
 
 
 class AstCheck:

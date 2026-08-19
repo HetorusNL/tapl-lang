@@ -12,22 +12,22 @@ from subprocess import CompletedProcess
 from subprocess import run
 from typing import NoReturn
 
-from .ast_checks.ast_check import AstCheck
-from .utils.ast_collection import AstCollection
-from .ast_generator import AstGenerator
-from .backends.c_backend_code_generator import CBackendCodeGenerator
-from .errors.typing_error import TypingError
-from .tokens.token import Token
-from .types.class_type import ClassType
-from .types.enum_type import EnumType
-from .types.type_applier import TypeApplier
-from .types.type_resolver import TypeResolver
-from .types.types import Types
-from .utils.ast import AST
-from .module.module import Module
-from .module.module_file import ModuleFile
-from .module.module_map import ModuleMap
-from .utils.stream import Stream
+from compyler.ast_checks.ast_check import AstCheck
+from compyler.utils.ast_collection import AstCollection
+from compyler.ast_generator import AstGenerator
+from compyler.backends.c_backend_code_generator import CBackendCodeGenerator
+from compyler.errors.typing_error import TypingError
+from compyler.tokens.token import Token
+from compyler.types.class_type import ClassType
+from compyler.types.enum_type import EnumType
+from compyler.types.type_applier import TypeApplier
+from compyler.types.type_resolver import TypeResolver
+from compyler.types.types import Types
+from compyler.utils.ast import AST
+from compyler.module.module import Module
+from compyler.module.module_file import ModuleFile
+from compyler.module.module_map import ModuleMap
+from compyler.utils.stream import Stream
 
 
 class Compyler:
@@ -239,7 +239,7 @@ class Compyler:
         import inspect
         from inspect import FrameInfo
 
-        from .utils.colors import Colors
+        from compyler.utils.colors import Colors
 
         # try to get the line number of the function calling this function
         stack: list[FrameInfo] = inspect.stack()

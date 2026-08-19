@@ -7,15 +7,15 @@
 from pathlib import Path
 from typing import NoReturn
 
-from ..errors.ast_error import AstError
-from ..tokens.identifier_token import IdentifierToken
-from ..tokens.token import Token
-from ..tokens.type_token import TypeToken
-from ..tokens.token_type import TokenType
-from .types import Types
-from .list_type import ListType
-from ..utils.source_location import SourceLocation
-from ..utils.stream import Stream
+from compyler.errors.ast_error import AstError
+from compyler.tokens.identifier_token import IdentifierToken
+from compyler.tokens.token import Token
+from compyler.tokens.type_token import TypeToken
+from compyler.tokens.token_type import TokenType
+from compyler.types.types import Types
+from compyler.types.list_type import ListType
+from compyler.utils.source_location import SourceLocation
+from compyler.utils.stream import Stream
 
 
 class TypeApplier:

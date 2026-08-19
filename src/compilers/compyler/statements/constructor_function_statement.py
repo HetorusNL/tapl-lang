@@ -4,10 +4,10 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
-from .function_statement import FunctionStatement
-from ..tokens.identifier_token import IdentifierToken
-from ..tokens.type_token import TypeToken
-from ..types.class_type import ClassType
+from compyler.statements.function_statement import FunctionStatement
+from compyler.tokens.identifier_token import IdentifierToken
+from compyler.tokens.type_token import TypeToken
+from compyler.types.class_type import ClassType
 
 
 class ConstructorFunctionStatement(FunctionStatement):

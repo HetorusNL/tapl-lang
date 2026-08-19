@@ -157,7 +157,7 @@ the following 'features' were found during AoC solving, and should be fixed
   from typing import TYPE_CHECKING
   # ...rest of imports...
   if TYPE_CHECKING:
-    from ..visitors.base_expression_visitor import BaseExpressionVisitor
+    from compyler.visitors.base_expression_visitor import BaseExpressionVisitor
   ```
 
 ## Ideas

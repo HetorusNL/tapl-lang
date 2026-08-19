@@ -6,10 +6,10 @@
 
 from pathlib import Path
 
-from ..utils.stream import Stream
-from ..tokens.token import Token
-from ..utils.source_location import SourceLocation
-from .raw_import import RawImport
+from compyler.module.raw_import import RawImport
+from compyler.tokens.token import Token
+from compyler.utils.source_location import SourceLocation
+from compyler.utils.stream import Stream
 
 
 class ModuleFile:

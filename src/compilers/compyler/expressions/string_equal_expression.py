@@ -7,13 +7,13 @@
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from .expression import Expression
-from ..tokens.token import Token
-from ..utils.source_location import SourceLocation
-from ..utils.utils import Utils
+from compyler.expressions.expression import Expression
+from compyler.tokens.token import Token
+from compyler.utils.source_location import SourceLocation
+from compyler.utils.utils import Utils
 
 if TYPE_CHECKING:
-    from ..visitors.base_expression_visitor import BaseExpressionVisitor
+    from compyler.visitors.base_expression_visitor import BaseExpressionVisitor
 
 
 class StringEqualExpression(Expression):

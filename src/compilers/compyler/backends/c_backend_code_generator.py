@@ -6,11 +6,11 @@
 
 from pathlib import Path
 
-from .c_backend_expression_visitor import CBackendExpressionVisitor
-from .c_backend_state import CBackendState
-from .c_backend_statement_visitor import CBackendStatementVisitor
-from ..types.types import Types
-from ..utils.ast_collection import AstCollection
+from compyler.backends.c_backend_expression_visitor import CBackendExpressionVisitor
+from compyler.backends.c_backend_state import CBackendState
+from compyler.backends.c_backend_statement_visitor import CBackendStatementVisitor
+from compyler.types.types import Types
+from compyler.utils.ast_collection import AstCollection
 
 
 class CBackendCodeGenerator:

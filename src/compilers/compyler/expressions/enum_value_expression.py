@@ -6,13 +6,13 @@
 
 from typing import TYPE_CHECKING
 
-from .identifier_expression import IdentifierExpression
-from ..tokens.identifier_token import IdentifierToken
-from ..tokens.type_token import TypeToken
-from ..utils.source_location import SourceLocation
+from compyler.expressions.identifier_expression import IdentifierExpression
+from compyler.tokens.identifier_token import IdentifierToken
+from compyler.tokens.type_token import TypeToken
+from compyler.utils.source_location import SourceLocation
 
 if TYPE_CHECKING:
-    from ..visitors.base_expression_visitor import BaseExpressionVisitor
+    from compyler.visitors.base_expression_visitor import BaseExpressionVisitor
 
 
 class EnumValueExpression(IdentifierExpression):

@@ -6,10 +6,10 @@
 
 from typing import TYPE_CHECKING
 
-from ..utils.source_location import SourceLocation
+from compyler.utils.source_location import SourceLocation
 
 if TYPE_CHECKING:
-    from ..visitors.base_statement_visitor import BaseStatementVisitor
+    from compyler.visitors.base_statement_visitor import BaseStatementVisitor
 
 
 class Statement:

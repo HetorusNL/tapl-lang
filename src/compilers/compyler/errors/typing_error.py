@@ -6,8 +6,8 @@
 
 from pathlib import Path
 
-from .tapl_error import TaplError
-from ..utils.colors import Colors
+from compyler.errors.tapl_error import TaplError
+from compyler.utils.colors import Colors
 
 
 class TypingError(TaplError):

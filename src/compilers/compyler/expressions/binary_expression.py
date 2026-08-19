@@ -6,14 +6,14 @@
 
 from typing import TYPE_CHECKING
 
-from .expression import Expression
-from .token_expression import TokenExpression
-from ..tokens.token import Token
-from ..tokens.token_type import TokenType
-from ..utils.source_location import SourceLocation
+from compyler.expressions.expression import Expression
+from compyler.expressions.token_expression import TokenExpression
+from compyler.tokens.token import Token
+from compyler.tokens.token_type import TokenType
+from compyler.utils.source_location import SourceLocation
 
 if TYPE_CHECKING:
-    from ..visitors.base_expression_visitor import BaseExpressionVisitor
+    from compyler.visitors.base_expression_visitor import BaseExpressionVisitor
 
 
 class BinaryExpression(TokenExpression):

@@ -7,11 +7,11 @@
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
-from ..types.type import Type
-from ..utils.source_location import SourceLocation
+from compyler.types.type import Type
+from compyler.utils.source_location import SourceLocation
 
 if TYPE_CHECKING:
-    from ..visitors.base_expression_visitor import BaseExpressionVisitor
+    from compyler.visitors.base_expression_visitor import BaseExpressionVisitor
 
 
 class Expression:

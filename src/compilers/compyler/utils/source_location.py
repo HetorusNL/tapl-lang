@@ -18,7 +18,7 @@ class SourceLocation:
         # of the start and length is the same, it's the same SourceLocation
         return self.start == other.start and self.length == other.length
 
-    def __add__(self, other: "SourceLocation") -> "SourceLocation":
+    def __add__(self, other: SourceLocation) -> SourceLocation:
         """add another SourceLocation, returns a new SourceLocation with the greedy sum of both"""
         # calculate the start and end of the greedy sum of both
         start: int = min(self.start, other.start)

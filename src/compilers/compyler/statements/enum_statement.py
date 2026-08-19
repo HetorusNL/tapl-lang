@@ -6,22 +6,22 @@
 
 from typing import TYPE_CHECKING
 
-from ..expressions.binary_expression import BinaryExpression
-from ..expressions.expression import Expression
-from ..expressions.string_expression import StringExpression
-from ..expressions.token_expression import TokenExpression
-from .statement import Statement
-from ..tokens.identifier_token import IdentifierToken
-from ..tokens.number_token import NumberToken
-from ..tokens.type_token import TypeToken
-from ..tokens.token import Token
-from ..tokens.token_type import TokenType
-from ..types.enum_type import EnumType
-from ..utils.enum_entry import EnumEntry
-from ..utils.source_location import SourceLocation
+from compyler.expressions.binary_expression import BinaryExpression
+from compyler.expressions.expression import Expression
+from compyler.expressions.string_expression import StringExpression
+from compyler.expressions.token_expression import TokenExpression
+from compyler.statements.statement import Statement
+from compyler.tokens.identifier_token import IdentifierToken
+from compyler.tokens.number_token import NumberToken
+from compyler.tokens.type_token import TypeToken
+from compyler.tokens.token import Token
+from compyler.tokens.token_type import TokenType
+from compyler.types.enum_type import EnumType
+from compyler.utils.enum_entry import EnumEntry
+from compyler.utils.source_location import SourceLocation
 
 if TYPE_CHECKING:
-    from ..visitors.base_statement_visitor import BaseStatementVisitor
+    from compyler.visitors.base_statement_visitor import BaseStatementVisitor
 
 
 class EnumStatement(Statement):

@@ -4,7 +4,7 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
-from .ast import AST
+from compyler.utils.ast import AST
 
 
 class AstCollection:

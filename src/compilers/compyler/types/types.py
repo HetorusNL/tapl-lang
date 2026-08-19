@@ -6,13 +6,13 @@
 
 from copy import deepcopy
 
-from .character_type import CharacterType
-from .class_type import ClassType
-from .enum_type import EnumType
-from .list_type import ListType
-from .numeric_type import NumericType
-from .numeric_type_type import NumericTypeType
-from .type import Type
+from compyler.types.character_type import CharacterType
+from compyler.types.class_type import ClassType
+from compyler.types.enum_type import EnumType
+from compyler.types.list_type import ListType
+from compyler.types.numeric_type import NumericType
+from compyler.types.numeric_type_type import NumericTypeType
+from compyler.types.type import Type
 
 
 class Types:

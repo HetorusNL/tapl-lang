@@ -4,9 +4,9 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
-from ..expressions.expression import Expression
-from ..expressions.string_expression import StringExpression
-from ..tokens.identifier_token import IdentifierToken
+from compyler.expressions.expression import Expression
+from compyler.expressions.string_expression import StringExpression
+from compyler.tokens.identifier_token import IdentifierToken
 
 
 class EnumEntry:

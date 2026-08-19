@@ -4,29 +4,29 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
-from .c_backend_state import CBackendState
-from ..expressions.binary_expression import BinaryExpression
-from ..expressions.call_expression import CallExpression
-from ..expressions.enum_value_expression import EnumValueExpression
-from ..expressions.expression import Expression
-from ..expressions.expression_type import ExpressionType
-from ..expressions.identifier_expression import IdentifierExpression
-from ..expressions.string_equal_expression import StringEqualExpression
-from ..expressions.string_expression import StringExpression
-from ..expressions.this_expression import ThisExpression
-from ..expressions.token_expression import TokenExpression
-from ..expressions.type_cast_expression import TypeCastExpression
-from ..expressions.unary_expression import UnaryExpression
-from ..tokens.character_token import CharacterToken
-from ..tokens.identifier_token import IdentifierToken
-from ..tokens.number_token import NumberToken
-from ..tokens.string_chars_token import StringCharsToken
-from ..tokens.token import Token
-from ..tokens.token_type import TokenType
-from ..types.enum_type import EnumType
-from ..types.list_type import ListType
-from ..utils.utils import Utils
-from ..visitors.base_expression_visitor import BaseExpressionVisitor
+from compyler.backends.c_backend_state import CBackendState
+from compyler.expressions.binary_expression import BinaryExpression
+from compyler.expressions.call_expression import CallExpression
+from compyler.expressions.enum_value_expression import EnumValueExpression
+from compyler.expressions.expression import Expression
+from compyler.expressions.expression_type import ExpressionType
+from compyler.expressions.identifier_expression import IdentifierExpression
+from compyler.expressions.string_equal_expression import StringEqualExpression
+from compyler.expressions.string_expression import StringExpression
+from compyler.expressions.this_expression import ThisExpression
+from compyler.expressions.token_expression import TokenExpression
+from compyler.expressions.type_cast_expression import TypeCastExpression
+from compyler.expressions.unary_expression import UnaryExpression
+from compyler.tokens.character_token import CharacterToken
+from compyler.tokens.identifier_token import IdentifierToken
+from compyler.tokens.number_token import NumberToken
+from compyler.tokens.string_chars_token import StringCharsToken
+from compyler.tokens.token import Token
+from compyler.tokens.token_type import TokenType
+from compyler.types.enum_type import EnumType
+from compyler.types.list_type import ListType
+from compyler.utils.utils import Utils
+from compyler.visitors.base_expression_visitor import BaseExpressionVisitor
 
 
 class CBackendExpressionVisitor(BaseExpressionVisitor[str]):

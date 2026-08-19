@@ -6,36 +6,36 @@
 
 from typing import TYPE_CHECKING
 
-from ..ast_checks.scope_wrapper import ScopeWrapper
-from .base_expression_visitor import BaseExpressionVisitor
-from ..expressions.binary_expression import BinaryExpression
-from ..expressions.call_expression import CallExpression
-from ..expressions.enum_value_expression import EnumValueExpression
-from ..expressions.expression import Expression
-from ..expressions.expression_type import ExpressionType
-from ..expressions.identifier_expression import IdentifierExpression
-from ..expressions.string_equal_expression import StringEqualExpression
-from ..expressions.string_expression import StringExpression
-from ..expressions.this_expression import ThisExpression
-from ..expressions.token_expression import TokenExpression
-from ..expressions.type_cast_expression import TypeCastExpression
-from ..expressions.unary_expression import UnaryExpression
-from ..tokens.identifier_token import IdentifierToken
-from ..tokens.character_token import CharacterToken
-from ..tokens.identifier_token import IdentifierToken
-from ..tokens.number_token import NumberToken
-from ..tokens.string_chars_token import StringCharsToken
-from ..tokens.token_type import TokenType
-from ..types.character_type import CharacterType
-from ..types.class_type import ClassType
-from ..types.enum_type import EnumType
-from ..types.list_type import ListType
-from ..types.numeric_type import NumericType
-from ..types.type import Type
-from ..utils.source_location import SourceLocation
+from compyler.ast_checks.scope_wrapper import ScopeWrapper
+from compyler.expressions.binary_expression import BinaryExpression
+from compyler.expressions.call_expression import CallExpression
+from compyler.expressions.enum_value_expression import EnumValueExpression
+from compyler.expressions.expression import Expression
+from compyler.expressions.expression_type import ExpressionType
+from compyler.expressions.identifier_expression import IdentifierExpression
+from compyler.expressions.string_equal_expression import StringEqualExpression
+from compyler.expressions.string_expression import StringExpression
+from compyler.expressions.this_expression import ThisExpression
+from compyler.expressions.token_expression import TokenExpression
+from compyler.expressions.type_cast_expression import TypeCastExpression
+from compyler.expressions.unary_expression import UnaryExpression
+from compyler.tokens.character_token import CharacterToken
+from compyler.tokens.identifier_token import IdentifierToken
+from compyler.tokens.identifier_token import IdentifierToken
+from compyler.tokens.number_token import NumberToken
+from compyler.tokens.string_chars_token import StringCharsToken
+from compyler.tokens.token_type import TokenType
+from compyler.types.character_type import CharacterType
+from compyler.types.class_type import ClassType
+from compyler.types.enum_type import EnumType
+from compyler.types.list_type import ListType
+from compyler.types.numeric_type import NumericType
+from compyler.types.type import Type
+from compyler.utils.source_location import SourceLocation
+from compyler.visitors.base_expression_visitor import BaseExpressionVisitor
 
 if TYPE_CHECKING:
-    from ..ast_checks.typing_pass import TypingPass
+    from compyler.ast_checks.typing_pass import TypingPass
 
 
 class TypingPassExpressionVisitor(BaseExpressionVisitor[None]):

@@ -6,11 +6,11 @@
 
 from typing import TYPE_CHECKING
 
-from .statement import Statement
-from ..utils.source_location import SourceLocation
+from compyler.statements.statement import Statement
+from compyler.utils.source_location import SourceLocation
 
 if TYPE_CHECKING:
-    from ..visitors.base_statement_visitor import BaseStatementVisitor
+    from compyler.visitors.base_statement_visitor import BaseStatementVisitor
 
 
 class ContinueStatement(Statement):

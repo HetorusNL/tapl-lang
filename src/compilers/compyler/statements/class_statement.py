@@ -6,17 +6,17 @@
 
 from typing import TYPE_CHECKING
 
-from .function_statement import FunctionStatement
-from .lifecycle_statement import LifecycleStatement
-from .list_statement import ListStatement
-from .statement import Statement
-from .var_decl_statement import VarDeclStatement
-from ..tokens.type_token import TypeToken
-from ..types.class_type import ClassType
-from ..utils.source_location import SourceLocation
+from compyler.statements.function_statement import FunctionStatement
+from compyler.statements.lifecycle_statement import LifecycleStatement
+from compyler.statements.list_statement import ListStatement
+from compyler.statements.statement import Statement
+from compyler.statements.var_decl_statement import VarDeclStatement
+from compyler.tokens.type_token import TypeToken
+from compyler.types.class_type import ClassType
+from compyler.utils.source_location import SourceLocation
 
 if TYPE_CHECKING:
-    from ..visitors.base_statement_visitor import BaseStatementVisitor
+    from compyler.visitors.base_statement_visitor import BaseStatementVisitor
 
 
 class ClassStatement(Statement):

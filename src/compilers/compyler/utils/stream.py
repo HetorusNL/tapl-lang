@@ -6,7 +6,7 @@
 
 from collections.abc import Iterator
 
-from ..errors.stream_error import StreamError
+from compyler.errors.stream_error import StreamError
 
 
 class Stream[T]:
@@ -23,7 +23,7 @@ class Stream[T]:
         self.objects: list[T] = []
         self._index: int = 0
 
-    def add(self, *objs: T) -> "Stream[T]":
+    def add(self, *objs: T) -> Stream[T]:
         """extend the stream with the objects provided"""
         self.objects.extend(objs)
         return self

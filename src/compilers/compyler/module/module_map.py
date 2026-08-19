@@ -6,18 +6,18 @@
 
 from pathlib import Path
 
-from ..errors.module_error import ModuleError
-from .modularize_folder import ModularizeFolder
-from .module import Module
-from .raw_import import RawImport
-from .module_file import ModuleFile
-from ..utils.stream import Stream
-from ..utils.stream import StreamError
-from ..tokenizer import Tokenizer
-from ..tokens.identifier_token import IdentifierToken
-from ..tokens.token import Token
-from ..tokens.token_type import TokenType
-from ..utils.source_location import SourceLocation
+from compyler.errors.module_error import ModuleError
+from compyler.module.modularize_folder import ModularizeFolder
+from compyler.module.module import Module
+from compyler.module.raw_import import RawImport
+from compyler.module.module_file import ModuleFile
+from compyler.tokenizer import Tokenizer
+from compyler.tokens.identifier_token import IdentifierToken
+from compyler.tokens.token import Token
+from compyler.tokens.token_type import TokenType
+from compyler.utils.stream import Stream
+from compyler.utils.stream import StreamError
+from compyler.utils.source_location import SourceLocation
 
 
 class ModuleMap:

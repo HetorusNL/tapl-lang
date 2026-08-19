@@ -4,12 +4,12 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
-from ..tokens.identifier_token import IdentifierToken
-from ..tokens.token import Token
-from ..tokens.token_type import TokenType
-from .types import Types
-from ..utils.stream import Stream
-from ..utils.stream import StreamError
+from compyler.tokens.identifier_token import IdentifierToken
+from compyler.tokens.token import Token
+from compyler.tokens.token_type import TokenType
+from compyler.types.types import Types
+from compyler.utils.stream import Stream
+from compyler.utils.stream import StreamError
 
 
 class TypeResolver:

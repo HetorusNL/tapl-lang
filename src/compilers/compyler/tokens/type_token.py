@@ -4,10 +4,10 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
-from .token_type import TokenType
-from .identifier_token import IdentifierToken
-from ..types.type import Type
-from ..utils.source_location import SourceLocation
+from compyler.tokens.token_type import TokenType
+from compyler.tokens.identifier_token import IdentifierToken
+from compyler.types.type import Type
+from compyler.utils.source_location import SourceLocation
 
 
 class TypeToken(IdentifierToken):

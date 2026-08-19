@@ -6,12 +6,12 @@
 
 from typing import TYPE_CHECKING
 
-from .fallthrough_statement import FallthroughStatement
-from .statement import Statement
-from ..tokens.token import Token
+from compyler.statements.fallthrough_statement import FallthroughStatement
+from compyler.statements.statement import Statement
+from compyler.tokens.token import Token
 
 if TYPE_CHECKING:
-    from ..visitors.base_statement_visitor import BaseStatementVisitor
+    from compyler.visitors.base_statement_visitor import BaseStatementVisitor
 
 
 class DefaultStatement(Statement):

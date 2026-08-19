@@ -6,12 +6,12 @@
 
 from typing import TYPE_CHECKING
 
-from .expression import Expression
-from .expression_type import ExpressionType
-from ..utils.source_location import SourceLocation
+from compyler.expressions.expression import Expression
+from compyler.expressions.expression_type import ExpressionType
+from compyler.utils.source_location import SourceLocation
 
 if TYPE_CHECKING:
-    from ..visitors.base_expression_visitor import BaseExpressionVisitor
+    from compyler.visitors.base_expression_visitor import BaseExpressionVisitor
 
 
 class UnaryExpression(Expression):

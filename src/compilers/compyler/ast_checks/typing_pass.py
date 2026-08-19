@@ -4,28 +4,28 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
-from ..errors.tapl_error import TaplError
-from ..expressions.call_expression import CallExpression
-from ..expressions.expression import Expression
-from ..expressions.token_expression import TokenExpression
-from .pass_base import PassBase
-from ..statements.function_statement import FunctionStatement
-from ..tokens.identifier_token import IdentifierToken
-from ..tokens.number_token import NumberToken
-from ..tokens.type_token import TypeToken
-from ..types.numeric_type import NumericType
-from ..types.numeric_type_type import NumericTypeType
-from ..types.type import Type
-from ..types.types import Types
-from ..utils.ast_collection import AstCollection
-from ..utils.source_location import SourceLocation
-from .scope_wrapper import ScopeWrapper
-from ..visitors.base_expression_visitor import BaseExpressionVisitor
-from ..visitors.base_statement_visitor import BaseStatementVisitor
-from ..visitors.typing_pass_expression_visitor import TypingPassExpressionVisitor
-from ..visitors.typing_pass_statement_visitor import TypingPassStatementVisitor
-from ..visitors.verify_types_expression_visitor import VerifyTypesExpressionVisitor
-from ..visitors.verify_types_statement_visitor import VerifyTypesStatementVisitor
+from compyler.ast_checks.pass_base import PassBase
+from compyler.ast_checks.scope_wrapper import ScopeWrapper
+from compyler.errors.tapl_error import TaplError
+from compyler.expressions.call_expression import CallExpression
+from compyler.expressions.expression import Expression
+from compyler.expressions.token_expression import TokenExpression
+from compyler.statements.function_statement import FunctionStatement
+from compyler.tokens.identifier_token import IdentifierToken
+from compyler.tokens.number_token import NumberToken
+from compyler.tokens.type_token import TypeToken
+from compyler.types.numeric_type import NumericType
+from compyler.types.numeric_type_type import NumericTypeType
+from compyler.types.type import Type
+from compyler.types.types import Types
+from compyler.utils.ast_collection import AstCollection
+from compyler.utils.source_location import SourceLocation
+from compyler.visitors.base_expression_visitor import BaseExpressionVisitor
+from compyler.visitors.base_statement_visitor import BaseStatementVisitor
+from compyler.visitors.typing_pass_expression_visitor import TypingPassExpressionVisitor
+from compyler.visitors.typing_pass_statement_visitor import TypingPassStatementVisitor
+from compyler.visitors.verify_types_expression_visitor import VerifyTypesExpressionVisitor
+from compyler.visitors.verify_types_statement_visitor import VerifyTypesStatementVisitor
 
 
 class TypingPass(PassBase[None]):

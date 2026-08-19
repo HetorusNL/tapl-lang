@@ -6,12 +6,12 @@
 
 from typing import TYPE_CHECKING
 
-from .expression import Expression
-from ..tokens.token import Token
-from ..utils.source_location import SourceLocation
+from compyler.expressions.expression import Expression
+from compyler.tokens.token import Token
+from compyler.utils.source_location import SourceLocation
 
 if TYPE_CHECKING:
-    from ..visitors.base_expression_visitor import BaseExpressionVisitor
+    from compyler.visitors.base_expression_visitor import BaseExpressionVisitor
 
 
 class TokenExpression(Expression):

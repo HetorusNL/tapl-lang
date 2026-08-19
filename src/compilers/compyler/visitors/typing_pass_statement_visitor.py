@@ -6,36 +6,36 @@
 
 from typing import TYPE_CHECKING
 
-from .base_statement_visitor import BaseStatementVisitor
-from ..errors.tapl_error import TaplError
-from ..statements.assignment_statement import AssignmentStatement
-from ..statements.break_statement import BreakStatement
-from ..statements.breakall_statement import BreakallStatement
-from ..statements.case_statement import CaseStatement
-from ..statements.class_statement import ClassStatement
-from ..statements.constructor_function_statement import ConstructorFunctionStatement
-from ..statements.continue_statement import ContinueStatement
-from ..statements.default_statement import DefaultStatement
-from ..statements.enum_statement import EnumStatement
-from ..statements.expression_statement import ExpressionStatement
-from ..statements.fallthrough_statement import FallthroughStatement
-from ..statements.for_loop_statement import ForLoopStatement
-from ..statements.function_statement import FunctionStatement
-from ..statements.if_statement import IfStatement
-from ..statements.import_statement import ImportStatement
-from ..statements.lifecycle_statement import LifecycleStatement
-from ..statements.list_statement import ListStatement
-from ..statements.module_statement import ModuleStatement
-from ..statements.print_statement import PrintStatement
-from ..statements.return_if_value_statement import ReturnIfValueStatement
-from ..statements.return_statement import ReturnStatement
-from ..statements.switch_statement import SwitchStatement
-from ..statements.var_decl_statement import VarDeclStatement
-from ..types.type import Type
-from ..utils.source_location import SourceLocation
+from compyler.errors.tapl_error import TaplError
+from compyler.statements.assignment_statement import AssignmentStatement
+from compyler.statements.break_statement import BreakStatement
+from compyler.statements.breakall_statement import BreakallStatement
+from compyler.statements.case_statement import CaseStatement
+from compyler.statements.class_statement import ClassStatement
+from compyler.statements.constructor_function_statement import ConstructorFunctionStatement
+from compyler.statements.continue_statement import ContinueStatement
+from compyler.statements.default_statement import DefaultStatement
+from compyler.statements.enum_statement import EnumStatement
+from compyler.statements.expression_statement import ExpressionStatement
+from compyler.statements.fallthrough_statement import FallthroughStatement
+from compyler.statements.for_loop_statement import ForLoopStatement
+from compyler.statements.function_statement import FunctionStatement
+from compyler.statements.if_statement import IfStatement
+from compyler.statements.import_statement import ImportStatement
+from compyler.statements.lifecycle_statement import LifecycleStatement
+from compyler.statements.list_statement import ListStatement
+from compyler.statements.module_statement import ModuleStatement
+from compyler.statements.print_statement import PrintStatement
+from compyler.statements.return_if_value_statement import ReturnIfValueStatement
+from compyler.statements.return_statement import ReturnStatement
+from compyler.statements.switch_statement import SwitchStatement
+from compyler.statements.var_decl_statement import VarDeclStatement
+from compyler.types.type import Type
+from compyler.utils.source_location import SourceLocation
+from compyler.visitors.base_statement_visitor import BaseStatementVisitor
 
 if TYPE_CHECKING:
-    from ..ast_checks.typing_pass import TypingPass
+    from compyler.ast_checks.typing_pass import TypingPass
 
 
 class TypingPassStatementVisitor(BaseStatementVisitor[None]):

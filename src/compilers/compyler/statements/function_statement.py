@@ -6,14 +6,14 @@
 
 from typing import TYPE_CHECKING
 
-from .statement import Statement
-from ..tokens.identifier_token import IdentifierToken
-from ..tokens.type_token import TypeToken
-from ..types.class_type import ClassType
-from ..utils.source_location import SourceLocation
+from compyler.statements.statement import Statement
+from compyler.tokens.identifier_token import IdentifierToken
+from compyler.tokens.type_token import TypeToken
+from compyler.types.class_type import ClassType
+from compyler.utils.source_location import SourceLocation
 
 if TYPE_CHECKING:
-    from ..visitors.base_statement_visitor import BaseStatementVisitor
+    from compyler.visitors.base_statement_visitor import BaseStatementVisitor
 
 
 class FunctionStatement(Statement):

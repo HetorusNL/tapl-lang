@@ -10,19 +10,18 @@ from pathlib import Path
 from typing import Generator
 from typing import NoReturn
 
-from ..errors.ast_error import AstError
-from ..errors.tapl_error import TaplError
-from ..expressions.expression import Expression
-from ..statements.statement import Statement
-from ..tokens.identifier_token import IdentifierToken
-from ..types.type import Type
-from ..types.types import Types
-from ..utils.ast_collection import AstCollection
-from ..utils.source_location import SourceLocation
-from .scope_wrapper import ScopeWrapper
-
-from ..visitors.base_expression_visitor import BaseExpressionVisitor
-from ..visitors.base_statement_visitor import BaseStatementVisitor
+from compyler.ast_checks.scope_wrapper import ScopeWrapper
+from compyler.errors.ast_error import AstError
+from compyler.errors.tapl_error import TaplError
+from compyler.expressions.expression import Expression
+from compyler.statements.statement import Statement
+from compyler.tokens.identifier_token import IdentifierToken
+from compyler.types.type import Type
+from compyler.types.types import Types
+from compyler.utils.ast_collection import AstCollection
+from compyler.utils.source_location import SourceLocation
+from compyler.visitors.base_expression_visitor import BaseExpressionVisitor
+from compyler.visitors.base_statement_visitor import BaseStatementVisitor
 
 
 class PassBase[T]:

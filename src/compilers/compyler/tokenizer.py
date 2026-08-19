@@ -6,16 +6,16 @@
 
 from pathlib import Path
 
-from .tokens.token_type import TokenType
-from .tokens.character_token import CharacterToken
-from .tokens.comment_token import CommentToken
-from .tokens.identifier_token import IdentifierToken
-from .tokens.number_token import NumberToken
-from .tokens.string_chars_token import StringCharsToken
-from .tokens.this_token import ThisToken
-from .tokens.token import Token
-from .utils.source_location import SourceLocation
-from .utils.stream import Stream
+from compyler.tokens.character_token import CharacterToken
+from compyler.tokens.comment_token import CommentToken
+from compyler.tokens.identifier_token import IdentifierToken
+from compyler.tokens.number_token import NumberToken
+from compyler.tokens.string_chars_token import StringCharsToken
+from compyler.tokens.this_token import ThisToken
+from compyler.tokens.token_type import TokenType
+from compyler.tokens.token import Token
+from compyler.utils.source_location import SourceLocation
+from compyler.utils.stream import Stream
 
 
 class Tokenizer:

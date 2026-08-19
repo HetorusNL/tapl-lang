@@ -6,15 +6,15 @@
 
 from typing import TYPE_CHECKING
 
-from .lifecycle_statement_type import LifecycleStatementType
-from .statement import Statement
-from ..tokens.identifier_token import IdentifierToken
-from ..tokens.type_token import TypeToken
-from ..types.type import Type
-from ..utils.source_location import SourceLocation
+from compyler.statements.lifecycle_statement_type import LifecycleStatementType
+from compyler.statements.statement import Statement
+from compyler.tokens.identifier_token import IdentifierToken
+from compyler.tokens.type_token import TypeToken
+from compyler.types.type import Type
+from compyler.utils.source_location import SourceLocation
 
 if TYPE_CHECKING:
-    from ..visitors.base_statement_visitor import BaseStatementVisitor
+    from compyler.visitors.base_statement_visitor import BaseStatementVisitor
 
 
 class LifecycleStatement(Statement):
