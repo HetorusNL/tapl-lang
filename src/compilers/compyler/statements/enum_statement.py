@@ -13,9 +13,9 @@ from compyler.expressions.token_expression import TokenExpression
 from compyler.statements.statement import Statement
 from compyler.tokens.identifier_token import IdentifierToken
 from compyler.tokens.number_token import NumberToken
-from compyler.tokens.type_token import TypeToken
 from compyler.tokens.token import Token
 from compyler.tokens.token_type import TokenType
+from compyler.tokens.type_token import TypeToken
 from compyler.types.enum_type import EnumType
 from compyler.utils.enum_entry import EnumEntry
 from compyler.utils.source_location import SourceLocation

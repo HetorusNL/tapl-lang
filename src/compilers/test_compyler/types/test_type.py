@@ -4,8 +4,8 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
-import unittest
 from typing import Any
+import unittest
 
 from compyler.types.type import Type
 

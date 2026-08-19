@@ -4,8 +4,8 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
-from compyler.backends.c_backend_state import CBackendState
 from compyler.backends.c_backend_expression_visitor import CBackendExpressionVisitor
+from compyler.backends.c_backend_state import CBackendState
 from compyler.expressions.call_expression import CallExpression
 from compyler.expressions.expression import Expression
 from compyler.expressions.string_expression import StringExpression

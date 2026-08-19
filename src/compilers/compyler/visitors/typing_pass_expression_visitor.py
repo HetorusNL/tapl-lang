@@ -21,7 +21,6 @@ from compyler.expressions.type_cast_expression import TypeCastExpression
 from compyler.expressions.unary_expression import UnaryExpression
 from compyler.tokens.character_token import CharacterToken
 from compyler.tokens.identifier_token import IdentifierToken
-from compyler.tokens.identifier_token import IdentifierToken
 from compyler.tokens.number_token import NumberToken
 from compyler.tokens.string_chars_token import StringCharsToken
 from compyler.tokens.token_type import TokenType

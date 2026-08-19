@@ -4,8 +4,8 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
-from compyler.types.type import Type
 from compyler.types.numeric_type_type import NumericTypeType
+from compyler.types.type import Type
 
 
 class NumericType(Type):

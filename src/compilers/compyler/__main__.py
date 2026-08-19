@@ -13,10 +13,12 @@ from subprocess import run
 from typing import NoReturn
 
 from compyler.ast_checks.ast_check import AstCheck
-from compyler.utils.ast_collection import AstCollection
 from compyler.ast_generator import AstGenerator
 from compyler.backends.c_backend_code_generator import CBackendCodeGenerator
 from compyler.errors.typing_error import TypingError
+from compyler.module.module import Module
+from compyler.module.module_file import ModuleFile
+from compyler.module.module_map import ModuleMap
 from compyler.tokens.token import Token
 from compyler.types.class_type import ClassType
 from compyler.types.enum_type import EnumType
@@ -24,9 +26,7 @@ from compyler.types.type_applier import TypeApplier
 from compyler.types.type_resolver import TypeResolver
 from compyler.types.types import Types
 from compyler.utils.ast import AST
-from compyler.module.module import Module
-from compyler.module.module_file import ModuleFile
-from compyler.module.module_map import ModuleMap
+from compyler.utils.ast_collection import AstCollection
 from compyler.utils.stream import Stream
 
 

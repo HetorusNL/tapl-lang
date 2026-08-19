@@ -12,8 +12,8 @@ from compyler.tokens.identifier_token import IdentifierToken
 from compyler.tokens.number_token import NumberToken
 from compyler.tokens.string_chars_token import StringCharsToken
 from compyler.tokens.this_token import ThisToken
-from compyler.tokens.token_type import TokenType
 from compyler.tokens.token import Token
+from compyler.tokens.token_type import TokenType
 from compyler.utils.source_location import SourceLocation
 from compyler.utils.stream import Stream
 

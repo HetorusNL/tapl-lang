@@ -7,13 +7,13 @@
 from pathlib import Path
 
 from compyler.expressions.expression import Expression
-from compyler.utils.colors import Colors
-from compyler.utils.source_location import SourceLocation
 from compyler.types.character_type import CharacterType
 from compyler.types.enum_type import EnumType
 from compyler.types.numeric_type import NumericType
 from compyler.types.numeric_type_type import NumericTypeType
 from compyler.types.type import Type
+from compyler.utils.colors import Colors
+from compyler.utils.source_location import SourceLocation
 
 
 class Utils:

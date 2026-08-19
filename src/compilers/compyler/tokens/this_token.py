@@ -4,8 +4,8 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
-from compyler.tokens.token_type import TokenType
 from compyler.tokens.identifier_token import IdentifierToken
+from compyler.tokens.token_type import TokenType
 from compyler.utils.source_location import SourceLocation
 
 

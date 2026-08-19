@@ -6,13 +6,13 @@
 
 from typing import TYPE_CHECKING
 
-from ..expressions.expression import Expression
-from .statement import Statement
-from ..tokens.token import Token
-from ..utils.source_location import SourceLocation
+from compyler.expressions.expression import Expression
+from compyler.statements.statement import Statement
+from compyler.tokens.token import Token
+from compyler.utils.source_location import SourceLocation
 
 if TYPE_CHECKING:
-    from ..visitors.base_statement_visitor import BaseStatementVisitor
+    from compyler.visitors.base_statement_visitor import BaseStatementVisitor
 
 
 class ReturnStatement(Statement):

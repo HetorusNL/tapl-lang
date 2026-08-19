@@ -9,8 +9,8 @@ from pathlib import Path
 from compyler.errors.module_error import ModuleError
 from compyler.module.modularize_folder import ModularizeFolder
 from compyler.module.module import Module
-from compyler.module.raw_import import RawImport
 from compyler.module.module_file import ModuleFile
+from compyler.module.raw_import import RawImport
 from compyler.tokenizer import Tokenizer
 from compyler.tokens.identifier_token import IdentifierToken
 from compyler.tokens.token import Token
