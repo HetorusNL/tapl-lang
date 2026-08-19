@@ -167,28 +167,6 @@ the following 'features' were found during AoC solving, and should be fixed
 - REPL
   - use Tom's "hot-reload" functionality to 'inject' REPL lines
   - store persistent variables somewhere
-- add `returnif` keyword-like thing:
-  - an indented block of statements follow this
-  - if a statement returns a non-null value, return this from the surrounding function
-  - example below
-
-### Examples
-
-`returnif`:
-
-```
-Statement statement():
-    // very neatly functions returning if they are non-null
-    returnif:
-        if_statement()
-        for_loop_statement()
-        print_statement()
-        while_loop_statement()
-
-    // outside of the block use a normal return statement
-    Expression e = expression()
-    return ExpressionStatement(e)
-```
 
 ## FAQ
 

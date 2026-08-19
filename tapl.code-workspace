@@ -1,8 +1,8 @@
 {
   "folders": [
     {
-      "path": "."
-    }
+      "path": ".",
+    },
   ],
   "settings": {
     "C_Cpp.autoAddFileAssociations": false,
@@ -15,7 +15,8 @@
     "python.testing.pytestArgs": ["src/compilers"],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
-    "xml.format.maxLineWidth": 150
+    "python.analysis.extraPaths": ["${workspaceFolder}/src/compilers"],
+    "xml.format.maxLineWidth": 150,
   },
   "extensions": {
     "recommendations": [
@@ -23,7 +24,7 @@
       "ms-python.python",
       "ms-python.black-formatter",
       "ms-vscode.cpptools-extension-pack",
-      "pkief.material-icon-theme"
-    ]
-  }
+      "pkief.material-icon-theme",
+    ],
+  },
 }
