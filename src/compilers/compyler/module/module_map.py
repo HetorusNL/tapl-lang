@@ -5,6 +5,7 @@
 # This file is part of compyler, a TAPL compiler.
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from compyler.errors.module_error import ModuleError
 from compyler.module.modularize_folder import ModularizeFolder
@@ -13,11 +14,13 @@ from compyler.module.module_file import ModuleFile
 from compyler.module.raw_import import RawImport
 from compyler.tokenizer import Tokenizer
 from compyler.tokens.identifier_token import IdentifierToken
-from compyler.tokens.token import Token
 from compyler.tokens.token_type import TokenType
-from compyler.utils.stream import Stream
 from compyler.utils.stream import StreamError
-from compyler.utils.source_location import SourceLocation
+
+if TYPE_CHECKING:
+    from compyler.tokens.token import Token
+    from compyler.utils.source_location import SourceLocation
+    from compyler.utils.stream import Stream
 
 
 class ModuleMap:

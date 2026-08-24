@@ -5,10 +5,13 @@
 # This file is part of compyler, a TAPL compiler.
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from compyler.statements.statement import Statement
-from compyler.types.types import Types
 from compyler.utils.stream import Stream
+
+if TYPE_CHECKING:
+    from compyler.statements.statement import Statement
+    from compyler.types.types import Types
 
 
 class AST:

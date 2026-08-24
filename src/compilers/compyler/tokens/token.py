@@ -4,8 +4,11 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
-from compyler.tokens.token_type import TokenType
-from compyler.utils.source_location import SourceLocation
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from compyler.tokens.token_type import TokenType
+    from compyler.utils.source_location import SourceLocation
 
 
 class Token:

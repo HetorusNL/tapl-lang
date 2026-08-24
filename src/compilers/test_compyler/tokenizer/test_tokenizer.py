@@ -8,12 +8,15 @@
 # pyright: reportPrivateUsage=false
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 import unittest
 
 from compyler.tokenizer import Tokenizer
-from compyler.tokens.token import Token
 from compyler.tokens.token_type import TokenType
-from compyler.utils.stream import Stream
+
+if TYPE_CHECKING:
+    from compyler.tokens.token import Token
+    from compyler.utils.stream import Stream
 
 
 class TestTokenizer(unittest.TestCase):

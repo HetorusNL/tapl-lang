@@ -5,6 +5,7 @@
 # This file is part of compyler, a TAPL compiler.
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 import unittest
 
 from compyler.ast_generator import AstGenerator
@@ -14,17 +15,19 @@ from compyler.backends.c_backend_state import CBackendState
 from compyler.backends.c_backend_statement_visitor import CBackendStatementVisitor
 from compyler.expressions.call_expression import CallExpression
 from compyler.expressions.identifier_expression import IdentifierExpression
-from compyler.statements.statement import Statement
 from compyler.tokenizer import Tokenizer
 from compyler.tokens.identifier_token import IdentifierToken
-from compyler.tokens.token import Token
 from compyler.types.type_applier import TypeApplier
 from compyler.types.type_resolver import TypeResolver
 from compyler.types.types import Types
-from compyler.utils.ast import AST
 from compyler.utils.ast_collection import AstCollection
 from compyler.utils.source_location import SourceLocation
-from compyler.utils.stream import Stream
+
+if TYPE_CHECKING:
+    from compyler.statements.statement import Statement
+    from compyler.tokens.token import Token
+    from compyler.utils.ast import AST
+    from compyler.utils.stream import Stream
 
 
 class TestAstGenerator(unittest.TestCase):

@@ -4,9 +4,13 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
-from compyler.expressions.expression import Expression
-from compyler.expressions.string_expression import StringExpression
-from compyler.tokens.identifier_token import IdentifierToken
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from compyler.expressions.expression import Expression
+    from compyler.expressions.string_expression import StringExpression
+    from compyler.tokens.identifier_token import IdentifierToken
 
 
 class EnumEntry:

@@ -6,13 +6,13 @@
 
 from pathlib import Path
 from typing import NoReturn
+from typing import TYPE_CHECKING
 
 from compyler.errors.ast_error import AstError
 from compyler.errors.tapl_error import TaplError
 from compyler.expressions.binary_expression import BinaryExpression
 from compyler.expressions.call_expression import CallExpression
 from compyler.expressions.enum_value_expression import EnumValueExpression
-from compyler.expressions.expression import Expression
 from compyler.expressions.expression_type import ExpressionType
 from compyler.expressions.identifier_expression import IdentifierExpression
 from compyler.expressions.string_equal_expression import StringEqualExpression
@@ -42,23 +42,26 @@ from compyler.statements.module_statement import ModuleStatement
 from compyler.statements.print_statement import PrintStatement
 from compyler.statements.return_if_value_statement import ReturnIfValueStatement
 from compyler.statements.return_statement import ReturnStatement
-from compyler.statements.statement import Statement
 from compyler.statements.switch_statement import SwitchStatement
 from compyler.statements.var_decl_statement import VarDeclStatement
 from compyler.tokens.identifier_token import IdentifierToken
 from compyler.tokens.this_token import ThisToken
-from compyler.tokens.token import Token
 from compyler.tokens.token_type import TokenType
 from compyler.tokens.type_token import TypeToken
 from compyler.types.class_type import ClassType
 from compyler.types.enum_type import EnumType
 from compyler.types.list_type import ListType
-from compyler.types.type import Type
-from compyler.types.types import Types
 from compyler.utils.ast import AST
-from compyler.utils.source_location import SourceLocation
-from compyler.utils.stream import Stream
 from compyler.utils.utils import Utils
+
+if TYPE_CHECKING:
+    from compyler.expressions.expression import Expression
+    from compyler.statements.statement import Statement
+    from compyler.tokens.token import Token
+    from compyler.types.type import Type
+    from compyler.types.types import Types
+    from compyler.utils.source_location import SourceLocation
+    from compyler.utils.stream import Stream
 
 
 class AstGenerator:

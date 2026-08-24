@@ -6,12 +6,12 @@
 
 from typing import TYPE_CHECKING
 
-from compyler.expressions.expression import Expression
 from compyler.expressions.identifier_expression import IdentifierExpression
-from compyler.types.class_type import ClassType
-from compyler.utils.source_location import SourceLocation
 
 if TYPE_CHECKING:
+    from compyler.expressions.expression import Expression
+    from compyler.types.class_type import ClassType
+    from compyler.utils.source_location import SourceLocation
     from compyler.visitors.base_expression_visitor import BaseExpressionVisitor
 
 

@@ -7,12 +7,12 @@
 from typing import TYPE_CHECKING
 
 from compyler.statements.statement import Statement
-from compyler.tokens.identifier_token import IdentifierToken
-from compyler.tokens.type_token import TypeToken
 from compyler.types.list_type import ListType
-from compyler.utils.source_location import SourceLocation
 
 if TYPE_CHECKING:
+    from compyler.tokens.identifier_token import IdentifierToken
+    from compyler.tokens.type_token import TypeToken
+    from compyler.utils.source_location import SourceLocation
     from compyler.visitors.base_statement_visitor import BaseStatementVisitor
 
 

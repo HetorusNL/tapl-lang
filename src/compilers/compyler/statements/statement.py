@@ -6,9 +6,8 @@
 
 from typing import TYPE_CHECKING
 
-from compyler.utils.source_location import SourceLocation
-
 if TYPE_CHECKING:
+    from compyler.utils.source_location import SourceLocation
     from compyler.visitors.base_statement_visitor import BaseStatementVisitor
 
 

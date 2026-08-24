@@ -4,9 +4,11 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
+from typing import TYPE_CHECKING
 
-from compyler.statements.function_statement import FunctionStatement
-from compyler.types.type import Type
+if TYPE_CHECKING:
+    from compyler.statements.function_statement import FunctionStatement
+    from compyler.types.type import Type
 
 
 class Scope:

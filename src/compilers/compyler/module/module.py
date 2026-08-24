@@ -5,10 +5,12 @@
 # This file is part of compyler, a TAPL compiler.
 
 from collections.abc import Iterator
+from typing import TYPE_CHECKING
 
-from compyler.module.module_file import ModuleFile
-from compyler.module.raw_import import RawImport
-from compyler.types.types import Types
+if TYPE_CHECKING:
+    from compyler.module.module_file import ModuleFile
+    from compyler.module.raw_import import RawImport
+    from compyler.types.types import Types
 
 
 class Module:

@@ -6,14 +6,14 @@
 
 from typing import TYPE_CHECKING
 
-from compyler.expressions.expression import Expression
-from compyler.statements.case_statement import CaseStatement
-from compyler.statements.default_statement import DefaultStatement
 from compyler.statements.statement import Statement
-from compyler.tokens.token import Token
-from compyler.utils.source_location import SourceLocation
 
 if TYPE_CHECKING:
+    from compyler.expressions.expression import Expression
+    from compyler.statements.case_statement import CaseStatement
+    from compyler.statements.default_statement import DefaultStatement
+    from compyler.tokens.token import Token
+    from compyler.utils.source_location import SourceLocation
     from compyler.visitors.base_statement_visitor import BaseStatementVisitor
 
 

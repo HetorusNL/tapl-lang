@@ -6,16 +6,19 @@
 
 from pathlib import Path
 from typing import NoReturn
+from typing import TYPE_CHECKING
 
 from compyler.errors.ast_error import AstError
 from compyler.tokens.identifier_token import IdentifierToken
-from compyler.tokens.token import Token
 from compyler.tokens.token_type import TokenType
 from compyler.tokens.type_token import TypeToken
-from compyler.types.list_type import ListType
-from compyler.types.types import Types
-from compyler.utils.source_location import SourceLocation
-from compyler.utils.stream import Stream
+
+if TYPE_CHECKING:
+    from compyler.tokens.token import Token
+    from compyler.types.list_type import ListType
+    from compyler.types.types import Types
+    from compyler.utils.source_location import SourceLocation
+    from compyler.utils.stream import Stream
 
 
 class TypeApplier:

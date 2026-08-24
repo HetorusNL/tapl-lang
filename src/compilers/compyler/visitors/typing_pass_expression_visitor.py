@@ -6,19 +6,8 @@
 
 from typing import TYPE_CHECKING
 
-from compyler.ast_checks.scope_wrapper import ScopeWrapper
-from compyler.expressions.binary_expression import BinaryExpression
-from compyler.expressions.call_expression import CallExpression
-from compyler.expressions.enum_value_expression import EnumValueExpression
 from compyler.expressions.expression import Expression
 from compyler.expressions.expression_type import ExpressionType
-from compyler.expressions.identifier_expression import IdentifierExpression
-from compyler.expressions.string_equal_expression import StringEqualExpression
-from compyler.expressions.string_expression import StringExpression
-from compyler.expressions.this_expression import ThisExpression
-from compyler.expressions.token_expression import TokenExpression
-from compyler.expressions.type_cast_expression import TypeCastExpression
-from compyler.expressions.unary_expression import UnaryExpression
 from compyler.tokens.character_token import CharacterToken
 from compyler.tokens.identifier_token import IdentifierToken
 from compyler.tokens.number_token import NumberToken
@@ -30,11 +19,22 @@ from compyler.types.enum_type import EnumType
 from compyler.types.list_type import ListType
 from compyler.types.numeric_type import NumericType
 from compyler.types.type import Type
-from compyler.utils.source_location import SourceLocation
 from compyler.visitors.base_expression_visitor import BaseExpressionVisitor
 
 if TYPE_CHECKING:
+    from compyler.ast_checks.scope_wrapper import ScopeWrapper
     from compyler.ast_checks.typing_pass import TypingPass
+    from compyler.expressions.binary_expression import BinaryExpression
+    from compyler.expressions.call_expression import CallExpression
+    from compyler.expressions.enum_value_expression import EnumValueExpression
+    from compyler.expressions.identifier_expression import IdentifierExpression
+    from compyler.expressions.string_equal_expression import StringEqualExpression
+    from compyler.expressions.string_expression import StringExpression
+    from compyler.expressions.this_expression import ThisExpression
+    from compyler.expressions.token_expression import TokenExpression
+    from compyler.expressions.type_cast_expression import TypeCastExpression
+    from compyler.expressions.unary_expression import UnaryExpression
+    from compyler.utils.source_location import SourceLocation
 
 
 class TypingPassExpressionVisitor(BaseExpressionVisitor[None]):

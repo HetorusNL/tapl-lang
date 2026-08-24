@@ -4,29 +4,33 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
-from compyler.ast_checks.pass_base import PassBase
-from compyler.statements.assignment_statement import AssignmentStatement
-from compyler.statements.break_statement import BreakStatement
-from compyler.statements.breakall_statement import BreakallStatement
-from compyler.statements.case_statement import CaseStatement
-from compyler.statements.class_statement import ClassStatement
-from compyler.statements.continue_statement import ContinueStatement
-from compyler.statements.default_statement import DefaultStatement
-from compyler.statements.enum_statement import EnumStatement
-from compyler.statements.expression_statement import ExpressionStatement
-from compyler.statements.fallthrough_statement import FallthroughStatement
-from compyler.statements.for_loop_statement import ForLoopStatement
-from compyler.statements.function_statement import FunctionStatement
-from compyler.statements.if_statement import IfStatement
-from compyler.statements.import_statement import ImportStatement
-from compyler.statements.list_statement import ListStatement
-from compyler.statements.module_statement import ModuleStatement
-from compyler.statements.print_statement import PrintStatement
-from compyler.statements.return_if_value_statement import ReturnIfValueStatement
-from compyler.statements.return_statement import ReturnStatement
-from compyler.statements.switch_statement import SwitchStatement
-from compyler.statements.var_decl_statement import VarDeclStatement
+from typing import TYPE_CHECKING
+
 from compyler.visitors.base_statement_visitor import BaseStatementVisitor
+
+if TYPE_CHECKING:
+    from compyler.ast_checks.pass_base import PassBase
+    from compyler.statements.assignment_statement import AssignmentStatement
+    from compyler.statements.break_statement import BreakStatement
+    from compyler.statements.breakall_statement import BreakallStatement
+    from compyler.statements.case_statement import CaseStatement
+    from compyler.statements.class_statement import ClassStatement
+    from compyler.statements.continue_statement import ContinueStatement
+    from compyler.statements.default_statement import DefaultStatement
+    from compyler.statements.enum_statement import EnumStatement
+    from compyler.statements.expression_statement import ExpressionStatement
+    from compyler.statements.fallthrough_statement import FallthroughStatement
+    from compyler.statements.for_loop_statement import ForLoopStatement
+    from compyler.statements.function_statement import FunctionStatement
+    from compyler.statements.if_statement import IfStatement
+    from compyler.statements.import_statement import ImportStatement
+    from compyler.statements.list_statement import ListStatement
+    from compyler.statements.module_statement import ModuleStatement
+    from compyler.statements.print_statement import PrintStatement
+    from compyler.statements.return_if_value_statement import ReturnIfValueStatement
+    from compyler.statements.return_statement import ReturnStatement
+    from compyler.statements.switch_statement import SwitchStatement
+    from compyler.statements.var_decl_statement import VarDeclStatement
 
 
 class ScopingPassStatementVisitor(BaseStatementVisitor[None]):

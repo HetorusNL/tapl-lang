@@ -5,11 +5,13 @@
 # This file is part of compyler, a TAPL compiler.
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from compyler.module.raw_import import RawImport
-from compyler.tokens.token import Token
-from compyler.utils.source_location import SourceLocation
-from compyler.utils.stream import Stream
+if TYPE_CHECKING:
+    from compyler.module.raw_import import RawImport
+    from compyler.tokens.token import Token
+    from compyler.utils.source_location import SourceLocation
+    from compyler.utils.stream import Stream
 
 
 class ModuleFile:

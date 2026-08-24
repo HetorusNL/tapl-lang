@@ -4,19 +4,23 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
-from compyler.ast_checks.pass_base import PassBase
-from compyler.expressions.binary_expression import BinaryExpression
-from compyler.expressions.call_expression import CallExpression
-from compyler.expressions.enum_value_expression import EnumValueExpression
+from typing import TYPE_CHECKING
+
 from compyler.expressions.expression import Expression
-from compyler.expressions.identifier_expression import IdentifierExpression
-from compyler.expressions.string_equal_expression import StringEqualExpression
-from compyler.expressions.string_expression import StringExpression
-from compyler.expressions.token_expression import TokenExpression
-from compyler.expressions.type_cast_expression import TypeCastExpression
-from compyler.expressions.unary_expression import UnaryExpression
 from compyler.tokens.identifier_token import IdentifierToken
 from compyler.visitors.base_expression_visitor import BaseExpressionVisitor
+
+if TYPE_CHECKING:
+    from compyler.ast_checks.pass_base import PassBase
+    from compyler.expressions.binary_expression import BinaryExpression
+    from compyler.expressions.call_expression import CallExpression
+    from compyler.expressions.enum_value_expression import EnumValueExpression
+    from compyler.expressions.identifier_expression import IdentifierExpression
+    from compyler.expressions.string_equal_expression import StringEqualExpression
+    from compyler.expressions.string_expression import StringExpression
+    from compyler.expressions.token_expression import TokenExpression
+    from compyler.expressions.type_cast_expression import TypeCastExpression
+    from compyler.expressions.unary_expression import UnaryExpression
 
 
 class ScopingPassExpressionVisitor(BaseExpressionVisitor[None]):

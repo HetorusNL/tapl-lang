@@ -4,24 +4,26 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
-
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Generator
 from typing import NoReturn
+from typing import TYPE_CHECKING
 
 from compyler.ast_checks.scope_wrapper import ScopeWrapper
 from compyler.errors.ast_error import AstError
 from compyler.errors.tapl_error import TaplError
-from compyler.expressions.expression import Expression
-from compyler.statements.statement import Statement
-from compyler.tokens.identifier_token import IdentifierToken
 from compyler.types.type import Type
-from compyler.types.types import Types
-from compyler.utils.ast_collection import AstCollection
-from compyler.utils.source_location import SourceLocation
-from compyler.visitors.base_expression_visitor import BaseExpressionVisitor
-from compyler.visitors.base_statement_visitor import BaseStatementVisitor
+
+if TYPE_CHECKING:
+    from compyler.expressions.expression import Expression
+    from compyler.statements.statement import Statement
+    from compyler.tokens.identifier_token import IdentifierToken
+    from compyler.types.types import Types
+    from compyler.utils.ast_collection import AstCollection
+    from compyler.utils.source_location import SourceLocation
+    from compyler.visitors.base_expression_visitor import BaseExpressionVisitor
+    from compyler.visitors.base_statement_visitor import BaseStatementVisitor
 
 
 class PassBase[T]:

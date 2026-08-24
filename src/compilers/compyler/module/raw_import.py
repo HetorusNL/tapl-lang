@@ -5,8 +5,10 @@
 # This file is part of compyler, a TAPL compiler.
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from compyler.utils.source_location import SourceLocation
+if TYPE_CHECKING:
+    from compyler.utils.source_location import SourceLocation
 
 
 class RawImport:

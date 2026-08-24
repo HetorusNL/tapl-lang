@@ -8,9 +8,9 @@ from copy import deepcopy
 from typing import TYPE_CHECKING
 
 from compyler.types.type import Type
-from compyler.utils.source_location import SourceLocation
 
 if TYPE_CHECKING:
+    from compyler.utils.source_location import SourceLocation
     from compyler.visitors.base_expression_visitor import BaseExpressionVisitor
 
 

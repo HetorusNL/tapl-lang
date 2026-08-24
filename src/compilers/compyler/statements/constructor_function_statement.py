@@ -4,10 +4,14 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
+from typing import TYPE_CHECKING
+
 from compyler.statements.function_statement import FunctionStatement
-from compyler.tokens.identifier_token import IdentifierToken
-from compyler.tokens.type_token import TypeToken
-from compyler.types.class_type import ClassType
+
+if TYPE_CHECKING:
+    from compyler.tokens.identifier_token import IdentifierToken
+    from compyler.tokens.type_token import TypeToken
+    from compyler.types.class_type import ClassType
 
 
 class ConstructorFunctionStatement(FunctionStatement):

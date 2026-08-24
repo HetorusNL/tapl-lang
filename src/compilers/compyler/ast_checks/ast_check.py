@@ -4,9 +4,13 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
+from typing import TYPE_CHECKING
+
 from compyler.ast_checks.scoping_pass import ScopingPass
 from compyler.ast_checks.typing_pass import TypingPass
-from compyler.utils.ast_collection import AstCollection
+
+if TYPE_CHECKING:
+    from compyler.utils.ast_collection import AstCollection
 
 
 class AstCheck:

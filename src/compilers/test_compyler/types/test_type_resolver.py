@@ -5,13 +5,16 @@
 # This file is part of compyler, a TAPL compiler.
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 import unittest
 
 from compyler.tokenizer import Tokenizer
-from compyler.tokens.token import Token
 from compyler.types.type_resolver import TypeResolver
-from compyler.types.types import Types
-from compyler.utils.stream import Stream
+
+if TYPE_CHECKING:
+    from compyler.tokens.token import Token
+    from compyler.types.types import Types
+    from compyler.utils.stream import Stream
 
 
 class TestTypeResolver(unittest.TestCase):

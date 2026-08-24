@@ -5,12 +5,15 @@
 # This file is part of compyler, a TAPL compiler.
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from compyler.backends.c_backend_expression_visitor import CBackendExpressionVisitor
 from compyler.backends.c_backend_state import CBackendState
 from compyler.backends.c_backend_statement_visitor import CBackendStatementVisitor
-from compyler.types.types import Types
-from compyler.utils.ast_collection import AstCollection
+
+if TYPE_CHECKING:
+    from compyler.types.types import Types
+    from compyler.utils.ast_collection import AstCollection
 
 
 class CBackendCodeGenerator:

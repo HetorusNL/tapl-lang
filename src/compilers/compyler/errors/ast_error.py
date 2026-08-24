@@ -5,11 +5,14 @@
 # This file is part of compyler, a TAPL compiler.
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from compyler.errors.tapl_error import TaplError
 from compyler.utils.colors import Colors
-from compyler.utils.source_location import SourceLocation
 from compyler.utils.utils import Utils
+
+if TYPE_CHECKING:
+    from compyler.utils.source_location import SourceLocation
 
 
 class AstError(TaplError):

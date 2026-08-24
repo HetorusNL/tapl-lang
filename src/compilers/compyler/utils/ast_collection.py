@@ -4,7 +4,10 @@
 #
 # This file is part of compyler, a TAPL compiler.
 
-from compyler.utils.ast import AST
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from compyler.utils.ast import AST
 
 
 class AstCollection:
