@@ -1,0 +1,30 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2026 Tim Klein Nijenhuis <tim@hetorus.nl>
+#
+# This file is part of compyler, a TAPL compiler.
+
+from typing import TYPE_CHECKING
+
+from compyler.expressions.expression import Expression
+
+if TYPE_CHECKING:
+    from compyler.tokens.token import Token
+    from compyler.utils.source_location import SourceLocation
+    from compyler.visitors.base_expression_visitor import BaseExpressionVisitor
+
+
+class MakePtrExpression(Expression):
+    def __init__(self, token: Token, expression: Expression):
+        source_location: SourceLocation = token.source_location + expression.source_location
+        super().__init__(source_location)
+        self.expression: Expression = expression
+
+    def accept[T](self, visitor: BaseExpressionVisitor[T]) -> T:
+        return visitor.visit_make_ptr_expression(self)
+
+    def __str__(self) -> str:
+        return f"make_ptr({self.expression.__str__()})"
+
+    def __repr__(self) -> str:
+        return f"<MakePtrExpression: location {self.source_location}, {self.expression.__repr__()}>"

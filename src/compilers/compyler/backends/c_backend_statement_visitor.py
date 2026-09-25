@@ -12,6 +12,7 @@ from compyler.statements.default_statement import DefaultStatement
 from compyler.statements.lifecycle_statement import LifecycleStatement
 from compyler.statements.lifecycle_statement_type import LifecycleStatementType
 from compyler.utils.utils import Utils
+from compyler.types.ptr_type import PtrType
 from compyler.visitors.base_statement_visitor import BaseStatementVisitor
 
 if TYPE_CHECKING:
@@ -71,6 +72,11 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
         """returns the full class as a struct"""
         # start with the typedef
         code: str = f"typedef struct {statement.class_type}_struct {statement.class_type};\n"
+
+        # if a PtrType to this class exists, also add it to the class_objects
+        ptr_keyword: str = PtrType.get_keyword(statement.class_type)
+        if ptr_type := self._state.types.ptr_types.get(ptr_keyword):
+            code += f"typedef {ptr_type.inner_type.name}* {ptr_type.name};\n"
 
         # add the class name
         code += f"struct {statement.class_type}_struct {{\n"

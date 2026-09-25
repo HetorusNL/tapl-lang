@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from compyler.expressions.enum_value_expression import EnumValueExpression
     from compyler.expressions.expression import Expression
     from compyler.expressions.identifier_expression import IdentifierExpression
+    from compyler.expressions.make_ptr_expression import MakePtrExpression
     from compyler.expressions.string_equal_expression import StringEqualExpression
     from compyler.expressions.string_expression import StringExpression
     from compyler.expressions.this_expression import ThisExpression
@@ -36,6 +37,9 @@ class BaseExpressionVisitor[T]:
         raise VisitorError(self, expression)
 
     def visit_identifier_expression(self, expression: IdentifierExpression) -> T:
+        raise VisitorError(self, expression)
+
+    def visit_make_ptr_expression(self, expression: MakePtrExpression) -> T:
         raise VisitorError(self, expression)
 
     def visit_string_equal_expression(self, expression: StringEqualExpression) -> T:

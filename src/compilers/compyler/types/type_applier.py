@@ -17,6 +17,7 @@ from compyler.tokens.type_token import TypeToken
 if TYPE_CHECKING:
     from compyler.tokens.token import Token
     from compyler.types.list_type import ListType
+    from compyler.types.ptr_type import PtrType
     from compyler.types.types import Types
     from compyler.utils.source_location import SourceLocation
     from compyler.utils.stream import Stream
@@ -71,6 +72,30 @@ class TypeApplier:
                     type_token: TypeToken = TypeToken(source_location, list_type)
 
                     # replace the list with type token between brackets tokens with a TypeToken
+                    tokens.replace(4, type_token)
+                except TaplError as e:
+                    errors.append(e)
+
+        # third pass to find and convert the ptr types to TypeTokens
+        for token in tokens.iter():
+            if token.token_type == TokenType.PTR:
+                try:
+                    # a ptr should have a type token between brackets
+                    self.expect(tokens.iter_next(), TokenType.BRACKET_OPEN)
+                    element_type: Token = self.expect(tokens.iter_next(1), TokenType.TYPE)
+                    assert isinstance(element_type, TypeToken)
+                    bracket_close: Token = self.expect(tokens.iter_next(2), TokenType.BRACKET_CLOSE)
+
+                    # add (if not already existing) the ptr type with this element type
+                    ptr_type: PtrType = self._types.add_ptr_type(element_type.type_)
+
+                    # construct the source_location
+                    source_location: SourceLocation = token.source_location + bracket_close.source_location
+
+                    # added the ptr type to the types, construct the TypeToken
+                    type_token: TypeToken = TypeToken(source_location, ptr_type)
+
+                    # replace the ptr with type token between brackets tokens with a TypeToken
                     tokens.replace(4, type_token)
                 except TaplError as e:
                     errors.append(e)

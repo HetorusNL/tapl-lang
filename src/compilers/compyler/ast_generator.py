@@ -15,6 +15,7 @@ from compyler.expressions.call_expression import CallExpression
 from compyler.expressions.enum_value_expression import EnumValueExpression
 from compyler.expressions.expression_type import ExpressionType
 from compyler.expressions.identifier_expression import IdentifierExpression
+from compyler.expressions.make_ptr_expression import MakePtrExpression
 from compyler.expressions.string_equal_expression import StringEqualExpression
 from compyler.expressions.string_expression import StringExpression
 from compyler.expressions.this_expression import ThisExpression
@@ -1074,6 +1075,10 @@ class AstGenerator:
             this_expression: ThisExpression = ThisExpression(token.source_location, token, self._class_type)
             return self.identifier_expression(this_expression)
 
+        # check for a make_ptr expression
+        if make_ptr_expression := self.make_ptr_expression():
+            return make_ptr_expression
+
         # otherwise we have an error, there must be an expression here
         self.ast_error(f"expected an expression, found '{self.current()}'!")
 
@@ -1115,6 +1120,19 @@ class AstGenerator:
 
         # later expression format modifiers can be added here as well
         self.ast_error(f"expected '}}' or '=', but found {self.current()}!")
+
+    def make_ptr_expression(self) -> MakePtrExpression | None:
+        # early return if we don't have a make_ptr keyword
+        token: Token | None = self.match(TokenType.MAKE_PTR)
+        if not token:
+            return None
+
+        # match an expression between parenthesis
+        self.expect(TokenType.PAREN_OPEN)
+        value = self.expression()
+        self.expect(TokenType.PAREN_CLOSE)
+
+        return MakePtrExpression(token, value)
 
     def identifier_expression(self, expression: IdentifierExpression) -> Expression:
         # continuously parse the expressions for function calls and dot operators

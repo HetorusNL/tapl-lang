@@ -47,7 +47,8 @@ class TestAstGenerator(unittest.TestCase):
         self._run_compilation_test("functions.tim", "result_functions.txt")
 
     def test_list_identifier_is_emitted_as_pointer_for_function_calls(self):
-        state = CBackendState()
+        types: Types = Types()
+        state = CBackendState(types)
         expression_visitor = CBackendExpressionVisitor(state)
         source_location = SourceLocation(0, 0)
 
@@ -89,7 +90,7 @@ class TestAstGenerator(unittest.TestCase):
         with open(result_file) as f:
             result: list[str] = f.readlines()
         # create the state and the visitors for the C backend
-        state = CBackendState()
+        state = CBackendState(types)
         expression_visitor = CBackendExpressionVisitor(state)
         statement_visitor = CBackendStatementVisitor(state, expression_visitor)
         # convert code lines to single lines and strip newlines

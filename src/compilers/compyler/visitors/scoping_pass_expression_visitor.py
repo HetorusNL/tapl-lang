@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from compyler.expressions.call_expression import CallExpression
     from compyler.expressions.enum_value_expression import EnumValueExpression
     from compyler.expressions.identifier_expression import IdentifierExpression
+    from compyler.expressions.make_ptr_expression import MakePtrExpression
     from compyler.expressions.string_equal_expression import StringEqualExpression
     from compyler.expressions.string_expression import StringExpression
     from compyler.expressions.token_expression import TokenExpression
@@ -50,6 +51,10 @@ class ScopingPassExpressionVisitor(BaseExpressionVisitor[None]):
         # self._pass_base.get_identifier_type(expression.identifier_token)
         # check the inner expression
         self._pass_base.parse_expression(expression.base_expression)
+
+    def visit_make_ptr_expression(self, expression: MakePtrExpression) -> None:
+        # check the inner expression of the make ptr expression
+        self._pass_base.parse_expression(expression.expression)
 
     def visit_string_equal_expression(self, expression: StringEqualExpression) -> None:
         # check the inner expression of the string equal expression

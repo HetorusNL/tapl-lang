@@ -444,6 +444,8 @@ class Tokenizer:
                 self._add_token_of_length(TokenType.IMPORT)
             case TokenType.LIST.value:
                 self._add_token_of_length(TokenType.LIST)
+            case TokenType.MAKE_PTR.value:
+                self._add_token_of_length(TokenType.MAKE_PTR)
             case TokenType.MODULE.value:
                 self._add_token_of_length(TokenType.MODULE)
             case TokenType.NULL.value:
@@ -452,6 +454,8 @@ class Tokenizer:
                 self._add_token_of_length(TokenType.PRINT)
             case TokenType.PRINTLN.value:
                 self._add_token_of_length(TokenType.PRINTLN)
+            case TokenType.PTR.value:
+                self._add_token_of_length(TokenType.PTR)
             case TokenType.RETURN.value:
                 self._add_token_of_length(TokenType.RETURN)
             case TokenType.RETURN_IF_VALUE.value:

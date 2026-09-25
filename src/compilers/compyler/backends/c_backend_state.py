@@ -5,8 +5,14 @@
 # This file is part of compyler, a TAPL compiler.
 
 
+from compyler.types.types import Types
+
+
 class CBackendState:
-    def __init__(self):
+    def __init__(self, types: Types):
+        # store the constructor objects
+        self.types: Types = types
+
         # create strings for the main source code and function declarations and definitions
         self.main_lines: list[str] = []
         self.function_declarations: list[str] = []

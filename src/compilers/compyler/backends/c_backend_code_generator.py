@@ -28,7 +28,7 @@ class CBackendCodeGenerator:
         self._types: Types = ast_collection.asts[-1].types
 
         # create the state and the visitors for the C backend
-        self._state = CBackendState()
+        self._state = CBackendState(self._types)
         self._expression_visitor = CBackendExpressionVisitor(self._state)
         self._statement_visitor = CBackendStatementVisitor(self._state, self._expression_visitor)
 

@@ -12,6 +12,7 @@ from compyler.types.enum_type import EnumType
 from compyler.types.list_type import ListType
 from compyler.types.numeric_type import NumericType
 from compyler.types.numeric_type_type import NumericTypeType
+from compyler.types.ptr_type import PtrType
 from compyler.types.type import Type
 
 
@@ -19,6 +20,7 @@ class Types:
     def __init__(self):
         self.simple_types: dict[str, Type] = self._builtin_types()
         self.list_types: dict[str, ListType] = {}
+        self.ptr_types: dict[str, PtrType] = {}
         self.class_types: dict[str, ClassType] = {}
         self.enum_types: dict[str, EnumType] = {}
 
@@ -134,7 +136,8 @@ class Types:
         returns the existing or newly added list type
         """
         # construct the keyword of the list type
-        keyword: str = f"list[{inner_type.keyword}]"
+        keyword: str = ListType.get_keyword(inner_type)
+
         # check if the type is already in the collection
         if keyword not in self.list_types:
             # create the Type, and add the keyword:Type to the collection
@@ -146,19 +149,41 @@ class Types:
         assert isinstance(list_type, ListType)
         return list_type
 
+    def add_ptr_type(self, inner_type: Type) -> PtrType:
+        """add a new ptr type to the Types collection,
+        does nothing when the ptr type is already present in the collection,
+        returns the existing or newly added ptr type
+        """
+        # construct the keyword of the ptr type
+        keyword: str = PtrType.get_keyword(inner_type)
+
+        # check if the type is already in the collection
+        if keyword not in self.ptr_types:
+            # create the Type, and add the keyword:Type to the collection
+            new_ptr_type = PtrType(inner_type)
+            self.ptr_types[keyword] = new_ptr_type
+
+        # return the existing or newly created ptr type
+        ptr_type: Type = self[keyword]
+        assert isinstance(ptr_type, PtrType)
+        return ptr_type
+
     def _get(self, keyword: str) -> Type | None:
         """internal get method that returns a reference to one of the type types, if found, None otherwise"""
         if builtin_type := self.simple_types.get(keyword):
             return builtin_type
-
-        if list_type := self.list_types.get(keyword):
-            return list_type
 
         if class_type := self.class_types.get(keyword):
             return class_type
 
         if enum_type := self.enum_types.get(keyword):
             return enum_type
+
+        if list_type := self.list_types.get(keyword):
+            return list_type
+
+        if ptr_type := self.ptr_types.get(keyword):
+            return ptr_type
 
         return None
 

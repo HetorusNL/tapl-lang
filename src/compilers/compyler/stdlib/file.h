@@ -24,7 +24,7 @@ bool read_file(const char* filename, list_char* list) {
 
     // continuously read blocks of up to BLOCK_SIZE chars long
     size_t count = 0;
-    while (count = fread(buffer, sizeof(buffer[0]), sizeof(buffer) / sizeof(buffer[0]), file)) {
+    while ((count = fread(buffer, sizeof(buffer[0]), sizeof(buffer) / sizeof(buffer[0]), file))) {
         // add all read characters to the lsit
         for (size_t i = 0; i < count; i++) {
             list_char_add(list, buffer[i]);

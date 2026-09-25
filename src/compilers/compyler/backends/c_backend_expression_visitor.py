@@ -6,6 +6,7 @@
 
 from typing import TYPE_CHECKING
 
+from compyler.expressions.call_expression import CallExpression
 from compyler.expressions.expression import Expression
 from compyler.expressions.expression_type import ExpressionType
 from compyler.expressions.identifier_expression import IdentifierExpression
@@ -16,16 +17,19 @@ from compyler.tokens.identifier_token import IdentifierToken
 from compyler.tokens.number_token import NumberToken
 from compyler.tokens.string_chars_token import StringCharsToken
 from compyler.tokens.token_type import TokenType
+from compyler.types.class_type import ClassType
 from compyler.types.enum_type import EnumType
 from compyler.types.list_type import ListType
+from compyler.types.numeric_type import NumericType
+from compyler.types.ptr_type import PtrType
 from compyler.utils.utils import Utils
 from compyler.visitors.base_expression_visitor import BaseExpressionVisitor
 
 if TYPE_CHECKING:
     from compyler.backends.c_backend_state import CBackendState
     from compyler.expressions.binary_expression import BinaryExpression
-    from compyler.expressions.call_expression import CallExpression
     from compyler.expressions.enum_value_expression import EnumValueExpression
+    from compyler.expressions.make_ptr_expression import MakePtrExpression
     from compyler.expressions.this_expression import ThisExpression
     from compyler.expressions.token_expression import TokenExpression
     from compyler.expressions.type_cast_expression import TypeCastExpression
@@ -106,14 +110,48 @@ class CBackendExpressionVisitor(BaseExpressionVisitor[str]):
     def visit_identifier_expression(self, expression: IdentifierExpression) -> str:
         # utility functions used in this IdentifierExpression
         def _join() -> str:
-            if expression.base_expression and expression.base_expression.identifier_token.token_type == TokenType.THIS:
-                return "->"
+            if expression.base_expression:
+                if expression.base_expression.identifier_token.token_type == TokenType.THIS:
+                    return "->"
+                if isinstance(expression.base_expression.type_, PtrType):
+                    return "->"
             return "->" if expression.type_.is_reference else "."
 
         if expression.base_expression:
             return f"{expression.base_expression.accept(self)}{_join()}{expression.identifier_token}"
 
         return f"{expression.identifier_token}"
+
+    def _constructor_call(self, classname: str, name: str, call_expression: CallExpression) -> str:
+        # formulate the constructor call, start with the variable name reference
+        arguments: list[str] = [f"{name}"]
+
+        assert isinstance(call_expression, CallExpression)
+        for argument in call_expression.arguments:
+            arguments.append(argument.accept(self))
+
+        # create the comma separated list of arguments for the constructor call
+        arguments_string: str = ", ".join(arguments)
+
+        # add the full constructor statement with the arguments
+        return f"{classname}_constructor({arguments_string});\n"
+
+    def visit_make_ptr_expression(self, expression: MakePtrExpression) -> str:
+        # first process the inner expression
+        if isinstance(expression.expression.type_, ClassType):
+            assert isinstance(expression.expression, CallExpression)
+            # as it is a pointer, malloc a new instance here and return the pointer
+            # use the neat statement expression, so we can return a value in a block
+            code: str = f"({{"
+            classname: str = expression.expression.type_.name
+            code += f"{classname}* ptr = ({classname}*)malloc(sizeof({classname}));\n"
+            code += self._constructor_call(classname, "ptr", expression.expression)
+            code += f"ptr;"
+            code += f"}})"
+            return code
+
+        inner_code: str = expression.expression.accept(self)
+        return f"&{inner_code}"
 
     def visit_string_equal_expression(self, expression: StringEqualExpression) -> str:
         inner_code: str = expression.inner.accept(self)
@@ -188,6 +226,10 @@ class CBackendExpressionVisitor(BaseExpressionVisitor[str]):
                 return f"'{expression.token}'"
             case TokenType.NUMBER:
                 assert isinstance(expression.token, NumberToken)
+                assert isinstance(expression.type_, NumericType)
+                # to please the C compiler when generating a 64-bit number
+                if expression.type_.num_bits > 32:
+                    return f"{expression.token}L"
                 return f"{expression.token}"
             case TokenType.STRING_CHARS:
                 assert isinstance(expression.token, StringCharsToken)

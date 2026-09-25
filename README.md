@@ -114,6 +114,7 @@ the following 'features' were found during AoC solving, and should be fixed
 
 ## TODO
 
+- fix almost all numeric types are generated as 64bit value
 - enum entries with equal values result in gcc error
 - modules - optional:
   - add --debug-imports flag to warn for wrongly formatted modularized files

@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from compyler.expressions.call_expression import CallExpression
     from compyler.expressions.enum_value_expression import EnumValueExpression
     from compyler.expressions.identifier_expression import IdentifierExpression
+    from compyler.expressions.make_ptr_expression import MakePtrExpression
     from compyler.expressions.string_equal_expression import StringEqualExpression
     from compyler.expressions.string_expression import StringExpression
     from compyler.expressions.this_expression import ThisExpression
@@ -50,6 +51,10 @@ class VerifyTypesExpressionVisitor(BaseExpressionVisitor[None]):
         if expression.base_expression:
             expression.base_expression.accept(self)
         self.verify(expression)
+
+    def visit_make_ptr_expression(self, expression: MakePtrExpression) -> None:
+        self.verify(expression)
+        expression.expression.accept(self)
 
     def visit_string_equal_expression(self, expression: StringEqualExpression) -> None:
         self.verify(expression)

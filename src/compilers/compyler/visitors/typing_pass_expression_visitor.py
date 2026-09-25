@@ -18,6 +18,7 @@ from compyler.types.class_type import ClassType
 from compyler.types.enum_type import EnumType
 from compyler.types.list_type import ListType
 from compyler.types.numeric_type import NumericType
+from compyler.types.ptr_type import PtrType
 from compyler.types.type import Type
 from compyler.visitors.base_expression_visitor import BaseExpressionVisitor
 
@@ -28,6 +29,7 @@ if TYPE_CHECKING:
     from compyler.expressions.call_expression import CallExpression
     from compyler.expressions.enum_value_expression import EnumValueExpression
     from compyler.expressions.identifier_expression import IdentifierExpression
+    from compyler.expressions.make_ptr_expression import MakePtrExpression
     from compyler.expressions.string_equal_expression import StringEqualExpression
     from compyler.expressions.string_expression import StringExpression
     from compyler.expressions.this_expression import ThisExpression
@@ -148,6 +150,20 @@ class TypingPassExpressionVisitor(BaseExpressionVisitor[None]):
             if isinstance(expression.type_, ListType):
                 expression.list_type = expression.type_
             assert expression.type_
+
+    def visit_make_ptr_expression(self, expression: MakePtrExpression) -> None:
+        # check the inner expression of the make ptr expression
+        self._typing_pass.parse_expression(expression.expression)
+
+        # create a PtrType from the inner expression value
+        keyword: str = PtrType.get_keyword(expression.expression.type_)
+        try:
+            # valid source code should already have the type, so first try that
+            expression.type_ = self._typing_pass.types[keyword]
+        except Exception:
+            # otherwise create the PtrType and set it on the expression
+            self._typing_pass.types.add_ptr_type(expression.expression.type_)
+            expression.type_ = self._typing_pass.types[keyword]
 
     def visit_string_equal_expression(self, expression: StringEqualExpression) -> None:
         # check the inner expression of the string equal expression

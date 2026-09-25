@@ -489,3 +489,18 @@ println("calling test_switch_case(4) returns: ")
 test_switch_case(4)  // prints 4 and default
 println("calling test_switch_case(5) returns: ")
 test_switch_case(5)  // prints default
+
+// some code with obj[types]
+class BlaClass:
+    u32 value
+    BlaClass():
+        this.value = 1337
+ptr[BlaClass] some_ptr
+list[u8] some_list_test
+some_list_test.add(23)
+ptr[list[u8]] some_list_ptr
+list[char] text
+ptr[BlaClass] get_value_test():
+    return make_ptr(BlaClass())
+ptr[BlaClass] value_test = get_value_test()
+println(value_test.value)

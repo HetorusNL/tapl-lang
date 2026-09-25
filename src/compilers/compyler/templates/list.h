@@ -8,8 +8,9 @@ struct list_TYPE_element_struct {
     TYPE value;
     list_TYPE_element* next;
 };
-// declare the list type itself
+// declare the list type itself, and typedef a pointer to this type
 typedef struct list_TYPE_struct list_TYPE;
+typedef list_TYPE* ptr_list_TYPE;
 struct list_TYPE_struct {
     // the pointers to the first and last element
     list_TYPE_element* head;
