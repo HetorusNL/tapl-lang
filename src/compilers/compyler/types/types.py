@@ -35,6 +35,7 @@ class Types:
         """
         types_list: list[Type] = [
             Type("void", underlying_type="void"),
+            Type("null"),  # no underlying type, since it is a keyword (NULL)
             NumericType("u1", NumericTypeType.UNSIGNED, 1, ["bool"], underlying_type="bool"),
             NumericType("u8", NumericTypeType.UNSIGNED, 8, underlying_type="uint8_t"),
             NumericType("u16", NumericTypeType.UNSIGNED, 16, underlying_type="uint16_t"),

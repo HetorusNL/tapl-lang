@@ -93,9 +93,9 @@ u8 func1(u8 argument):
     local++
     println(local)
     return argument + local
-u8 func2():  // u8 as we don't support pointers (yet) :s
+u8 func2():  // u8 as we don't support pointers to basic types (yet) :s
     println(1337)
-    return null
+    return 0
 void func3(u8 a, u8 b, u8 c):
     println(a + b + c)
     return
@@ -458,6 +458,26 @@ u32 test_return_if_value():
 println("\ntesting return_if_value statement behavior")
 println("test_return_if_value() returned: {test_return_if_value()}")
 
+println("\neven better, testing return_if_value statements with classes and ptr's")
+class RIVTestClass:
+
+ptr[RIVTestClass] null_function():
+    return null
+
+ptr[RIVTestClass] return_class_function():
+    return make_ptr(RIVTestClass())
+
+ptr[RIVTestClass] test_riv_class():
+    return_if_value:
+        null
+        null_function()
+        return_class_function()
+
+    // should not be reached, as the result of return_class_function should be returned
+    return null
+
+println("test_riv_class() returned: {test_riv_class()}")
+
 println("\ntesting the switch-case statements in TAPL")
 void test_switch_case(u8 value):
     switch value:
@@ -504,3 +524,12 @@ ptr[BlaClass] get_value_test():
     return make_ptr(BlaClass())
 ptr[BlaClass] value_test = get_value_test()
 println(value_test.value)
+// create a new ptr and copy over the contents
+ptr[BlaClass] new_ptr
+new_ptr = value_test
+println(new_ptr.value)
+// var_decl can be null
+ptr[BlaClass] null_ptr = null
+// we can also make a different ptr null
+value_test = null
+println(value_test)  // should print the null pointer value (nil)

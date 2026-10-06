@@ -143,9 +143,6 @@ the following 'features' were found during AoC solving, and should be fixed
   - add classes
   - add standard library / built-in function, to do print(..)
     - this needs imports
-- fix open TODOs in `token_expression.py`
-  - support pointers?
-  - after supporting pointers, refactor 0 to NULL
 - fix todos in the typing pass:
   - add fancy error-highlighting/pointing in the source code line(s)
 - allow type 'upscaling', e.g. u8 -> u16 -> u32 -> u64, in typing pass
@@ -153,13 +150,6 @@ the following 'features' were found during AoC solving, and should be fixed
   - https://pygls.readthedocs.io/en/latest/servers/getting-started.html
   - example: https://github.com/windelbouwman/sauce-os/tree/main/language-server/slang-lang
 - use hypothesis tests: https://hypothesis.readthedocs.io/en/latest/
-- refactor all type-hints-only imports to a block like:
-  ```python
-  from typing import TYPE_CHECKING
-  # ...rest of imports...
-  if TYPE_CHECKING:
-    from compyler.visitors.base_expression_visitor import BaseExpressionVisitor
-  ```
 
 ## Ideas
 

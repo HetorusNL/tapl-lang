@@ -11,6 +11,7 @@ from compyler.types.character_type import CharacterType
 from compyler.types.enum_type import EnumType
 from compyler.types.numeric_type import NumericType
 from compyler.types.numeric_type_type import NumericTypeType
+from compyler.types.ptr_type import PtrType
 from compyler.types.type import Type
 from compyler.utils.colors import Colors
 
@@ -81,6 +82,8 @@ class Utils:
         match type_:
             case CharacterType():
                 return f"%c"
+            case EnumType():
+                return f"%d"
             case NumericType():
                 # depending on the size of the type, add 'l' to the format
                 long: str = "l" if type_.num_bits > 32 else ""
@@ -91,11 +94,13 @@ class Utils:
                         return f"%{long}u"
                     case NumericTypeType.FLOATING_POINT:
                         return f"%{long}f"
-            case EnumType():
-                return f"%d"
+            case PtrType():
+                return f"%p"
             case Type():
                 if type_.name == "string":
                     return f"%s"
+                elif type_.name == "null":
+                    return f"%p"
                 assert False, f"internal compiler error, type with name {type_} not handled!"
             case _:
                 assert False, f"internal compiler error, {type(type_)} not handled!"
@@ -107,5 +112,4 @@ class Utils:
 
     @classmethod
     def null_value(cls) -> str:
-        # TODO: refactor to NULL when we support pointers
-        return f"0"
+        return f"NULL"

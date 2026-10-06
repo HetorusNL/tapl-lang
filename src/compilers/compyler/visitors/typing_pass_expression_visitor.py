@@ -202,8 +202,7 @@ class TypingPassExpressionVisitor(BaseExpressionVisitor[None]):
                     case TokenType.FALSE:
                         expression.type_ = self._typing_pass.types["base"]
                     case TokenType.NULL:
-                        # TODO: refactor when ptr implemented
-                        expression.type_ = self._typing_pass.types["base"]
+                        expression.type_ = self._typing_pass.types["null"]
                     case _:
                         token: str = str(type(expression.token))
                         token_type: str = expression.token.token_type.value

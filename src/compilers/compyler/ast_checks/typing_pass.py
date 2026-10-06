@@ -14,6 +14,7 @@ from compyler.tokens.number_token import NumberToken
 from compyler.tokens.type_token import TypeToken
 from compyler.types.numeric_type import NumericType
 from compyler.types.numeric_type_type import NumericTypeType
+from compyler.types.ptr_type import PtrType
 from compyler.utils.source_location import SourceLocation
 from compyler.visitors.typing_pass_expression_visitor import TypingPassExpressionVisitor
 from compyler.visitors.typing_pass_statement_visitor import TypingPassStatementVisitor
@@ -137,7 +138,18 @@ class TypingPass(PassBase[None]):
                 # return the left side, as right is a base type
                 return left
 
-        # if both sides are not NumericType, the types must match exactly
+        # if one of the sides is a null type, the other side can be null or a ptr type
+        if left.keyword == "null" or right.keyword == "null":
+            # if both sides are null, return the null type
+            if left.keyword == "null" and right.keyword == "null":
+                return left
+            # if one side is a null type, the other side must be a ptr type
+            if isinstance(left, PtrType) and right.keyword == "null":
+                return left
+            if isinstance(right, PtrType) and left.keyword == "null":
+                return right
+
+        # if both sides are not NumericType or ptr-related, the types must match exactly
         if left.keyword == right.keyword:
             return left
 
