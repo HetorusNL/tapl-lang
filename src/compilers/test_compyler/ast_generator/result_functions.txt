@@ -6,13 +6,13 @@ printf("%u\n", argument);
 return argument;
 }
 s16 func2() {
-printf("%ld\n", 1337);
-return 1337;
+printf("%ld\n", 1337L);
+return 1337L;
 }
 void func3(u8 a, u8 b, u8 c) {
 printf("%u\n", ((a + b) + c));
 return;
 }
-func(10);
+func(10L);
 func2();
-func3(1, 2, 3);
+func3(1L, 2L, 3L);

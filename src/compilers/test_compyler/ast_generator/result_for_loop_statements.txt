@@ -1,13 +1,13 @@
-for (u8 i = 0; (i < 10); ((i)++)) {
+for (u8 i = 0L; (i < 10L); ((i)++)) {
 printf("%u\n", i);
 }
 breakall_43:;
-u8 idx = 0;
-for (; (((idx)++) < 10); ) {
+u8 idx = 0L;
+for (; (((idx)++) < 10L); ) {
 printf("%u\n", idx);
 }
 breakall_133:;
-for (u8 i = 0; (i < 10); ((i)++)) {
+for (u8 i = 0L; (i < 10L); ((i)++)) {
 printf("%u", i);
 }
 breakall_222:;

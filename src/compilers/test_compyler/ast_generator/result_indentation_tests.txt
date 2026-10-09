@@ -1,7 +1,7 @@
-if (1337) {
-printf("%ld\n", 1337);
-} else if (1) {
+if (1337L) {
+printf("%ld\n", 1337L);
+} else if (1L) {
 } else {
 }
-if (1) {
+if (1L) {
 }

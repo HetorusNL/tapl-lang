@@ -1,19 +1,19 @@
-(((1100 + (150 * 2)) + 37) - 100);
-((1 * 2) + (3 / ((4 + true))));
-printf("%ld\n", 1337);
-u16 var = 10;
+(((1100L + (150L * 2L)) + 37L) - 100L);
+((1L * 2L) + (3L / ((4L + true))));
+printf("%ld\n", 1337L);
+u16 var = 10L;
 printf("%u\n", var);
-u16 test_unary_minus = (-(1));
+u16 test_unary_minus = (-(1L));
 printf("%u\n", test_unary_minus);
-printf("%u\n", (1337 == 1337));
-printf("%u\n", ((1337 + 1) != 1337));
-if (1337) {
-printf("%ld\n", 1337);
-} else if (1338) {
-printf("%ld\n", 1338);
+printf("%u\n", (1337L == 1337L));
+printf("%u\n", ((1337L + 1L) != 1337L));
+if (1337L) {
+printf("%ld\n", 1337L);
+} else if (1338L) {
+printf("%ld\n", 1338L);
 } else {
-printf("%ld\n", 0);
+printf("%ld\n", 0L);
 }
-u8 small = 123;
+u8 small = 123L;
 u16 big = ((u16)small);
-u8 small_again = (((u8)big) + 1);
+u8 small_again = (((u8)big) + 1L);
