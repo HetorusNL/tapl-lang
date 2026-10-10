@@ -10,6 +10,9 @@ RUN \
     # mount the source code, they also don't need to be in the image
     --mount=type=bind,source=src/,target=src/,rw \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    # mount the .clang-format file, as it is needed for formatting the code
+    --mount=type=bind,source=.clang-format,target=.clang-format.src \
     \
     # make the script crash on errors and such
     set -eou; \
@@ -18,7 +21,10 @@ RUN \
     export UV_PROJECT_ENVIRONMENT=/usr/local; \
     export UV_NO_EDITABLE=1; \
     # install the dependencies and build/install the tapl-compyler itself
-    uv sync --no-dev;
+    uv sync --no-dev; \
+    \
+    # move the .clang-format file to the root of the image
+    cp .clang-format.src /.clang-format;
 
 # setup the env for compilation
 ENV TAPL_CC="gcc"\
