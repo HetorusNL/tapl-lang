@@ -61,6 +61,7 @@ class TokenType(Enum):
     STRING_START = "<STRING_START>"
 
     # keywords
+    ARRAY = "array"
     BREAK = "break"
     BREAKALL = "breakall"
     CASE = "case"

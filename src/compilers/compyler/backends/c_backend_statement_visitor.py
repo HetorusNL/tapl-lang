@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from compyler.backends.c_backend_expression_visitor import CBackendExpressionVisitor
     from compyler.backends.c_backend_state import CBackendState
     from compyler.expressions.expression import Expression
+    from compyler.statements.array_statement import ArrayStatement
     from compyler.statements.assignment_statement import AssignmentStatement
     from compyler.statements.break_statement import BreakStatement
     from compyler.statements.breakall_statement import BreakallStatement
@@ -47,6 +48,16 @@ class CBackendStatementVisitor(BaseStatementVisitor[str]):
     def __init__(self, state: CBackendState, expression_visitor: CBackendExpressionVisitor):
         self._state: CBackendState = state
         self._expression_visitor: CBackendExpressionVisitor = expression_visitor
+
+    def visit_array_statement(self, statement: ArrayStatement) -> str:
+        array_base: str = statement.array_type.name
+        # create the array declaration
+        code: str = f"{array_base} {statement.name};"
+        # get the size of the array
+        size: str = statement.size.accept(self._expression_visitor)
+        # call the constructor of the array
+        code += f"{array_base}_constructor(&{statement.name}, {size});"
+        return code
 
     def visit_assignment_statement(self, statement: AssignmentStatement) -> str:
         identifier: str = statement.expression.accept(self._expression_visitor)

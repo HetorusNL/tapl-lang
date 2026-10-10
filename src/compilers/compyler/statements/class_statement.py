@@ -10,6 +10,7 @@ from compyler.statements.statement import Statement
 from compyler.types.class_type import ClassType
 
 if TYPE_CHECKING:
+    from compyler.statements.array_statement import ArrayStatement
     from compyler.statements.function_statement import FunctionStatement
     from compyler.statements.lifecycle_statement import LifecycleStatement
     from compyler.statements.list_statement import ListStatement
@@ -25,7 +26,7 @@ class ClassStatement(Statement):
         assert isinstance(name.type_, ClassType)
         self.name: TypeToken = name
         # store everything that can be in a class statement in the class
-        self.variables: list[VarDeclStatement | ListStatement] = []
+        self.variables: list[ArrayStatement | VarDeclStatement | ListStatement] = []
         self.functions: list[FunctionStatement] = []
         # start with a default/empty constructor and destructor
         self.constructor: LifecycleStatement | None = None

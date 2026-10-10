@@ -9,10 +9,12 @@ from typing import TYPE_CHECKING
 from compyler.errors.tapl_error import TaplError
 from compyler.statements.constructor_function_statement import ConstructorFunctionStatement
 from compyler.statements.default_statement import DefaultStatement
+from compyler.types.numeric_type import NumericType
 from compyler.visitors.base_statement_visitor import BaseStatementVisitor
 
 if TYPE_CHECKING:
     from compyler.ast_checks.typing_pass import TypingPass
+    from compyler.statements.array_statement import ArrayStatement
     from compyler.statements.assignment_statement import AssignmentStatement
     from compyler.statements.break_statement import BreakStatement
     from compyler.statements.breakall_statement import BreakallStatement
@@ -41,6 +43,14 @@ if TYPE_CHECKING:
 class TypingPassStatementVisitor(BaseStatementVisitor[None]):
     def __init__(self, typing_pass: TypingPass):
         self._typing_pass: TypingPass = typing_pass
+
+    def visit_array_statement(self, statement: ArrayStatement) -> None:
+        # check that the size is a numeric type
+        self._typing_pass.parse_expression(statement.size)
+        if not isinstance(statement.size.type_, NumericType):
+            self._typing_pass.ast_error("array size must be a numeric type!", statement.size.source_location)
+        # add the variable declaration to the scope
+        self._typing_pass.add_identifier(statement.name, statement.array_type)
 
     def visit_assignment_statement(self, statement: AssignmentStatement) -> None:
         # get the identifier token type

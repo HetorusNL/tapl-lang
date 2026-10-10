@@ -17,6 +17,7 @@ from compyler.tokens.identifier_token import IdentifierToken
 from compyler.tokens.number_token import NumberToken
 from compyler.tokens.string_chars_token import StringCharsToken
 from compyler.tokens.token_type import TokenType
+from compyler.types.array_type import ArrayType
 from compyler.types.class_type import ClassType
 from compyler.types.enum_type import EnumType
 from compyler.types.list_type import ListType
@@ -35,6 +36,7 @@ if TYPE_CHECKING:
     from compyler.expressions.type_cast_expression import TypeCastExpression
     from compyler.expressions.unary_expression import UnaryExpression
     from compyler.tokens.token import Token
+    from compyler.types.type import Type
 
 
 class CBackendExpressionVisitor(BaseExpressionVisitor[str]):
@@ -53,15 +55,22 @@ class CBackendExpressionVisitor(BaseExpressionVisitor[str]):
             assert expression.base_expression
             return f"" if expression.base_expression.type_.is_reference else f"&"
 
+        def _is_ptr_type(type_: Type) -> bool:
+            if isinstance(type_, ListType) and not type_.is_reference:
+                return True
+            if isinstance(type_, ArrayType) and not type_.is_reference:
+                return True
+            return False
+
         def _get_argument_code(argument: Expression) -> str:
             if isinstance(argument, IdentifierExpression):
-                if isinstance(argument.type_, ListType) and not argument.type_.is_reference:
+                if _is_ptr_type(argument.type_):
                     return f"&{argument.identifier_token}"
             return argument.accept(self)
 
         def _get_receiver_code(base_expression: IdentifierExpression) -> str:
             base_expression_code: str = base_expression.accept(self)
-            if isinstance(base_expression.type_, ListType) and not base_expression.type_.is_reference:
+            if _is_ptr_type(base_expression.type_):
                 return f"&{base_expression_code}"
             return base_expression_code
 
@@ -88,8 +97,14 @@ class CBackendExpressionVisitor(BaseExpressionVisitor[str]):
                 instance: str = f"{_dereference()}{_get_receiver_code(expression.base_expression)}"
                 return _formulate_call(instance, full_name)
 
-            if expression.base_expression.list_type:
-                full_name: str = f"list_{expression.base_expression.list_type.inner_type}_{function_name}"
+            if isinstance(expression.base_expression.type_, ArrayType):
+                full_name: str = f"array_{expression.base_expression.type_.inner_type}_{function_name}"
+                # formulate the instance pointer and get the code of the arguments in the expression
+                instance_pointer: str = _get_receiver_code(expression.base_expression)
+                return _formulate_call(instance_pointer, full_name)
+
+            if isinstance(expression.base_expression.type_, ListType):
+                full_name: str = f"list_{expression.base_expression.type_.inner_type}_{function_name}"
                 # formulate the instance pointer and get the code of the arguments in the expression
                 instance_pointer: str = _get_receiver_code(expression.base_expression)
                 return _formulate_call(instance_pointer, full_name)

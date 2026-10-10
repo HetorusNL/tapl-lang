@@ -56,7 +56,6 @@ class TestAstGenerator(unittest.TestCase):
         identifier_token = IdentifierToken(source_location, "buffer")
         argument_expression = IdentifierExpression(source_location, identifier_token)
         argument_expression.type_ = list_type
-        argument_expression.list_type = list_type
 
         function_identifier = IdentifierExpression(source_location, IdentifierToken(source_location, "read_file"))
         expression = CallExpression(source_location, function_identifier, None, [argument_expression])

@@ -41,6 +41,7 @@ class CBackendCodeGenerator:
 
         # also generate the typedefs for all builtin basic types
         self._write_basic_type_header()
+        self._write_array_type_header()
         self._write_list_type_header()
 
         # loop through the statements of all ASTs in the AstCollection and generate code for each of them
@@ -110,6 +111,36 @@ class CBackendCodeGenerator:
         # write the content to the file
         types_header: Path = self._header_folder / "types.h"
         with open(types_header, "w") as f:
+            f.writelines(lines)
+
+    def _write_array_type_header(self) -> None:
+        # add the strings to be added to the types header
+        lines: list[str] = [
+            "#pragma once\n",
+            "\n",
+            "// include the needed system headers\n",
+            "#include <stdio.h>\n",
+            "#include <stdlib.h>\n",
+            "\n",
+            "// also include the needed TAPL headers\n",
+            "#include <tapl_headers/types.h>\n",
+            "#include <tapl_headers/utility_functions.h>\n",
+            "\n",
+        ]
+
+        # for every array type, add the filled in template to the source lines
+        for type_ in self._types.array_types.values():
+            # read the lines from the template
+            with open(self._templates_folder / "array.h") as f:
+                template_lines: list[str] = f.readlines()
+            # replace the "TYPE" text with the actual internal type of the ArrayType
+            array_type: str = type_.inner_type.keyword
+            template_lines = [line.replace("TYPE", array_type) for line in template_lines]
+            lines.extend(template_lines)
+
+        # write the content to the file
+        array_header: Path = self._header_folder / "array.h"
+        with open(array_header, "w") as f:
             f.writelines(lines)
 
     def _write_list_type_header(self) -> None:
@@ -223,8 +254,9 @@ class CBackendCodeGenerator:
             "#include <stdio.h>\n",
             "\n",
             "// also include the needed TAPL headers\n",
-            "#include <tapl_headers/enums.h>\n",
+            "#include <tapl_headers/array.h>\n",
             "#include <tapl_headers/classes.h>\n",
+            "#include <tapl_headers/enums.h>\n",
             "#include <tapl_headers/file.h>\n",
             "#include <tapl_headers/functions.h>\n",
             "#include <tapl_headers/list.h>\n",

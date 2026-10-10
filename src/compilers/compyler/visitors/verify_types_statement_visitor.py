@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 from compyler.visitors.base_statement_visitor import BaseStatementVisitor
 
 if TYPE_CHECKING:
+    from compyler.statements.array_statement import ArrayStatement
     from compyler.statements.assignment_statement import AssignmentStatement
     from compyler.statements.break_statement import BreakStatement
     from compyler.statements.breakall_statement import BreakallStatement
@@ -37,6 +38,9 @@ if TYPE_CHECKING:
 class VerifyTypesStatementVisitor(BaseStatementVisitor[None]):
     def __init__(self, expression_visitor: BaseExpressionVisitor[None]):
         self._expression_visitor: BaseExpressionVisitor[None] = expression_visitor
+
+    def visit_array_statement(self, statement: ArrayStatement) -> None:
+        statement.size.accept(self._expression_visitor)
 
     def visit_assignment_statement(self, statement: AssignmentStatement) -> None:
         statement.expression.accept(self._expression_visitor)

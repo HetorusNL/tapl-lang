@@ -49,7 +49,7 @@ u64 list_TYPE_size(list_TYPE* this) {
 void list_TYPE_add(list_TYPE* this, TYPE value) {
     list_TYPE_cache_invalidate(this);
     // construct the new element
-    list_TYPE_element* new_element = malloc(sizeof(list_TYPE_element));
+    list_TYPE_element* new_element = (list_TYPE_element*)malloc(sizeof(list_TYPE_element));
     new_element->value = value;
     new_element->next = NULL;
 
@@ -178,7 +178,7 @@ void list_TYPE_insert(list_TYPE* this, u64 index, TYPE value) {
     // handle the case when it's the first element
     if (index == 0) {
         // add the element to the list and move the current list value to the next pointer
-        list_TYPE_element* new_element = malloc(sizeof(list_TYPE_element));
+        list_TYPE_element* new_element = (list_TYPE_element*)malloc(sizeof(list_TYPE_element));
         new_element->value = value;
         new_element->next = this->head;
         this->head = new_element;
@@ -201,7 +201,7 @@ void list_TYPE_insert(list_TYPE* this, u64 index, TYPE value) {
         panic("index out of bounds in list_TYPE_insert");
 
     // add the element at the current element's next pointer, and this next pointer points to that
-    list_TYPE_element* new_element = malloc(sizeof(list_TYPE_element));
+    list_TYPE_element* new_element = (list_TYPE_element*)malloc(sizeof(list_TYPE_element));
     new_element->value = value;
     new_element->next = element->next;
     element->next = new_element;

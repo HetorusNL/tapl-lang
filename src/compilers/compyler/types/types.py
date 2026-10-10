@@ -6,6 +6,7 @@
 
 from copy import deepcopy
 
+from compyler.types.array_type import ArrayType
 from compyler.types.character_type import CharacterType
 from compyler.types.class_type import ClassType
 from compyler.types.enum_type import EnumType
@@ -19,10 +20,11 @@ from compyler.types.type import Type
 class Types:
     def __init__(self):
         self.simple_types: dict[str, Type] = self._builtin_types()
-        self.list_types: dict[str, ListType] = {}
-        self.ptr_types: dict[str, PtrType] = {}
+        self.array_types: dict[str, ArrayType] = {}
         self.class_types: dict[str, ClassType] = {}
         self.enum_types: dict[str, EnumType] = {}
+        self.list_types: dict[str, ListType] = {}
+        self.ptr_types: dict[str, PtrType] = {}
 
         # make sure also the list[char] exists for the file stdlib functions
         self.add_list_type(self["char"])
@@ -99,6 +101,25 @@ class Types:
         # return the existing or newly created type
         return self[keyword]
 
+    def add_array_type(self, inner_type: Type) -> ArrayType:
+        """add a new array type to the Types collection,
+        does nothing when the array type is already present in the collection,
+        returns the existing or newly added array type
+        """
+        # construct the keyword of the array type
+        keyword: str = ArrayType.get_keyword(inner_type)
+
+        # check if the type is already in the collection
+        if keyword not in self.array_types:
+            # create the Type, and add the keyword:Type to the collection
+            new_array_type = ArrayType(inner_type)
+            self.array_types[keyword] = new_array_type
+
+        # return the existing or newly created array type
+        array_type: Type = self[keyword]
+        assert isinstance(array_type, ArrayType)
+        return array_type
+
     def add_class_type(self, keyword: str) -> ClassType:
         """add a new class type to the Types collection,
         does nothing when the class type is already present in the collection,
@@ -173,6 +194,9 @@ class Types:
         """internal get method that returns a reference to one of the type types, if found, None otherwise"""
         if builtin_type := self.simple_types.get(keyword):
             return builtin_type
+
+        if array_type := self.array_types.get(keyword):
+            return array_type
 
         if class_type := self.class_types.get(keyword):
             return class_type

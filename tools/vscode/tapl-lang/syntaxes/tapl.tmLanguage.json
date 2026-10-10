@@ -50,7 +50,7 @@
         },
         {
           "name": "support.class.tapl",
-          "match": "\\b(?:hmap|list|ptr)\\b"
+          "match": "\\b(?:array|hmap|list|ptr)\\b"
         }
       ]
     },

@@ -510,7 +510,7 @@ test_switch_case(4)  // prints 4 and default
 println("calling test_switch_case(5) returns: ")
 test_switch_case(5)  // prints default
 
-// some code with obj[types]
+println("\nsome code with obj[types]")
 class BlaClass:
     u32 value
     BlaClass():
@@ -533,3 +533,13 @@ ptr[BlaClass] null_ptr = null
 // we can also make a different ptr null
 value_test = null
 println(value_test)  // should print the null pointer value (nil)
+
+println("\nsome tests with the array data type")
+array[u8] some_array = array(10)
+some_array.set(0, 10)
+some_array.set(9, 1)
+println("the values set in the u8 array are: {some_array.get(0)=} and {some_array.get(9)=}")
+array[char] char_array = array(2)
+char_array.set(0, 'T')
+char_array.set(1, 0x3F)  // 0x3F seems to be in ascii '?'
+println("the values set in the char array are: {char_array.get(0)=} and {char_array.get(1)=}")

@@ -10,8 +10,6 @@ from compyler.expressions.expression import Expression
 
 if TYPE_CHECKING:
     from compyler.tokens.identifier_token import IdentifierToken
-    from compyler.types.class_type import ClassType
-    from compyler.types.list_type import ListType
     from compyler.utils.source_location import SourceLocation
     from compyler.visitors.base_expression_visitor import BaseExpressionVisitor
 
@@ -21,8 +19,6 @@ class IdentifierExpression(Expression):
         super().__init__(source_location)
         self.identifier_token: IdentifierToken = identifier_token
         self.base_expression: IdentifierExpression | None = None
-        self.class_type: ClassType | None = None
-        self.list_type: ListType | None = None
 
     def accept[T](self, visitor: BaseExpressionVisitor[T]) -> T:
         return visitor.visit_identifier_expression(self)

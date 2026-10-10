@@ -10,6 +10,7 @@ from compyler.visitors.base_statement_visitor import BaseStatementVisitor
 
 if TYPE_CHECKING:
     from compyler.ast_checks.pass_base import PassBase
+    from compyler.statements.array_statement import ArrayStatement
     from compyler.statements.assignment_statement import AssignmentStatement
     from compyler.statements.break_statement import BreakStatement
     from compyler.statements.breakall_statement import BreakallStatement
@@ -36,6 +37,12 @@ if TYPE_CHECKING:
 class ScopingPassStatementVisitor(BaseStatementVisitor[None]):
     def __init__(self, pass_base: PassBase[None]):
         self._pass_base: PassBase[None] = pass_base
+
+    def visit_array_statement(self, statement: ArrayStatement) -> None:
+        # first check the size expression for identifiers
+        self._pass_base.parse_expression(statement.size)
+        # then add the identifier to the surrounding scope with the array type
+        self._pass_base.add_identifier(statement.name, statement.array_type)
 
     def visit_assignment_statement(self, statement: AssignmentStatement) -> None:
         # check that the this or identifier expression
@@ -132,7 +139,7 @@ class ScopingPassStatementVisitor(BaseStatementVisitor[None]):
         pass  # nothing to check in an ImportStatement
 
     def visit_list_statement(self, statement: ListStatement) -> None:
-        # check the expression also for identifiers
+        # add the identifier to the surrounding scope with the list type
         self._pass_base.add_identifier(statement.name, statement.list_type)
 
     def visit_module_statement(self, statement: ModuleStatement) -> None:

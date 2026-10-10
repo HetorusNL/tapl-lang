@@ -22,6 +22,7 @@ from compyler.expressions.this_expression import ThisExpression
 from compyler.expressions.token_expression import TokenExpression
 from compyler.expressions.type_cast_expression import TypeCastExpression
 from compyler.expressions.unary_expression import UnaryExpression
+from compyler.statements.array_statement import ArrayStatement
 from compyler.statements.assignment_statement import AssignmentStatement
 from compyler.statements.break_statement import BreakStatement
 from compyler.statements.breakall_statement import BreakallStatement
@@ -49,6 +50,7 @@ from compyler.tokens.identifier_token import IdentifierToken
 from compyler.tokens.this_token import ThisToken
 from compyler.tokens.token_type import TokenType
 from compyler.tokens.type_token import TypeToken
+from compyler.types.array_type import ArrayType
 from compyler.types.class_type import ClassType
 from compyler.types.enum_type import EnumType
 from compyler.types.list_type import ListType
@@ -238,7 +240,7 @@ class AstGenerator:
 
     def _type_statement(
         self, must_end_with_newline: bool
-    ) -> FunctionStatement | ListStatement | VarDeclStatement | None:
+    ) -> ArrayStatement | FunctionStatement | ListStatement | VarDeclStatement | None:
         """returns a statement starting with a type or list, or None otherwise"""
         # start with a type
         if self.current().token_type != TokenType.TYPE:
@@ -488,7 +490,7 @@ class AstGenerator:
 
         return switch_statement
 
-    def var_decl_statement(self, must_end_with_newline: bool) -> ListStatement | VarDeclStatement:
+    def var_decl_statement(self, must_end_with_newline: bool) -> ArrayStatement | ListStatement | VarDeclStatement:
         # the _type_statement function already checked the tokens for us
         # so we can start consuming here
         type_token: Token = self.consume()
@@ -504,7 +506,22 @@ class AstGenerator:
         # statements should end with a newline
         self.expect_newline(must_end_with_newline=must_end_with_newline)
 
-        # check if the type is a list type or a different type
+        # check if the type is an array type
+        if isinstance(type_token.type_, ArrayType):
+            # check that there is an initial_value, the constructor of the array
+            if not initial_value or not isinstance(initial_value, CallExpression):
+                message: str = f"expected a constructor call for an array!"
+                raise AstError(message, self._filename, name.source_location)
+            if initial_value.identifier_token.value != TokenType.ARRAY.value:
+                message: str = f"expected an array constructor call for an array!"
+                raise AstError(message, self._filename, initial_value.source_location)
+            if len(initial_value.arguments) != 1:
+                message: str = f"expected an array constructor with one argument for an array!"
+                raise AstError(message, self._filename, initial_value.source_location)
+            # store the size of the array expression and return the array statement
+            return ArrayStatement(type_token, name, initial_value.arguments[0])
+
+        # check if the type is a list type
         if isinstance(type_token.type_, ListType):
             # return a list statement
             return ListStatement(type_token, name)
@@ -672,7 +689,10 @@ class AstGenerator:
         while not self.match(TokenType.DEDENT):
             # check for a var decl or function statement
             if type_statement := self._type_statement(True):
-                if type(type_statement) == FunctionStatement:
+                if type(type_statement) == ArrayStatement:
+                    class_statement.variables.append(type_statement)
+                    continue
+                elif type(type_statement) == FunctionStatement:
                     class_statement.functions.append(type_statement)
                     continue
                 elif type(type_statement) == VarDeclStatement:
@@ -1042,6 +1062,12 @@ class AstGenerator:
         if token := self.match(TokenType.IDENTIFIER):
             assert isinstance(token, IdentifierToken)
             return self.identifier_expression(IdentifierExpression(token.source_location, token))
+
+        # match an array constructor call expression
+        if token := self.match(TokenType.ARRAY):
+            # artificially construct an identifier token for the array constructor call
+            identifier_token: IdentifierToken = IdentifierToken(token.source_location, TokenType.ARRAY.value)
+            return self.identifier_expression(IdentifierExpression(token.source_location, identifier_token))
 
         # match a certain type calls or dot operators
         if token := self.match(TokenType.TYPE):

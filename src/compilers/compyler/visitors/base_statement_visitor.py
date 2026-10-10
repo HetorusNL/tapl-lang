@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 from compyler.errors.visitor_error import VisitorError
 
 if TYPE_CHECKING:
+    from compyler.statements.array_statement import ArrayStatement
     from compyler.statements.assignment_statement import AssignmentStatement
     from compyler.statements.break_statement import BreakStatement
     from compyler.statements.breakall_statement import BreakallStatement
@@ -35,6 +36,9 @@ if TYPE_CHECKING:
 
 
 class BaseStatementVisitor[T]:
+    def visit_array_statement(self, statement: ArrayStatement) -> T:
+        raise VisitorError(self, statement)
+
     def visit_assignment_statement(self, statement: AssignmentStatement) -> T:
         raise VisitorError(self, statement)
 

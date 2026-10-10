@@ -13,6 +13,7 @@ from compyler.tokens.identifier_token import IdentifierToken
 from compyler.tokens.number_token import NumberToken
 from compyler.tokens.string_chars_token import StringCharsToken
 from compyler.tokens.token_type import TokenType
+from compyler.types.array_type import ArrayType
 from compyler.types.character_type import CharacterType
 from compyler.types.class_type import ClassType
 from compyler.types.enum_type import EnumType
@@ -62,8 +63,8 @@ class TypingPassExpressionVisitor(BaseExpressionVisitor[None]):
         identifier_token: IdentifierToken = expression.identifier_token
         base_expression_type: Type | None = expression.base_expression.type_ if expression.base_expression else None
         if base_expression_type:
-            # if the previous identifier is a list or class, we can call certain functions
-            if isinstance(base_expression_type, ListType):
+            # several types can be callable, check if the base expression type is one of them
+            if isinstance(base_expression_type, ArrayType):
                 # check the arguments
                 # TODO: add type and number of arguments checking to arguments of list functions
                 for argument in expression.arguments:
@@ -86,6 +87,17 @@ class TypingPassExpressionVisitor(BaseExpressionVisitor[None]):
 
             if isinstance(base_expression_type, EnumType):
                 # check that the function can be called on an enum
+                if identifier_token.value in base_expression_type.callable_functions():
+                    return_value_keyword = base_expression_type.callable_functions()[identifier_token.value]
+                    return_value_type: Type = self._typing_pass.types[return_value_keyword]
+                    expression.type_ = return_value_type
+                    return
+
+            if isinstance(base_expression_type, ListType):
+                # check the arguments
+                # TODO: add type and number of arguments checking to arguments of list functions
+                for argument in expression.arguments:
+                    self._typing_pass.parse_expression(argument)
                 if identifier_token.value in base_expression_type.callable_functions():
                     return_value_keyword = base_expression_type.callable_functions()[identifier_token.value]
                     return_value_type: Type = self._typing_pass.types[return_value_keyword]
@@ -147,8 +159,6 @@ class TypingPassExpressionVisitor(BaseExpressionVisitor[None]):
             assert not has_type
 
             expression.type_ = self._typing_pass.get_identifier_type(expression.identifier_token)
-            if isinstance(expression.type_, ListType):
-                expression.list_type = expression.type_
             assert expression.type_
 
     def visit_make_ptr_expression(self, expression: MakePtrExpression) -> None:
