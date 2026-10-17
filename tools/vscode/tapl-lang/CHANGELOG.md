@@ -5,6 +5,16 @@ All notable changes to the "tapl-lang" extension will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.11]
+
+### Changed
+
+- bumped `@vscode/vsce` major version
+
+### Fixed
+
+- migrated to organization-scoped extension deployment access token (because micro$oft)
+
 ## [0.1.10]
 
 ### Added
